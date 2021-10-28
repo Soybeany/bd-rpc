@@ -1,4 +1,4 @@
-package com.soybeany.rpc.demo.client;
+package com.soybeany.rpc.demo.consumer;
 
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.model.Context;
@@ -14,12 +14,12 @@ import java.util.Map;
 public class TestPlugin implements IClientPlugin {
     @Override
     public String onSetupSyncTagToHandle() {
-        return "test";
+        return "test2";
     }
 
     @Override
     public void onSendSync(Context ctx, Map<String, String> result) {
-        result.put("what", "a");
+        result.put("good", "b");
         System.out.println("准备发送心跳");
     }
 
