@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Soybeany
@@ -25,13 +22,17 @@ class MainServiceImpl implements MainService {
 
     @Override
     public Map<String, String> sync(HttpServletRequest request) {
-        Context ctx = Context.getNew(request);
+        Context ctx = Context.fromRequest(request);
         Map<String, String> result = new HashMap<>();
-        Map<String, Map<String, String[]>> paramMap = TagUtils.split(request.getParameterMap());
+        Map<String, Map<String, String>> paramMap = TagUtils.split(getParam(request));
         for (IServerPlugin plugin : allPlugins) {
-            Map<String, String> tmpResult = new HashMap<>();
             String tag = plugin.onSetupSyncTagToHandle();
-            plugin.onHandleSync(ctx, paramMap.get(tag), tmpResult);
+            Map<String, String> tagParam = paramMap.get(tag);
+            if (null == tagParam) {
+                continue;
+            }
+            Map<String, String> tmpResult = new HashMap<>();
+            plugin.onHandleSync(ctx, tagParam, tmpResult);
             tmpResult.forEach((k, v) -> result.put(TagUtils.addTag(tag, k), v));
         }
         return result;
@@ -42,6 +43,16 @@ class MainServiceImpl implements MainService {
     @PostConstruct
     private void onInit() {
         Collections.sort(allPlugins);
+    }
+
+    private Map<String, String> getParam(HttpServletRequest request) {
+        Map<String, String> param = new HashMap<>();
+        Enumeration<String> names = request.getParameterNames();
+        while (names.hasMoreElements()) {
+            String name = names.nextElement();
+            param.put(name, request.getParameter(name));
+        }
+        return param;
     }
 
 }

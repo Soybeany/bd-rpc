@@ -18,6 +18,6 @@ public interface IServerPlugin extends IBasePlugin {
      * @param param  入参
      * @param result 数据
      */
-    void onHandleSync(Context ctx, Map<String, String[]> param, Map<String, String> result);
+    void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result);
 
 }

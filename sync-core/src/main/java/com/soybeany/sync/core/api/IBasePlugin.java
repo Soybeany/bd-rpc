@@ -25,8 +25,6 @@ public interface IBasePlugin extends Comparable<IBasePlugin> {
      *
      * @return 标签值
      */
-    default String onSetupSyncTagToHandle() {
-        return null;
-    }
+    String onSetupSyncTagToHandle();
 
 }

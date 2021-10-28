@@ -14,9 +14,9 @@ public class TagUtils {
     /**
      * 依据分隔符，将入参分隔
      */
-    public static Map<String, Map<String, String[]>> split(Map<String, String[]> param) {
-        Map<String, Map<String, String[]>> result = new HashMap<>();
-        for (Map.Entry<String, String[]> entry : param.entrySet()) {
+    public static Map<String, Map<String, String>> split(Map<String, String> param) {
+        Map<String, Map<String, String>> result = new HashMap<>();
+        for (Map.Entry<String, String> entry : param.entrySet()) {
             String key = entry.getKey();
             int separatorIndex = key.indexOf(SEPARATOR);
             if (separatorIndex == -1) {

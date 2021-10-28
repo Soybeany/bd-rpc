@@ -3,7 +3,8 @@ package com.soybeany.sync.core.model;
 import lombok.Getter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,28 +17,36 @@ import java.util.Map;
 public class Context {
 
     private String ipAddress;
-    private Map<String, String> requestHeaders;
+    private final Map<String, String> requestHeaders = new HashMap<>();
     private final Map<String, Object> data = new HashMap<>();
 
     // ***********************方法区****************************
 
-    public static Context getNew(HttpServletRequest request) {
+    public static Context getEmpty() {
+        Context ctx = new Context();
+        try {
+            ctx.ipAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("无法获取本地ip地址");
+        }
+        return ctx;
+    }
+
+    public static Context fromRequest(HttpServletRequest request) {
         Context ctx = new Context();
         ctx.ipAddress = getIpAddress(request);
-        ctx.requestHeaders = getHeaders(request);
+        setupHeaders(request, ctx.requestHeaders);
         return ctx;
     }
 
     // ***********************内部方法****************************
 
-    private static Map<String, String> getHeaders(HttpServletRequest request) {
-        Map<String, String> result = new HashMap<>();
+    private static void setupHeaders(HttpServletRequest request, Map<String, String> headers) {
         Enumeration<String> keys = request.getHeaderNames();
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
-            result.put(key, request.getHeader(key));
+            headers.put(key, request.getHeader(key));
         }
-        return Collections.unmodifiableMap(result);
     }
 
     private static String getIpAddress(HttpServletRequest request) {

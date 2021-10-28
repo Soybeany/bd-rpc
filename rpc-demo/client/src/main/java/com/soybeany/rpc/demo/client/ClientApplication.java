@@ -1,13 +1,13 @@
-package com.soybeany.rpc.demo.server;
+package com.soybeany.rpc.demo.client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {"com.soybeany"})
-class MainApplication {
+class ClientApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MainApplication.class, args);
+        SpringApplication.run(ClientApplication.class, args);
     }
 
 }

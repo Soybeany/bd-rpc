@@ -11,11 +11,19 @@ import java.util.Map;
 public interface IClientPlugin extends IBasePlugin {
 
     /**
+     * 触发心跳时的回调
+     *
+     * @param ctx    上下文
+     * @param result 待传输至服务器的数据
+     */
+    void onSendSync(Context ctx, Map<String, String> result);
+
+    /**
      * 处理同步的回调(必须先配置{@link #onSetupSyncTagToHandle})
      *
      * @param ctx   上下文
      * @param param 入参
      */
-    void onHandleSync(Context ctx, Map<String, String[]> param);
+    void onHandleSync(Context ctx, Map<String, String> param);
 
 }

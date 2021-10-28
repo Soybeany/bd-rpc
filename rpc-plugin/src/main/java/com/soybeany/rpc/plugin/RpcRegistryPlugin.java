@@ -1,5 +1,6 @@
 package com.soybeany.rpc.plugin;
 
+import com.soybeany.rpc.model.Constants;
 import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.model.Context;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,15 @@ public class RpcRegistryPlugin implements IServerPlugin {
     // todo 带缓存，每10秒回调一次
 
     @Override
-    public void onHandleSync(Context ctx, Map<String, String[]> param, Map<String, String> result) {
+    public void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result) {
 
     }
+
+    @Override
+    public String onSetupSyncTagToHandle() {
+        return Constants.TAG;
+    }
+
+    // ***********************内部方法****************************
 
 }
