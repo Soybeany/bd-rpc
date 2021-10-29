@@ -1,4 +1,4 @@
-package com.soybeany.rpc.model.resource;
+package com.soybeany.rpc.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,14 +9,19 @@ import java.util.Date;
  * @author Soybeany
  * @date 2021/10/27
  */
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(exclude = "syncTime")
 @Data
-public class ProviderResource extends RpcResource {
+public class ProviderResource {
 
     /**
-     * 调用信息
+     * 资源id
      */
-    private RpcInfo info;
+    private String id;
+
+    /**
+     * 服务器信息
+     */
+    private ServerInfo info;
 
     /**
      * 同步时间
@@ -25,11 +30,11 @@ public class ProviderResource extends RpcResource {
 
     // ***********************方法区****************************
 
-    public static ProviderResource getNew(RpcInfo info, RpcResource r, Date syncTime) {
+    public static ProviderResource getNew(String id, ServerInfo info, Date syncTime) {
         ProviderResource resource = new ProviderResource();
+        resource.id = id;
         resource.info = info;
         resource.syncTime = syncTime;
-        resource.copy(r);
         return resource;
     }
 

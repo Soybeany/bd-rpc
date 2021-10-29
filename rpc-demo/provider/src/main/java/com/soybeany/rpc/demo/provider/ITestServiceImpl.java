@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 public class ITestServiceImpl implements ITestService {
     @Override
     public String getValue() {
-        return "some value";
+        return "success";
     }
 }

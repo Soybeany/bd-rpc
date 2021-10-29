@@ -16,8 +16,13 @@ import java.util.Map;
 @Getter
 public class Context {
 
+    // **请求用**
+
     private String ipAddress;
     private final Map<String, String> headers = new HashMap<>();
+
+    // **内部用**
+
     private final Map<String, Object> data = new HashMap<>();
 
     // ***********************方法区****************************

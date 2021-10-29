@@ -1,13 +1,15 @@
-package com.soybeany.rpc.model.resource;
+package com.soybeany.rpc.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author Soybeany
  * @date 2021/10/27
  */
 @Data
-public class RpcInfo {
+@EqualsAndHashCode(exclude = "authorization")
+public class ServerInfo {
 
     /**
      * ip地址
@@ -20,9 +22,14 @@ public class RpcInfo {
     private Integer port;
 
     /**
-     * 用于匹配的版本
+     * 上下文
      */
-    private Integer version;
+    private String context;
+
+    /**
+     * 请求尾缀
+     */
+    private String suffix;
 
     /**
      * 调用接口时使用的凭证

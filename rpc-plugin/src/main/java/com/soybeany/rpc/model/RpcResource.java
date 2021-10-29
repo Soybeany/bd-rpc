@@ -1,4 +1,4 @@
-package com.soybeany.rpc.model.resource;
+package com.soybeany.rpc.model;
 
 import lombok.Data;
 
@@ -10,9 +10,9 @@ import lombok.Data;
 public class RpcResource {
 
     /**
-     * 关联的标签
+     * 资源的唯一标识
      */
-    private String tag;
+    private String id;
 
     /**
      * 请求路径
@@ -22,7 +22,7 @@ public class RpcResource {
     // ***********************方法区****************************
 
     protected void copy(RpcResource r) {
-        this.tag = r.tag;
+        this.id = r.id;
         this.path = r.path;
     }
 

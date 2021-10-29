@@ -1,6 +1,7 @@
 package com.soybeany.sync.core.api;
 
 import com.soybeany.sync.core.model.Context;
+import com.soybeany.sync.core.model.SyncSender;
 
 import java.util.Map;
 
@@ -12,8 +13,10 @@ public interface IClientPlugin extends IBasePlugin {
 
     /**
      * 应用启动时的回调
+     *
+     * @param sender 同步信号的发送者
      */
-    default void onStartup() {
+    default void onStartup(SyncSender sender) {
     }
 
     /**
