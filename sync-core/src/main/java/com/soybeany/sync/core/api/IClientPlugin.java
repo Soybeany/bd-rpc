@@ -11,6 +11,12 @@ import java.util.Map;
 public interface IClientPlugin extends IBasePlugin {
 
     /**
+     * 应用启动时的回调
+     */
+    default void onStartup() {
+    }
+
+    /**
      * 触发心跳时的回调
      *
      * @param ctx    上下文

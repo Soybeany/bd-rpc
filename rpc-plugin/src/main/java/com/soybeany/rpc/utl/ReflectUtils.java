@@ -23,9 +23,31 @@ public class ReflectUtils {
             if (null != annotation) {
                 break;
             }
+            annotation = getAnnotationFromInterfaces(annotationClass, clazz);
+            if (null != annotation) {
+                break;
+            }
             clazz = clazz.getSuperclass();
         }
         return annotation;
+    }
+
+    private static <T extends Annotation> T getAnnotationFromInterfaces(Class<T> annotationClass, Class<?> objClass) {
+        Class<?>[] classes = objClass.getInterfaces();
+        if (classes.length == 0) {
+            return null;
+        }
+        for (Class<?> clazz : classes) {
+            T annotation = clazz.getAnnotation(annotationClass);
+            if (null != annotation) {
+                return annotation;
+            }
+            annotation = getAnnotationFromInterfaces(annotationClass, clazz);
+            if (null != annotation) {
+                return annotation;
+            }
+        }
+        return null;
     }
 
 }

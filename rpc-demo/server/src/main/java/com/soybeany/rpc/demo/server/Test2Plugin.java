@@ -19,7 +19,7 @@ public class Test2Plugin implements IServerPlugin {
 
     @Override
     public void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result) {
-        System.out.println("收到心跳:" + param);
+        System.out.println("收到心跳:" + param + ctx.getHeaders());
         result.put("b", "ok");
     }
 }
