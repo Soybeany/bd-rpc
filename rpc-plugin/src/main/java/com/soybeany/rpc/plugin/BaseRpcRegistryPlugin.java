@@ -32,9 +32,8 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
                 Map<String, ServerInfoProvider> map = new HashMap<>();
                 for (String id : GSON.fromJson(param.get(Constants.KEY_SERVICE_ID_ARR), String[].class)) {
                     List<ServerInfo> infoList = new LinkedList<>();
-                    for (ProviderResource resource : providersMap.get(id)) {
-                        infoList.add(resource.getInfo());
-                    }
+                    Optional.ofNullable(providersMap.get(id))
+                            .ifPresent(resources -> resources.forEach(r -> infoList.add(r.getInfo())));
                     map.put(id, new ServerInfoProvider(infoList));
                 }
                 result.put(Constants.KEY_PROVIDER_MAP, GSON.toJson(map));

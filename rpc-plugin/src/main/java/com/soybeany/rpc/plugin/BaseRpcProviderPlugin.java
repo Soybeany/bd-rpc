@@ -4,12 +4,17 @@ import com.soybeany.rpc.model.BdRpc;
 import com.soybeany.rpc.model.MethodInfo;
 import com.soybeany.rpc.model.ProviderParam;
 import com.soybeany.rpc.model.ServerInfo;
+import com.soybeany.rpc.utl.ReflectUtils;
 import com.soybeany.sync.core.model.Context;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
@@ -18,6 +23,9 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/27
  */
 public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
+
+    @Autowired
+    private ApplicationContext appContext;
 
     private final Map<String, Object> serviceMap = new HashMap<>();
 
@@ -45,10 +53,13 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
         return Constants.TAG;
     }
 
-    @Override
-    protected void onHandleBean(BdRpc bdRpc, Object bean) {
-        // todo 去重
-        serviceMap.put(getId(bdRpc), bean);
+    @PostConstruct
+    private void onInit() {
+        for (String name : appContext.getBeanDefinitionNames()) {
+            Object bean = appContext.getBean(name);
+            Optional.ofNullable(ReflectUtils.getAnnotation(onSetupScanPkg(), BdRpc.class, bean.getClass()))
+                    .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
+        }
     }
 
     public Object invoke(MethodInfo info) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -58,6 +69,11 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
     }
 
     // ***********************内部方法****************************
+
+    private void onHandleBean(BdRpc bdRpc, Object bean) {
+        // todo 去重
+        serviceMap.put(getId(bdRpc), bean);
+    }
 
     private Class<?>[] toClass(String[] classNames) throws ClassNotFoundException {
         Class<?>[] classes = new Class[classNames.length];

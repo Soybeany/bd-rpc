@@ -10,13 +10,19 @@ import com.soybeany.rpc.utl.ServiceProvider;
 import com.soybeany.sync.core.model.Context;
 import com.soybeany.sync.core.model.SyncSender;
 import com.soybeany.sync.core.util.RequestUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.util.ClassUtils;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
@@ -25,6 +31,8 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/27
  */
 public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implements ServiceProvider {
+
+    private static final String RESOURCE_PATTERN = "/**/*.class";
 
     // todo 首次拉全量，后续拉增量
 
@@ -43,13 +51,6 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
      */
     private Map<String, ServerInfoProvider> providers;
 
-    private SyncSender sender;
-
-    @Override
-    public void onStartup(SyncSender sender) {
-        this.sender = sender;
-    }
-
     @Override
     public void onSendSync(Context ctx, Map<String, String> result) {
         result.put(Constants.KEY_ACTION, Constants.ACTION_GET_PROVIDERS);
@@ -66,11 +67,6 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         return Constants.TAG;
     }
 
-    @Override
-    protected void onHandleBean(BdRpc bdRpc, Object bean) {
-        serviceIdSet.add(getId(bdRpc));
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public synchronized <T> T get(Class<T> interfaceClass) {
@@ -82,8 +78,6 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
             }
             ServerInfoProvider provider;
             String serviceId = getId(bdRpc);
-            serviceIdSet.add(serviceId);
-            sender.send(null);
             if (null == providers || null == (provider = providers.get(serviceId))) {
                 throw new RuntimeException("暂无此id的服务提供者信息");
             }
@@ -98,6 +92,11 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
 
     // ***********************内部方法****************************
 
+    @PostConstruct
+    private void onInit() {
+        scanNeededServiceIds();
+    }
+
     private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Class<T> resultClass) {
         ServerInfo serverInfo = provider.get();
         String url = "http://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
@@ -108,6 +107,28 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         Map<String, String> params = new HashMap<>();
         params.put(Constants.KEY_METHOD_INFO, GSON.toJson(methodInfo));
         return RequestUtils.request(url, headers, params, resultClass);
+    }
+
+    private void scanNeededServiceIds() {
+        //spring工具类，可以获取指定路径下的全部类
+        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+        try {
+            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(onSetupScanPkg()) + RESOURCE_PATTERN;
+            Resource[] resources = resourcePatternResolver.getResources(pattern);
+            //MetadataReader 的工厂类
+            MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
+            for (Resource resource : resources) {
+                //用于读取类信息
+                MetadataReader reader = readerFactory.getMetadataReader(resource);
+                //扫描到的class
+                String classname = reader.getClassMetadata().getClassName();
+                Class<?> clazz = Class.forName(classname);
+                //处理指定的注解
+                Optional.ofNullable(clazz.getAnnotation(BdRpc.class)).ifPresent(bdRpc -> serviceIdSet.add(getId(bdRpc)));
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("路径元信息解析异常:" + e.getMessage());
+        }
     }
 
     private String[] toClassNames(Class<?>[] classes) {

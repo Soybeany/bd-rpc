@@ -15,26 +15,11 @@ import java.util.Optional;
  */
 public abstract class BaseRpcClientPlugin implements IClientPlugin {
 
-    @Autowired
-    private ApplicationContext appContext;
-
     protected static String getId(BdRpc annotation) {
         return annotation.serviceId() + "-" + annotation.version();
     }
 
-    @PostConstruct
-    private void onInit() {
-        for (String name : appContext.getBeanDefinitionNames()) {
-            Object bean = appContext.getBean(name);
-            Optional.ofNullable(ReflectUtils.getAnnotation(onSetupScanPkg(), BdRpc.class, bean.getClass()))
-                    .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
-        }
-    }
-
-
     // ***********************子类实现****************************
-
-    protected abstract void onHandleBean(BdRpc bdRpc, Object bean);
 
     /**
      * 设置扫描的路径
