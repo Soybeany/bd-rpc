@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+
 /**
  * @author Soybeany
  * @date 2021/10/30
@@ -20,7 +22,7 @@ public class TestController {
     public String test() {
         ITestService service = serviceProvider.get(ITestService.class);
         TestParam param = new TestParam(3, "success");
-        return service.getValue(param).getValue();
+        return service.getValue(Collections.singletonList(param)).getValue();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.soybeany.rpc.registry;
 
+import com.google.gson.Gson;
 import com.soybeany.rpc.core.model.ProviderParam;
 import com.soybeany.rpc.core.model.ProviderResource;
 import com.soybeany.rpc.core.model.ServerInfo;
@@ -8,6 +9,8 @@ import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.model.Context;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import static com.soybeany.rpc.core.model.BdRpcConstants.*;
@@ -47,6 +50,31 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
             default:
                 throw new RuntimeException("暂不支持此操作");
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Gson gson = new Gson();
+        List<ServerInfo> list = new LinkedList<>();
+        ServerInfo info = new ServerInfo();
+        info.setAddress("sfer");
+        list.add(info);
+        String json = gson.toJson(list);
+        System.out.println(json);
+        String j2 = gson.toJson("sfwr");
+        System.out.println(j2);
+
+        Method m = BaseRpcRegistryPlugin.class.getDeclaredMethod("test", List.class, String.class);
+        Type type = m.getGenericParameterTypes()[0];
+        System.out.println(type);
+        Type type2 = m.getGenericParameterTypes()[1];
+        System.out.println(type2);
+        List<ServerInfo> t = gson.fromJson(json, type);
+        System.out.println(t.get(0).getAddress());
+        System.out.println(gson.fromJson(j2, type2).toString());
+    }
+
+    private void test(List<ServerInfo> list, String w) {
+
     }
 
     @Override

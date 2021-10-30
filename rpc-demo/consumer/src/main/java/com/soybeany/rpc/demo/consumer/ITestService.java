@@ -4,6 +4,8 @@ import com.soybeany.rpc.demo.provider.TestParam;
 import com.soybeany.rpc.demo.provider.TestVO;
 import com.soybeany.rpc.core.model.BdRpc;
 
+import java.util.List;
+
 /**
  * @author Soybeany
  * @date 2021/10/29
@@ -11,6 +13,6 @@ import com.soybeany.rpc.core.model.BdRpc;
 @BdRpc(serviceId = "test")
 public interface ITestService {
 
-    TestVO getValue(TestParam param);
+    TestVO getValue(List<TestParam> param);
 
 }

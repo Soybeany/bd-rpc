@@ -62,8 +62,8 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
 
     public Object invoke(MethodInfo info) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Object obj = serviceMap.get(info.getServiceId());
-        Method method = obj.getClass().getMethod(info.getMethodName(), toClass(info.getClazzNames()));
-        return method.invoke(obj, info.getArgs());
+        Method method = info.getMethod(obj);
+        return method.invoke(obj, info.getArgs(method));
     }
 
     // ***********************内部方法****************************
@@ -73,12 +73,5 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
         serviceMap.put(getId(bdRpc), bean);
     }
 
-    private Class<?>[] toClass(String[] classNames) throws ClassNotFoundException {
-        Class<?>[] classes = new Class[classNames.length];
-        for (int i = 0; i < classNames.length; i++) {
-            classes[i] = Class.forName(classNames[i]);
-        }
-        return classes;
-    }
 
 }

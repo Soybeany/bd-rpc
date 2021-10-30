@@ -79,7 +79,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
                 throw new RuntimeException("暂无此id的服务提供者信息");
             }
             instance = (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
-                MethodInfo info = new MethodInfo(serviceId, method.getName(), toClassNames(method.getParameterTypes()), MethodInfo.toJsons(args));
+                MethodInfo info = new MethodInfo(serviceId, method, args);
                 return request(provider, info, method.getReturnType());
             });
             proxies.put(interfaceClass, instance);
@@ -121,19 +121,13 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
                 String classname = reader.getClassMetadata().getClassName();
                 Class<?> clazz = Class.forName(classname);
                 //处理指定的注解
-                Optional.ofNullable(clazz.getAnnotation(BdRpc.class)).ifPresent(bdRpc -> serviceIdSet.add(getId(bdRpc)));
+                Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
+                        .filter(bdRpc -> clazz.isInterface())
+                        .ifPresent(bdRpc -> serviceIdSet.add(getId(bdRpc)));
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("路径元信息解析异常:" + e.getMessage());
         }
-    }
-
-    private String[] toClassNames(Class<?>[] classes) {
-        String[] result = new String[classes.length];
-        for (int i = 0; i < classes.length; i++) {
-            result[i] = classes[i].getName();
-        }
-        return result;
     }
 
 }
