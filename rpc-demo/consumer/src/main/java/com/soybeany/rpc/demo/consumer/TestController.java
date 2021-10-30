@@ -22,7 +22,7 @@ public class TestController {
     public String test() {
         ITestService service = serviceProvider.get(ITestService.class);
         TestParam param = new TestParam(3, "success");
-        return service.getValue(Collections.singletonList(param)).getValue();
+        return service.getValue(Collections.singletonList(param)).get(0).getValue();
     }
 
 }

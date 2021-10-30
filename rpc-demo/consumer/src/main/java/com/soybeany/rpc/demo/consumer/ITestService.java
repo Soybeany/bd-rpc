@@ -13,6 +13,6 @@ import java.util.List;
 @BdRpc(serviceId = "test")
 public interface ITestService {
 
-    TestVO getValue(List<TestParam> param);
+    List<TestVO> getValue(List<TestParam> param);
 
 }

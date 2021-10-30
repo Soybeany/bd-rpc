@@ -80,7 +80,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
             }
             instance = (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
                 MethodInfo info = new MethodInfo(serviceId, method, args);
-                return request(provider, info, method.getReturnType());
+                return request(provider, info, method.getGenericReturnType());
             });
             proxies.put(interfaceClass, instance);
         }
@@ -94,7 +94,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         scanNeededServiceIds();
     }
 
-    private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Class<T> resultClass) {
+    private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Type resultType) {
         ServerInfo serverInfo = provider.get();
         String url = "http://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
                 + serverInfo.getContext() + PATH
@@ -103,7 +103,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         headers.put("Authorization", serverInfo.getAuthorization());
         Map<String, String> params = new HashMap<>();
         params.put(KEY_METHOD_INFO, GSON.toJson(methodInfo));
-        return RequestUtils.request(url, headers, params, resultClass);
+        return RequestUtils.request(url, headers, params, resultType);
     }
 
     private void scanNeededServiceIds() {
