@@ -10,6 +10,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rpc-plugin</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>rpc-core</module>
+        <module>rpc-consumer</module>
+        <module>rpc-provider</module>
+        <module>rpc-registry</module>
+    </modules>
 
     <dependencies>
         <dependency>

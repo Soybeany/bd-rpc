@@ -1,12 +1,9 @@
 package com.soybeany.rpc.demo.consumer;
 
-import com.soybeany.rpc.plugin.BaseRpcConsumerPlugin;
-import com.soybeany.rpc.utl.ServiceProvider;
+import com.soybeany.rpc.consumer.BaseRpcConsumerPlugin;
 import com.soybeany.sync.core.model.Context;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Map;
 
 /**

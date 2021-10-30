@@ -1,6 +1,6 @@
 package com.soybeany.rpc.demo.provider;
 
-import com.soybeany.rpc.model.BdRpc;
+import com.soybeany.rpc.core.model.BdRpc;
 
 /**
  * @author Soybeany

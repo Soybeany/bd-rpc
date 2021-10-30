@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>com.soybeany</groupId>
-            <artifactId>rpc-plugin</artifactId>
+            <artifactId>rpc-provider</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
