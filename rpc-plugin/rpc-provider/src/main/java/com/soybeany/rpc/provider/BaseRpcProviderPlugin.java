@@ -17,6 +17,12 @@ import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
 /**
+ * // todo serverInfoProvider增加自动剔除失败次数较多的server
+ * // todo 支持熔断实现的解析、概率半熔断
+ * // todo 增加可配置项
+ * // todo 支持本地服务与远端代理服务
+ * // todo 增加异常类
+ *
  * @author Soybeany
  * @date 2021/10/27
  */
@@ -34,6 +40,7 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
         info.setPort(8081);
         info.setContext("");
         info.setAuthorization("123456");
+        // todo 移除ProviderParam对象，改为直接使用map入参
         ProviderParam param = new ProviderParam();
         param.setInfo(info);
         param.setServiceIds(serviceMap.keySet());
