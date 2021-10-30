@@ -9,6 +9,6 @@ import com.soybeany.rpc.model.BdRpc;
 @BdRpc(serviceId = "test")
 public interface ITestService {
 
-    String getValue();
+    TestVO getValue(TestParam param);
 
 }

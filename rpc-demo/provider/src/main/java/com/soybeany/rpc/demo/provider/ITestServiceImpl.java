@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ITestServiceImpl implements ITestService {
     @Override
-    public String getValue() {
-        return "success";
+    public TestVO getValue(TestParam param) {
+        return new TestVO(param.getB() + param.getA());
     }
 }

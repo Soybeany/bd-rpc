@@ -1,5 +1,6 @@
 package com.soybeany.rpc.demo.consumer;
 
+import com.soybeany.rpc.demo.provider.TestParam;
 import com.soybeany.rpc.utl.ServiceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,8 @@ public class TestController {
     @GetMapping("/test")
     public String test() {
         ITestService service = serviceProvider.get(ITestService.class);
-        return service.getValue();
+        TestParam param = new TestParam(3, "success");
+        return service.getValue(param).getValue();
     }
 
 }

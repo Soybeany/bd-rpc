@@ -82,7 +82,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
                 throw new RuntimeException("暂无此id的服务提供者信息");
             }
             instance = (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
-                MethodInfo info = new MethodInfo(serviceId, method.getName(), toClassNames(method.getParameterTypes()), args);
+                MethodInfo info = new MethodInfo(serviceId, method.getName(), toClassNames(method.getParameterTypes()), MethodInfo.toJsons(args));
                 return request(provider, info, method.getReturnType());
             });
             proxies.put(interfaceClass, instance);
