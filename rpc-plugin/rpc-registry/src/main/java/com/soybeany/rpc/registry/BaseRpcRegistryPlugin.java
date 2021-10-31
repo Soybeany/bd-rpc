@@ -1,7 +1,6 @@
 package com.soybeany.rpc.registry;
 
-import com.google.gson.Gson;
-import com.soybeany.rpc.core.model.ProviderParam;
+import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.model.ProviderResource;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.model.ServerInfoProvider;
@@ -9,7 +8,6 @@ import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.model.Context;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -25,8 +23,10 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
 @Component
 public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
 
-    // todo 带缓存，每10秒回调一次
+    private static final Type TYPE_ID_SET = new TypeToken<Set<String>>() {
+    }.getType();
 
+    // todo 带缓存，每10秒回调一次
     private final Map<String, Set<ProviderResource>> providersMap = new HashMap<>();
 
     @Override
@@ -43,7 +43,9 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
                 result.put(KEY_PROVIDER_MAP, GSON.toJson(map));
                 break;
             case ACTION_REGISTER_PROVIDERS:
-                for (ProviderResource resource : GSON.fromJson(param.get(KEY_PROVIDER_MAP), ProviderParam.class).toResources()) {
+                ServerInfo info = GSON.fromJson(param.get(KEY_PROVIDER_INFO), ServerInfo.class);
+                Set<String> serviceIds = GSON.fromJson(param.get(KEY_SERVICE_ID_ARR), TYPE_ID_SET);
+                for (ProviderResource resource : toResources(info, serviceIds)) {
                     providersMap.computeIfAbsent(resource.getId(), k -> new HashSet<>()).add(resource);
                 }
                 break;
@@ -52,36 +54,18 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        Gson gson = new Gson();
-        List<ServerInfo> list = new LinkedList<>();
-        ServerInfo info = new ServerInfo();
-        info.setAddress("sfer");
-        list.add(info);
-        String json = gson.toJson(list);
-        System.out.println(json);
-        String j2 = gson.toJson("sfwr");
-        System.out.println(j2);
-
-        Method m = BaseRpcRegistryPlugin.class.getDeclaredMethod("test", List.class, String.class);
-        Type type = m.getGenericParameterTypes()[0];
-        System.out.println(type);
-        Type type2 = m.getGenericParameterTypes()[1];
-        System.out.println(type2);
-        List<ServerInfo> t = gson.fromJson(json, type);
-        System.out.println(t.get(0).getAddress());
-        System.out.println(gson.fromJson(j2, type2).toString());
-    }
-
-    private void test(List<ServerInfo> list, String w) {
-
-    }
-
     @Override
     public String onSetupSyncTagToHandle() {
         return TAG;
     }
 
     // ***********************内部方法****************************
+
+    private Set<ProviderResource> toResources(ServerInfo info, Collection<String> serviceIds) {
+        Set<ProviderResource> set = new HashSet<>();
+        Date date = new Date();
+        serviceIds.forEach(id -> set.add(ProviderResource.getNew(id, info, date)));
+        return set;
+    }
 
 }

@@ -12,7 +12,9 @@ public class BdRpcConstants {
     public static final String KEY_METHOD_INFO = "methodInfo";
     public static final String KEY_PROVIDER_MAP = "providerMap";
     public static final String KEY_ACTION = "action";
+    public static final String KEY_PROVIDER_INFO = "providerInfo";
     public static final String KEY_SERVICE_ID_ARR = "serviceIdArr";
+
 
     public static final String ACTION_GET_PROVIDERS = "getProviders";
     public static final String ACTION_REGISTER_PROVIDERS = "registerProviders";

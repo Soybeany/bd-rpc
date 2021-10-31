@@ -1,6 +1,9 @@
 package com.soybeany.rpc.provider;
 
-import com.soybeany.rpc.core.model.*;
+import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
+import com.soybeany.rpc.core.model.BdRpc;
+import com.soybeany.rpc.core.model.MethodInfo;
+import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ReflectUtils;
 import com.soybeany.sync.core.model.Context;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +43,10 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
         info.setPort(8081);
         info.setContext("");
         info.setAuthorization("123456");
-        // todo 移除ProviderParam对象，改为直接使用map入参
-        ProviderParam param = new ProviderParam();
-        param.setInfo(info);
-        param.setServiceIds(serviceMap.keySet());
+
         result.put(KEY_ACTION, ACTION_REGISTER_PROVIDERS);
-        result.put(KEY_PROVIDER_MAP, GSON.toJson(param));
+        result.put(KEY_PROVIDER_INFO, GSON.toJson(info));
+        result.put(KEY_SERVICE_ID_ARR, GSON.toJson(serviceMap.keySet()));
     }
 
     @Override
