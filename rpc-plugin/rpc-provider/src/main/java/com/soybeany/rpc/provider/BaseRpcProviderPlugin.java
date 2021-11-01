@@ -5,6 +5,7 @@ import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.model.MethodInfo;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ReflectUtils;
+import com.soybeany.rpc.core.utl.ServiceInvoker;
 import com.soybeany.sync.core.model.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -29,7 +30,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2021/10/27
  */
-public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
+public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin implements ServiceInvoker {
 
     @Autowired
     private ApplicationContext appContext;
@@ -59,6 +60,13 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
         return TAG;
     }
 
+    @Override
+    public Object invoke(MethodInfo info) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Object obj = serviceMap.get(info.getServiceId());
+        Method method = info.getMethod(obj);
+        return method.invoke(obj, info.getArgs(method));
+    }
+
     @PostConstruct
     private void onInit() {
         for (String name : appContext.getBeanDefinitionNames()) {
@@ -66,12 +74,6 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin {
             Optional.ofNullable(ReflectUtils.getAnnotation(onSetupScanPkg(), BdRpc.class, bean.getClass()))
                     .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
         }
-    }
-
-    public Object invoke(MethodInfo info) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Object obj = serviceMap.get(info.getServiceId());
-        Method method = info.getMethod(obj);
-        return method.invoke(obj, info.getArgs(method));
     }
 
     // ***********************内部方法****************************
