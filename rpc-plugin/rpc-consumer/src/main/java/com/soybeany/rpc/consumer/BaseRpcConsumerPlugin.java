@@ -1,11 +1,18 @@
 package com.soybeany.rpc.consumer;
 
 import com.google.gson.reflect.TypeToken;
-import com.soybeany.rpc.core.model.*;
-import com.soybeany.rpc.core.utl.ReflectUtils;
+import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
+import com.soybeany.rpc.core.model.MethodInfo;
+import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.ServerInfoProvider;
 import com.soybeany.rpc.core.utl.ServiceProvider;
 import com.soybeany.sync.core.model.Context;
 import com.soybeany.sync.core.util.RequestUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -36,10 +43,18 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     private static final Type PROVIDERS_TYPE = new TypeToken<Map<String, ServerInfoProvider>>() {
     }.getType();
 
+    @Autowired
+    private ApplicationContext appContext;
+
     /**
-     * 已加载的代理
+     * 已加载的代理（本地/远程）
      */
     private final Map<Class<?>, Object> proxies = new HashMap<>();
+
+    /**
+     * 用于熔断的实现
+     */
+    private final Map<Class<?>, Object> fuseImpls = new HashMap<>();
 
     private final Set<String> serviceIdSet = new HashSet<>();
 
@@ -67,31 +82,25 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     @SuppressWarnings("unchecked")
     @Override
     public synchronized <T> T get(Class<T> interfaceClass) {
+        // 从代理实现中找
         T instance = (T) proxies.get(interfaceClass);
-        if (null == instance) {
-            BdRpc bdRpc = ReflectUtils.getAnnotation(onSetupScanPkg(), BdRpc.class, interfaceClass);
-            if (null == bdRpc) {
-                throw new RuntimeException("指定的接口需要添加@BdRpc注解");
-            }
-            ServerInfoProvider provider;
-            String serviceId = getId(bdRpc);
-            if (null == providers || null == (provider = providers.get(serviceId))) {
-                throw new RuntimeException("暂无此id的服务提供者信息");
-            }
-            instance = (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
-                MethodInfo info = new MethodInfo(serviceId, method, args);
-                return request(provider, info, method.getGenericReturnType());
-            });
-            proxies.put(interfaceClass, instance);
+        if (null != instance) {
+            return instance;
         }
-        return instance;
+        // 从spring容器中找
+        T impl = getBeanFromContext(interfaceClass);
+        if (null != impl) {
+            return impl;
+        }
+        // 没有找到实现类
+        throw new RpcPluginException("没有找到指定类的实现");
     }
 
     // ***********************内部方法****************************
 
     @PostConstruct
     private void onInit() {
-        scanNeededServiceIds();
+        scanAndSetupNeededService();
     }
 
     private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Type resultType) {
@@ -106,7 +115,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         return RequestUtils.request(url, headers, params, resultType);
     }
 
-    private void scanNeededServiceIds() {
+    private void scanAndSetupNeededService() {
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
@@ -123,11 +132,43 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
                 //处理指定的注解
                 Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
                         .filter(bdRpc -> clazz.isInterface())
-                        .ifPresent(bdRpc -> serviceIdSet.add(getId(bdRpc)));
+                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(bdRpc)));
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("路径元信息解析异常:" + e.getMessage());
         }
     }
 
+    private void setupServiceImpl(Class<?> interfaceClass, String serviceId) {
+        // 记录serviceId
+        serviceIdSet.add(serviceId);
+        // 本地服务
+        Object impl = getBeanFromContext(interfaceClass);
+        if (null != impl) {
+            if (isFuseImpl(impl)) {
+                fuseImpls.put(interfaceClass, impl);
+            } else {
+                proxies.put(interfaceClass, impl);
+            }
+        }
+        // 远端服务
+        Object instance = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
+            ServerInfoProvider provider;
+            if (null == providers || null == (provider = providers.get(serviceId))) {
+                throw new RpcPluginException("暂无此id的服务提供者信息");
+            }
+            MethodInfo info = new MethodInfo(serviceId, method, args);
+            return request(provider, info, method.getGenericReturnType());
+        });
+        proxies.put(interfaceClass, instance);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T getBeanFromContext(Class<?> interfaceClass) {
+        try {
+            return (T) appContext.getBean(interfaceClass);
+        } catch (NoSuchBeanDefinitionException ignore) {
+            return null;
+        }
+    }
 }

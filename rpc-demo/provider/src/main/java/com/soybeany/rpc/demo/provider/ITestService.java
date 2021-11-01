@@ -1,6 +1,6 @@
 package com.soybeany.rpc.demo.provider;
 
-import com.soybeany.rpc.core.model.BdRpc;
+import com.soybeany.rpc.core.anno.BdRpc;
 
 import java.util.List;
 

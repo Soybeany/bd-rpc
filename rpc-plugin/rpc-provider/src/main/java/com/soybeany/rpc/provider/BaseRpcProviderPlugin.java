@@ -1,7 +1,7 @@
 package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
-import com.soybeany.rpc.core.model.BdRpc;
+import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.model.MethodInfo;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ReflectUtils;

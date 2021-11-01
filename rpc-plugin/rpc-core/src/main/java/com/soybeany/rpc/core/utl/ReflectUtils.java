@@ -8,12 +8,16 @@ import java.lang.annotation.Annotation;
  */
 public class ReflectUtils {
 
+    public static <T extends Annotation> T getAnnotation(Class<T> annotationClass, Class<?> clazz) {
+        return getAnnotation(null, annotationClass, clazz);
+    }
+
     /**
      * 从一个指定对象中获取指定的注解
      */
     public static <T extends Annotation> T getAnnotation(String pkgStartWith, Class<T> annotationClass, Class<?> clazz) {
         String pkgName = clazz.getPackage().getName();
-        if (!pkgName.startsWith(pkgStartWith)) {
+        if (null != pkgStartWith && !pkgName.startsWith(pkgStartWith)) {
             return null;
         }
         T annotation = null;
