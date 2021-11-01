@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +50,11 @@ public class MainService implements SyncSender {
         allPlugins.forEach(plugin -> plugin.onStartup(this));
         // 执行定时任务
         service.scheduleWithFixedDelay(() -> sendSync(null), 0, 3, TimeUnit.SECONDS);
+    }
+
+    @PreDestroy
+    private void onDestroy() {
+        service.shutdown();
     }
 
     private void sendSync(Map<String, String> data) {

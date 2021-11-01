@@ -9,7 +9,7 @@ import java.util.Collection;
 public class ServerInfoProvider {
 
     private final ServerInfo[] infoArr;
-    private int index = -1;
+    private transient int index = -1;
 
     public ServerInfoProvider(ServerInfo... infoArr) {
         this.infoArr = new ServerInfo[infoArr.length];

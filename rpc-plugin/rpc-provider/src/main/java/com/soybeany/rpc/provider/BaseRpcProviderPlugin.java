@@ -1,7 +1,8 @@
 package com.soybeany.rpc.provider;
 
-import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.model.MethodInfo;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ReflectUtils;
@@ -24,8 +25,6 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * // todo serverInfoProvider增加自动剔除失败次数较多的server
  * // todo 支持熔断实现的解析、概率半熔断
  * // todo 增加可配置项
- * // todo 支持本地服务与远端代理服务
- * // todo 增加异常类
  *
  * @author Soybeany
  * @date 2021/10/27
@@ -39,14 +38,8 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin implemen
 
     @Override
     public void onSendSync(Context ctx, Map<String, String> result) {
-        ServerInfo info = new ServerInfo();
-        info.setAddress("localhost");
-        info.setPort(8081);
-        info.setContext("");
-        info.setAuthorization("123456");
-
         result.put(KEY_ACTION, ACTION_REGISTER_PROVIDERS);
-        result.put(KEY_PROVIDER_INFO, GSON.toJson(info));
+        result.put(KEY_PROVIDER_INFO, GSON.toJson(onGetServerInfo()));
         result.put(KEY_SERVICE_ID_ARR, GSON.toJson(serviceMap.keySet()));
     }
 
@@ -79,9 +72,20 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin implemen
     // ***********************内部方法****************************
 
     private void onHandleBean(BdRpc bdRpc, Object bean) {
-        // todo 去重
-        serviceMap.put(getId(bdRpc), bean);
+        String id = getId(bdRpc);
+        Object previous = serviceMap.put(id, bean);
+        if (null != previous) {
+            throw new RpcPluginException("@BdRpc的serviceId(" + id + ")需唯一");
+        }
     }
 
+    // ***********************子类实现****************************
+
+    /**
+     * 配置访问服务的服务器信息
+     *
+     * @return 服务器信息
+     */
+    protected abstract ServerInfo onGetServerInfo();
 
 }

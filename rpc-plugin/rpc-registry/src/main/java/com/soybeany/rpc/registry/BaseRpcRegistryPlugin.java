@@ -27,16 +27,16 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
     }.getType();
 
     // todo 带缓存，每10秒回调一次
-    private final Map<String, Set<ProviderResource>> providersMap = new HashMap<>();
+    protected final IResourceManager resourceManager = onSetupResourceManager();
 
     @Override
-    public synchronized void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result) {
+    public void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result) {
         switch (param.get(KEY_ACTION)) {
             case ACTION_GET_PROVIDERS:
                 Map<String, ServerInfoProvider> map = new HashMap<>();
                 for (String id : GSON.fromJson(param.get(KEY_SERVICE_ID_ARR), String[].class)) {
                     List<ServerInfo> infoList = new LinkedList<>();
-                    Optional.ofNullable(providersMap.get(id))
+                    Optional.ofNullable(resourceManager.load(id))
                             .ifPresent(resources -> resources.forEach(r -> infoList.add(r.getInfo())));
                     map.put(id, new ServerInfoProvider(infoList));
                 }
@@ -45,9 +45,7 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
             case ACTION_REGISTER_PROVIDERS:
                 ServerInfo info = GSON.fromJson(param.get(KEY_PROVIDER_INFO), ServerInfo.class);
                 Set<String> serviceIds = GSON.fromJson(param.get(KEY_SERVICE_ID_ARR), TYPE_ID_SET);
-                for (ProviderResource resource : toResources(info, serviceIds)) {
-                    providersMap.computeIfAbsent(resource.getId(), k -> new HashSet<>()).add(resource);
-                }
+                toResources(info, serviceIds).forEach(resourceManager::save);
                 break;
             default:
                 throw new RuntimeException("暂不支持此操作");
@@ -67,5 +65,9 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
         serviceIds.forEach(id -> set.add(ProviderResource.getNew(id, info, date)));
         return set;
     }
+
+    // ***********************子类实现****************************
+
+    protected abstract IResourceManager onSetupResourceManager();
 
 }
