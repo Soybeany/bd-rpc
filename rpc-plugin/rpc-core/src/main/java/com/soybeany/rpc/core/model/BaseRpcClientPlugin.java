@@ -1,6 +1,6 @@
 package com.soybeany.rpc.core.model;
 
-import com.soybeany.rpc.core.anno.BdFuse;
+import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.sync.core.api.IClientPlugin;
 
@@ -16,8 +16,8 @@ public abstract class BaseRpcClientPlugin implements IClientPlugin {
 
     // ***********************子类方法****************************
 
-    protected boolean isFuseImpl(Object obj) {
-        return null != obj.getClass().getAnnotation(BdFuse.class);
+    protected boolean isFallbackImpl(Object obj) {
+        return null != obj.getClass().getAnnotation(BdFallback.class);
     }
 
     // ***********************子类实现****************************

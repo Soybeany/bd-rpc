@@ -12,6 +12,11 @@ import lombok.EqualsAndHashCode;
 public class ServerInfo {
 
     /**
+     * 使用的协议
+     */
+    private String protocol = "http";
+
+    /**
      * ip地址
      */
     private String address;
@@ -34,6 +39,6 @@ public class ServerInfo {
     /**
      * 调用接口时使用的凭证
      */
-    private String authorization;
+    private String authorization = "";
 
 }

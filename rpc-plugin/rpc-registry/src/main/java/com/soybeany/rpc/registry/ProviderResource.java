@@ -1,5 +1,6 @@
-package com.soybeany.rpc.core.model;
+package com.soybeany.rpc.registry;
 
+import com.soybeany.rpc.core.model.ServerInfo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

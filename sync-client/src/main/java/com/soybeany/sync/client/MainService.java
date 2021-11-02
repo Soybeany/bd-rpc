@@ -6,6 +6,7 @@ import com.soybeany.sync.core.model.Context;
 import com.soybeany.sync.core.model.SyncSender;
 import com.soybeany.sync.core.util.RequestUtils;
 import com.soybeany.sync.core.util.TagUtils;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
  * @author Soybeany
  * @date 2021/10/27
  */
+@Log
 @Service
 public class MainService implements SyncSender {
 
@@ -34,6 +36,9 @@ public class MainService implements SyncSender {
 
     @Autowired
     private List<IClientPlugin> allPlugins;
+
+    @Autowired
+    private ISyncClientConfig config;
 
     @Override
     public void send(Map<String, String> data) {
@@ -49,7 +54,7 @@ public class MainService implements SyncSender {
         // 启动回调
         allPlugins.forEach(plugin -> plugin.onStartup(this));
         // 执行定时任务
-        service.scheduleWithFixedDelay(() -> sendSync(null), 0, 3, TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(() -> sendSync(null), 0, config.onSetupSyncIntervalInSec(), TimeUnit.SECONDS);
     }
 
     @PreDestroy
@@ -69,7 +74,7 @@ public class MainService implements SyncSender {
             String tag = plugin.onSetupSyncTagToHandle();
             tmpParam.forEach((k, v) -> params.put(TagUtils.addTag(tag, k), v));
         }
-        Map<String, String> result = RequestUtils.request("http://localhost:8080/api/sync", ctx.getHeaders(), params, type);
+        Map<String, String> result = RequestUtils.request(config.onGetSyncServerUrl(), ctx.getHeaders(), params, type);
         if (null == result) {
             return;
         }
@@ -83,4 +88,5 @@ public class MainService implements SyncSender {
             plugin.onHandleSync(ctx, tagResult);
         }
     }
+
 }

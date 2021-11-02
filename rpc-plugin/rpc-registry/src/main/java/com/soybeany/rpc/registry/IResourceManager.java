@@ -1,6 +1,6 @@
 package com.soybeany.rpc.registry;
 
-import com.soybeany.rpc.core.model.ProviderResource;
+import lombok.extern.java.Log;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,15 +20,11 @@ public interface IResourceManager {
 
     void save(ProviderResource resource);
 
+    @Log
     class MapImpl implements IResourceManager {
 
         private final Map<String, Set<ProviderResource>> providersMap = new HashMap<>();
         private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
-        private final long checkIntervalInSec;
-
-        public MapImpl(int checkIntervalInSec) {
-            this.checkIntervalInSec = checkIntervalInSec;
-        }
 
         @Override
         public synchronized Set<ProviderResource> load(String id) {
@@ -45,9 +41,10 @@ public interface IResourceManager {
             service.scheduleWithFixedDelay(() -> {
                 long time = System.currentTimeMillis();
                 synchronized (this) {
+                    log.info("清理");
                     providersMap.forEach((k, v) -> v.removeIf(resource -> isInvalid(time, resource, validPeriodInMillis)));
                 }
-            }, checkIntervalInSec, checkIntervalInSec, TimeUnit.SECONDS);
+            }, validPeriodInMillis, validPeriodInMillis, TimeUnit.MILLISECONDS);
         }
 
         public void shutdownAutoClean() {
@@ -55,7 +52,9 @@ public interface IResourceManager {
         }
 
         private boolean isInvalid(long curTimestamp, ProviderResource resource, long validPeriodInMillis) {
-            return curTimestamp - resource.getSyncTime().getTime() > validPeriodInMillis;
+            long delta = curTimestamp - resource.getSyncTime().getTime();
+            log.info("delta:" + delta);
+            return delta > validPeriodInMillis;
         }
 
     }

@@ -16,7 +16,7 @@ public class TestPlugin extends BaseRpcRegistryPlugin {
 
     @Override
     protected IResourceManager onSetupResourceManager() {
-        return new IResourceManager.MapImpl(3);
+        return new IResourceManager.MapImpl();
     }
 
     @PostConstruct

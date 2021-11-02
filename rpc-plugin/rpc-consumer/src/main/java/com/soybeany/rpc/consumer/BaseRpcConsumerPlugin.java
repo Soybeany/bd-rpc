@@ -54,7 +54,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     /**
      * 用于熔断的实现
      */
-    private final Map<Class<?>, Object> fuseImpls = new HashMap<>();
+    private final Map<Class<?>, Object> fallbackImpls = new HashMap<>();
 
     private final Set<String> serviceIdSet = new HashSet<>();
 
@@ -105,7 +105,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
 
     private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Type resultType) {
         ServerInfo serverInfo = provider.get();
-        String url = "http://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
+        String url = serverInfo.getProtocol() + "://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
                 + serverInfo.getContext() + PATH
                 + (null != serverInfo.getSuffix() ? serverInfo.getSuffix() : "");
         Map<String, String> headers = new HashMap<>();
@@ -143,14 +143,13 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         // 记录serviceId
         serviceIdSet.add(serviceId);
         // 本地服务
-        Object impl = getBeanFromContext(interfaceClass);
-        if (null != impl) {
-            if (isFuseImpl(impl)) {
-                fuseImpls.put(interfaceClass, impl);
+        Optional.ofNullable(getBeanFromContext(interfaceClass)).ifPresent(impl -> {
+            if (isFallbackImpl(impl)) {
+                fallbackImpls.put(interfaceClass, impl);
             } else {
                 proxies.put(interfaceClass, impl);
             }
-        }
+        });
         // 远端服务
         Object instance = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
             ServerInfoProvider provider;
