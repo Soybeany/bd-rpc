@@ -5,7 +5,6 @@ import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.model.ServerInfoProvider;
 import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.model.Context;
-import lombok.extern.java.Log;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
@@ -20,7 +19,6 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2021/10/26
  */
-@Log
 @Component
 public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
 
@@ -46,7 +44,6 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
             case ACTION_REGISTER_PROVIDERS:
                 ServerInfo info = GSON.fromJson(param.get(KEY_PROVIDER_INFO), ServerInfo.class);
                 Set<String> serviceIds = GSON.fromJson(param.get(KEY_SERVICE_ID_ARR), TYPE_ID_SET);
-                log.info("收到注册");
                 toResources(info, serviceIds).forEach(resourceManager::save);
                 break;
             default:

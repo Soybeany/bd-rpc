@@ -6,7 +6,6 @@ import com.soybeany.sync.core.model.Context;
 import com.soybeany.sync.core.model.SyncSender;
 import com.soybeany.sync.core.util.RequestUtils;
 import com.soybeany.sync.core.util.TagUtils;
-import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,6 @@ import java.util.concurrent.TimeUnit;
  * @author Soybeany
  * @date 2021/10/27
  */
-@Log
 @Service
 public class MainService implements SyncSender {
 
