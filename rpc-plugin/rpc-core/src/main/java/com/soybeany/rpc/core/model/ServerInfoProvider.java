@@ -1,5 +1,7 @@
 package com.soybeany.rpc.core.model;
 
+import com.soybeany.rpc.core.exception.RpcPluginException;
+
 import java.util.Collection;
 
 /**
@@ -25,8 +27,8 @@ public class ServerInfoProvider {
     }
 
     public ServerInfo get() {
-        if (null == infoArr) {
-            return null;
+        if (null == infoArr || infoArr.length <= 0) {
+            throw new RpcPluginException("此id的服务提供者暂未注册");
         }
         return infoArr[++index % infoArr.length];
     }

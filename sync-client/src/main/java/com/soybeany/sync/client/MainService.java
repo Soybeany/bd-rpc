@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,8 +73,10 @@ public class MainService implements SyncSender {
             String tag = plugin.onSetupSyncTagToHandle();
             tmpParam.forEach((k, v) -> params.put(TagUtils.addTag(tag, k), v));
         }
-        Map<String, String> result = RequestUtils.request(config.onGetSyncServerUrl(), ctx.getHeaders(), params, type);
-        if (null == result) {
+        Map<String, String> result;
+        try {
+            result = RequestUtils.request(config.onGetSyncServerUrl(), ctx.getHeaders(), params, type);
+        } catch (IOException e) {
             return;
         }
         Map<String, Map<String, String>> paramMap = TagUtils.split(result);

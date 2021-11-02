@@ -112,7 +112,11 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         headers.put("Authorization", serverInfo.getAuthorization());
         Map<String, String> params = new HashMap<>();
         params.put(KEY_METHOD_INFO, GSON.toJson(methodInfo));
-        return RequestUtils.request(url, headers, params, resultType);
+        try {
+            return RequestUtils.request(url, headers, params, resultType);
+        } catch (IOException e) {
+            throw new RpcPluginException(e.getMessage());
+        }
     }
 
     private void scanAndSetupNeededService() {

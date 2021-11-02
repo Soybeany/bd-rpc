@@ -16,28 +16,22 @@ public class RequestUtils {
     public static final Gson GSON = new Gson();
     private static final OkHttpClient CLIENT = new OkHttpClient();
 
-    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Class<T> resultClass) {
+    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Class<T> resultClass) throws IOException {
         String bodyString = getBodyString(url, headers, params);
-        if (null == bodyString) {
-            return null;
-        }
         return GSON.fromJson(bodyString, resultClass);
     }
 
     /**
      * 单url请求
      */
-    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Type resultType) {
+    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Type resultType) throws IOException {
         String bodyString = getBodyString(url, headers, params);
-        if (null == bodyString) {
-            return null;
-        }
         return GSON.fromJson(bodyString, resultType);
     }
 
     // ***********************内部方法****************************
 
-    private static String getBodyString(String url, Map<String, String> headers, Map<String, String> params) {
+    private static String getBodyString(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
         Request.Builder requestBuilder = new Request.Builder().url(url);
         // 添加header
         headers.forEach(requestBuilder::header);
@@ -48,12 +42,13 @@ public class RequestUtils {
         // 请求
         Call call = CLIENT.newCall(requestBuilder.build());
         try (Response response = call.execute()) {
-            if (!response.isSuccessful() || null == response.body()) {
-                return null;
+            if (!response.isSuccessful()) {
+                throw new IOException("请求失败:" + response.code());
+            }
+            if (null == response.body()) {
+                throw new IOException("body为null");
             }
             return response.body().string();
-        } catch (IOException e) {
-            return null;
         }
     }
 
