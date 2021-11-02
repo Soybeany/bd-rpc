@@ -1,6 +1,7 @@
 package com.soybeany.rpc.registry;
 
 import com.google.gson.reflect.TypeToken;
+import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.model.ServerInfoProvider;
 import com.soybeany.sync.core.api.IServerPlugin;
@@ -25,7 +26,6 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
     private static final Type TYPE_ID_SET = new TypeToken<Set<String>>() {
     }.getType();
 
-    // todo 带缓存，每10秒回调一次
     protected final IResourceManager resourceManager = onSetupResourceManager();
 
     @Override
@@ -47,7 +47,7 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
                 toResources(info, serviceIds).forEach(resourceManager::save);
                 break;
             default:
-                throw new RuntimeException("暂不支持此操作");
+                throw new RpcPluginException("暂不支持此操作");
         }
     }
 

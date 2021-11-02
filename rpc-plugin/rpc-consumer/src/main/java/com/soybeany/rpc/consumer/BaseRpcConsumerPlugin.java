@@ -38,8 +38,6 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
 
-    // todo 首次拉全量，后续拉增量
-
     private static final Type PROVIDERS_TYPE = new TypeToken<Map<String, ServerInfoProvider>>() {
     }.getType();
 
@@ -139,13 +137,16 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
                         .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(bdRpc)));
             }
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("路径元信息解析异常:" + e.getMessage());
+            throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
         }
     }
 
     private void setupServiceImpl(Class<?> interfaceClass, String serviceId) {
         // 记录serviceId
-        serviceIdSet.add(serviceId);
+        boolean success = serviceIdSet.add(serviceId);
+        if (!success) {
+            throw new RpcPluginException("@BdRpc的serviceId(" + serviceId + ")需唯一");
+        }
         // 本地服务
         Optional.ofNullable(getBeanFromContext(interfaceClass)).ifPresent(impl -> {
             if (isFallbackImpl(impl)) {
