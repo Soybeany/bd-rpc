@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 
 /**
@@ -21,10 +22,11 @@ public class TestController {
     @Autowired
     private ServiceProvider serviceProvider;
 
+    private ITestService service;
+
     @GetMapping("/test")
     public String test() {
         try {
-            ITestService service = serviceProvider.get(ITestService.class);
             TestParam param = new TestParam(3, "success");
             return service.getValue(Collections.singletonList(param)).get(0).getValue();
         } catch (RpcPluginException e) {
@@ -35,6 +37,11 @@ public class TestController {
             e.printStackTrace();
             return "未预料异常:" + e.getMessage();
         }
+    }
+
+    @PostConstruct
+    private void onInit() {
+        service = serviceProvider.get(ITestService.class);
     }
 
 }

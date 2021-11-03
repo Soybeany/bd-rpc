@@ -2,7 +2,7 @@ package com.soybeany.rpc.demo.provider;
 
 import org.springframework.stereotype.Component;
 
-import java.io.FileNotFoundException;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -12,12 +12,11 @@ import java.util.List;
 @Component
 public class ITestServiceImpl implements ITestService {
     @Override
-    public List<TestVO> getValue(List<TestParam> params) throws Exception {
-//        List<TestVO> result = new LinkedList<>();
-//        for (TestParam param : params) {
-//            result.add(new TestVO(param.getB() + param.getA()));
-//        }
-//        return result;
-        throw new FileNotFoundException("测试异常");
+    public List<TestVO> getValue(List<TestParam> params) {
+        List<TestVO> result = new LinkedList<>();
+        for (TestParam param : params) {
+            result.add(new TestVO(param.getB() + param.getA()));
+        }
+        return result;
     }
 }
