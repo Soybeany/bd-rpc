@@ -8,6 +8,6 @@ import com.soybeany.rpc.core.model.MethodInfo;
  */
 public interface ServiceInvoker {
 
-    Object invoke(MethodInfo info) throws ReflectiveOperationException;
+    Object invoke(MethodInfo info) throws Throwable;
 
 }

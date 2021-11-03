@@ -11,5 +11,12 @@
 
     <artifactId>rpc-core</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.github.Soybeany.bdlib-server</groupId>
+            <artifactId>bd-util</artifactId>
+            <version>2.5.13</version>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -3,10 +3,8 @@ package com.soybeany.rpc.consumer;
 import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
-import com.soybeany.rpc.core.model.MethodInfo;
-import com.soybeany.rpc.core.model.ServerInfo;
-import com.soybeany.rpc.core.model.ServerInfoProvider;
+import com.soybeany.rpc.core.exception.RpcRequestException;
+import com.soybeany.rpc.core.model.*;
 import com.soybeany.rpc.core.utl.ServiceProvider;
 import com.soybeany.sync.core.model.Context;
 import com.soybeany.sync.core.util.RequestUtils;
@@ -101,7 +99,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         scanAndSetupNeededService();
     }
 
-    private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Type resultType) {
+    private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Type resultType) throws Throwable {
         ServerInfo serverInfo = provider.get();
         String url = serverInfo.getProtocol() + "://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
                 + serverInfo.getContext() + PATH
@@ -110,11 +108,13 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         headers.put("Authorization", serverInfo.getAuthorization());
         Map<String, String> params = new HashMap<>();
         params.put(KEY_METHOD_INFO, GSON.toJson(methodInfo));
+        RpcDTO dto;
         try {
-            return RequestUtils.request(url, headers, params, resultType);
+            dto = RequestUtils.request(url, headers, params, RpcDTO.class);
         } catch (IOException e) {
-            throw new RpcPluginException(e.getMessage());
+            throw new RpcRequestException(e.getMessage());
         }
+        return dto.getIsNorm() ? dto.getData(resultType) : dto.throwException();
     }
 
     private void scanAndSetupNeededService() {

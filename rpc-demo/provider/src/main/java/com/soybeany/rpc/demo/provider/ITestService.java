@@ -11,6 +11,6 @@ import java.util.List;
 @BdRpc(serviceId = "test")
 public interface ITestService {
 
-    List<TestVO> getValue(List<TestParam> param);
+    List<TestVO> getValue(List<TestParam> param) throws Exception;
 
 }

@@ -32,7 +32,12 @@ public class RequestUtils {
     // ***********************内部方法****************************
 
     private static String getBodyString(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
-        Request.Builder requestBuilder = new Request.Builder().url(url);
+        Request.Builder requestBuilder;
+        try {
+            requestBuilder = new Request.Builder().url(url);
+        } catch (IllegalArgumentException e) {
+            throw new IOException("服务提供者参数异常，无法访问");
+        }
         // 添加header
         headers.forEach(requestBuilder::header);
         // 添加入参

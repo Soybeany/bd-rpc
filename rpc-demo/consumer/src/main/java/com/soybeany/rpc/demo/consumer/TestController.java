@@ -31,6 +31,9 @@ public class TestController {
             String message = e.getMessage();
             log.warning(message);
             return "exception:" + message;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "未预料异常:" + e.getMessage();
         }
     }
 

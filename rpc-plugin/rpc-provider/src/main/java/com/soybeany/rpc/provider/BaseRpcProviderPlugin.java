@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
 /**
  * // todo serverInfoProvider增加自动剔除失败次数较多的server
  * // todo 支持熔断实现的解析、概率半熔断
+ * // todo provider的授权凭证自动生成、维护
  *
  * @author Soybeany
  * @date 2021/10/27
@@ -52,10 +54,14 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin implemen
     }
 
     @Override
-    public Object invoke(MethodInfo info) throws ReflectiveOperationException {
+    public Object invoke(MethodInfo info) throws Throwable {
         Object obj = serviceMap.get(info.getServiceId());
         Method method = info.getMethod(obj);
-        return method.invoke(obj, info.getArgs(method));
+        try {
+            return method.invoke(obj, info.getArgs(method));
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        }
     }
 
     @PostConstruct
