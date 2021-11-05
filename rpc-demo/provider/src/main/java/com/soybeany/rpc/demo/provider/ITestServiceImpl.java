@@ -1,5 +1,7 @@
 package com.soybeany.rpc.demo.provider;
 
+import com.soybeany.rpc.demo.model.TestParam;
+import com.soybeany.rpc.demo.model.TestVO;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;

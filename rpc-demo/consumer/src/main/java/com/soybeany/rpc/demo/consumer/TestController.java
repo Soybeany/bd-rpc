@@ -2,7 +2,7 @@ package com.soybeany.rpc.demo.consumer;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.utl.ServiceProvider;
-import com.soybeany.rpc.demo.provider.TestParam;
+import com.soybeany.rpc.demo.model.TestParam;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

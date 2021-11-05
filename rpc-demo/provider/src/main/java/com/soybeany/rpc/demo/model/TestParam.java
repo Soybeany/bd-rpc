@@ -1,6 +1,5 @@
-package com.soybeany.rpc.demo.provider;
+package com.soybeany.rpc.demo.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -8,7 +7,6 @@ import lombok.Data;
  * @date 2021/10/30
  */
 @Data
-@AllArgsConstructor
 public class TestParam {
 
     private int a;

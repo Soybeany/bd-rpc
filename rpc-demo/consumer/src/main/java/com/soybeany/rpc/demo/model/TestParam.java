@@ -1,4 +1,4 @@
-package com.soybeany.rpc.demo.provider;
+package com.soybeany.rpc.demo.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,8 +9,9 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class TestVO {
+public class TestParam {
 
-    private String value;
+    private int a;
+    private String b;
 
 }

@@ -1,8 +1,8 @@
 package com.soybeany.rpc.demo.consumer;
 
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.demo.provider.TestParam;
-import com.soybeany.rpc.demo.provider.TestVO;
+import com.soybeany.rpc.demo.model.TestParam;
+import com.soybeany.rpc.demo.model.TestVO;
 
 import java.util.List;
 

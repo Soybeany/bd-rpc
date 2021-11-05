@@ -1,4 +1,4 @@
-package com.soybeany.rpc.demo.provider;
+package com.soybeany.rpc.demo.model;
 
 import lombok.Data;
 
