@@ -1,12 +1,9 @@
 package com.soybeany.rpc.demo.provider;
 
-import com.soybeany.rpc.core.exception.RpcRequestException;
-import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.provider.BaseRpcProviderPlugin;
-import com.soybeany.rpc.provider.ring.DataModifiedException;
 import com.soybeany.rpc.provider.ring.RingDataDAO;
 import com.soybeany.rpc.provider.ring.RingDataProvider;
-import com.soybeany.sync.core.util.NetUtils;
+import com.soybeany.util.file.BdFileUtils;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -22,14 +19,8 @@ import org.springframework.stereotype.Component;
 public class TestPlugin extends BaseRpcProviderPlugin implements ApplicationListener<WebServerInitializedEvent> {
 
     @Value("${server.servlet.context-path}")
-    private String path;
-
-    private final String address = NetUtils.getLocalIpAddress();
-    private Integer port = -1;
-
-    private final RingDataProvider<String> authorizationProvider = new RingDataProvider.Builder<>(
-            new AuthorizationProducer(), new RingDataDAO.MemImpl<>(), 10 * 1000
-    ).build();
+    private String contextPath;
+    private int port = -1;
 
     @Override
     protected String onSetupScanPkg() {
@@ -37,18 +28,18 @@ public class TestPlugin extends BaseRpcProviderPlugin implements ApplicationList
     }
 
     @Override
-    protected ServerInfo onGetServerInfo() {
-        log.info("发送");
-        ServerInfo info = new ServerInfo();
-        info.setAddress(address);
-        info.setPort(port);
-        info.setContext(path);
-        try {
-            info.setAuthorization(authorizationProvider.get());
-        } catch (DataModifiedException e) {
-            throw new RpcRequestException("无法生成凭证");
-        }
-        return info;
+    protected int onSetupServerPort() {
+        return port;
+    }
+
+    @Override
+    protected String onSetupServerContextPath() {
+        return contextPath;
+    }
+
+    @Override
+    protected RingDataProvider<String> onSetupAuthorizationProvider() {
+        return new RingDataProvider.Builder<>(BdFileUtils::getUuid, new RingDataDAO.MemImpl<>(), 10 * 1000).build();
     }
 
     @Override

@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.soybeany.rpc.core.model.BdRpcConstants.KEY_METHOD_INFO;
-import static com.soybeany.rpc.core.model.BdRpcConstants.PATH;
+import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
 /**
@@ -24,7 +24,13 @@ class RpcProviderController {
     private BaseRpcProviderPlugin plugin;
 
     @PostMapping(PATH)
-    RpcDTO bdRpc(HttpServletRequest request) {
+    RpcDTO bdRpc(HttpServletRequest request, HttpServletResponse response) {
+        // 凭证校验
+        if (!plugin.isAuthorizationValid(request.getHeader(HEADER_AUTHORIZATION))) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return null;
+        }
+        // 处理rpc调用
         try {
             String param = request.getParameter(KEY_METHOD_INFO);
             return RpcDTO.norm(plugin.invoke(GSON.fromJson(param, MethodInfo.class)));

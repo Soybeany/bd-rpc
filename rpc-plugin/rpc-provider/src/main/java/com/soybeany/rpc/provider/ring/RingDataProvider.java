@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Soybeany
@@ -27,7 +28,7 @@ public class RingDataProvider<T> {
         this.containers = new RingDataContainer[targetLength];
     }
 
-    public synchronized T get() throws DataModifiedException {
+    public synchronized T getNewest() throws DataModifiedException {
         if (!loaded) {
             init();
             loaded = true;
@@ -40,6 +41,22 @@ public class RingDataProvider<T> {
             check();
         }
         return containers[curIndex].getData();
+    }
+
+    /**
+     * 判断指定数据是否有效
+     */
+    public synchronized boolean isValid(T obj) {
+        long curTime = System.currentTimeMillis();
+        for (RingDataContainer<T> container : containers) {
+            if (!Objects.equals(obj, container.getData())) {
+                continue;
+            }
+            if (container.getExpiryTime() > curTime) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ***********************内部方法****************************
@@ -55,12 +72,14 @@ public class RingDataProvider<T> {
             }
         }
         // 无效位置填充新数据
+        boolean shouldSave = false;
         for (int i = targetIndex - 1; i >= curIndex; i--) {
             long expiryTime = curTime + (targetLength - targetIndex + i + 1) * b.refreshIntervalMillis;
             containers[i % targetLength] = new RingDataContainer<>(b.producer.onGetNew(), expiryTime);
+            shouldSave = true;
         }
         // 有创建新数据，则保存
-        if (targetIndex != curIndex) {
+        if (shouldSave) {
             b.dao.onSave(Arrays.asList(containers));
             curIndex = targetIndex % targetLength;
         }

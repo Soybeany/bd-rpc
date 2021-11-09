@@ -102,10 +102,10 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Type resultType) throws Throwable {
         ServerInfo serverInfo = provider.get();
         String url = serverInfo.getProtocol() + "://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
-                + serverInfo.getContext() + PATH
+                + serverInfo.getContextPath() + PATH
                 + (null != serverInfo.getSuffix() ? serverInfo.getSuffix() : "");
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", serverInfo.getAuthorization());
+        headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
         Map<String, String> params = new HashMap<>();
         params.put(KEY_METHOD_INFO, GSON.toJson(methodInfo));
         RpcDTO dto;

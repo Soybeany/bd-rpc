@@ -27,9 +27,9 @@ public class ServerInfo {
     private Integer port;
 
     /**
-     * 上下文
+     * 上下文路径
      */
-    private String context;
+    private String contextPath;
 
     /**
      * 请求尾缀
