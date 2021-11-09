@@ -1,4 +1,4 @@
-package com.soybeany.rpc.demo.consumer;
+package com.soybeany.rpc.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

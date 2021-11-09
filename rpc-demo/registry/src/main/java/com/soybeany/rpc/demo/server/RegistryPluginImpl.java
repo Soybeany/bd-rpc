@@ -12,21 +12,23 @@ import javax.annotation.PreDestroy;
  * @date 2021/10/28
  */
 @Component
-public class TestPlugin extends BaseRpcRegistryPlugin {
+public class RegistryPluginImpl extends BaseRpcRegistryPlugin {
+
+    private IResourceManager.MapImpl resourceManager;
 
     @Override
     protected IResourceManager onSetupResourceManager() {
-        return new IResourceManager.MapImpl();
+        return resourceManager = new IResourceManager.MapImpl();
     }
 
     @PostConstruct
     private void onInit() {
-        ((IResourceManager.MapImpl) resourceManager).startAutoClean(7);
+        resourceManager.startAutoClean(7);
     }
 
     @PreDestroy
     private void onDestroy() {
-        ((IResourceManager.MapImpl) resourceManager).shutdownAutoClean();
+        resourceManager.shutdownAutoClean();
     }
 
 }

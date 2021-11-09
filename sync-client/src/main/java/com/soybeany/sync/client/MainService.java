@@ -51,7 +51,7 @@ public class MainService implements SyncSender {
         // 排序
         Collections.sort(allPlugins);
         // 启动回调
-        allPlugins.forEach(plugin -> plugin.onStartup(this));
+        service.submit(() -> allPlugins.forEach(plugin -> plugin.onStartup(this)));
         // 执行定时任务
         service.scheduleWithFixedDelay(() -> sendSync(null), 0, config.onSetupSyncIntervalInSec(), TimeUnit.SECONDS);
     }

@@ -3,7 +3,6 @@ package com.soybeany.rpc.registry;
 import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.ServerInfo;
-import com.soybeany.rpc.core.model.ServerInfoProvider;
 import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.model.Context;
 import org.springframework.stereotype.Component;
@@ -26,18 +25,18 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
     private static final Type TYPE_ID_SET = new TypeToken<Set<String>>() {
     }.getType();
 
-    protected final IResourceManager resourceManager = onSetupResourceManager();
+    private final IResourceManager resourceManager = onSetupResourceManager();
 
     @Override
     public void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result) {
         switch (param.get(KEY_ACTION)) {
             case ACTION_GET_PROVIDERS:
-                Map<String, ServerInfoProvider> map = new HashMap<>();
+                Map<String, List<ServerInfo>> map = new HashMap<>();
                 for (String id : GSON.fromJson(param.get(KEY_SERVICE_ID_ARR), String[].class)) {
                     List<ServerInfo> infoList = new LinkedList<>();
                     Optional.ofNullable(resourceManager.load(id))
                             .ifPresent(resources -> resources.forEach(r -> infoList.add(r.getInfo())));
-                    map.put(id, new ServerInfoProvider(infoList));
+                    map.put(id, infoList);
                 }
                 result.put(KEY_PROVIDER_MAP, GSON.toJson(map));
                 break;

@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @Log
 @Component
-public class TestPlugin extends BaseRpcConsumerPlugin {
+public class ConsumerPluginImpl extends BaseRpcConsumerPlugin {
 
     @Override
     public synchronized void onHandleSync(Context ctx, Map<String, String> param) {

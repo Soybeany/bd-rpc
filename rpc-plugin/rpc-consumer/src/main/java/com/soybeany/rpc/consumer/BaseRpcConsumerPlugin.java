@@ -1,10 +1,14 @@
 package com.soybeany.rpc.consumer;
 
 import com.google.gson.reflect.TypeToken;
+import com.soybeany.rpc.consumer.picker.ServerInfoPicker;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcRequestException;
-import com.soybeany.rpc.core.model.*;
+import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
+import com.soybeany.rpc.core.model.MethodInfo;
+import com.soybeany.rpc.core.model.RpcDTO;
+import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ServiceProvider;
 import com.soybeany.sync.core.model.Context;
 import com.soybeany.sync.core.util.RequestUtils;
@@ -36,7 +40,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
 
-    private static final Type PROVIDERS_TYPE = new TypeToken<Map<String, ServerInfoProvider>>() {
+    private static final Type PROVIDERS_TYPE = new TypeToken<Map<String, ServerInfo[]>>() {
     }.getType();
 
     @Autowired
@@ -57,7 +61,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     /**
      * 服务器信息提供者的映射
      */
-    private Map<String, ServerInfoProvider> providers;
+    private final Map<String, ServerInfoPicker> pickers = new HashMap<>();
 
     @Override
     public void onSendSync(Context ctx, Map<String, String> result) {
@@ -67,7 +71,9 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
 
     @Override
     public synchronized void onHandleSync(Context ctx, Map<String, String> param) {
-        providers = GSON.fromJson(param.get(KEY_PROVIDER_MAP), PROVIDERS_TYPE);
+        Map<String, ServerInfo[]> map = GSON.fromJson(param.get(KEY_PROVIDER_MAP), PROVIDERS_TYPE);
+        pickers.clear();
+        map.forEach((k, v) -> pickers.put(k, new ServerInfoPicker(v)));
     }
 
     @Override
@@ -99,7 +105,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         scanAndSetupNeededService();
     }
 
-    private <T> T request(ServerInfoProvider provider, MethodInfo methodInfo, Type resultType) throws Throwable {
+    private <T> T request(ServerInfoPicker provider, MethodInfo methodInfo, Type resultType) throws Throwable {
         ServerInfo serverInfo = provider.get();
         String url = serverInfo.getProtocol() + "://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
                 + serverInfo.getContextPath() + PATH
@@ -157,8 +163,8 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         });
         // 远端服务
         Object instance = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
-            ServerInfoProvider provider;
-            if (null == providers || null == (provider = providers.get(serviceId))) {
+            ServerInfoPicker provider;
+            if (null == (provider = pickers.get(serviceId))) {
                 throw new RpcPluginException("暂无此id的服务提供者信息");
             }
             MethodInfo info = new MethodInfo(serviceId, method, args);

@@ -1,29 +1,20 @@
-package com.soybeany.rpc.core.model;
+package com.soybeany.rpc.consumer.picker;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
-
-import java.util.Collection;
+import com.soybeany.rpc.core.model.ServerInfo;
 
 /**
  * @author Soybeany
  * @date 2021/10/29
  */
-public class ServerInfoProvider {
+public class ServerInfoPicker {
 
     private final ServerInfo[] infoArr;
     private transient int index = -1;
 
-    public ServerInfoProvider(ServerInfo... infoArr) {
+    public ServerInfoPicker(ServerInfo... infoArr) {
         this.infoArr = new ServerInfo[infoArr.length];
         System.arraycopy(infoArr, 0, this.infoArr, 0, infoArr.length);
-    }
-
-    public ServerInfoProvider(Collection<ServerInfo> infoList) {
-        this.infoArr = new ServerInfo[infoList.size()];
-        int index = 0;
-        for (ServerInfo info : infoList) {
-            this.infoArr[index++] = info;
-        }
     }
 
     public ServerInfo get() {
