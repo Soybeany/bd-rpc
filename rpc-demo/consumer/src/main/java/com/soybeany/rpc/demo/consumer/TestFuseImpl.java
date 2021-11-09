@@ -5,6 +5,7 @@ import com.soybeany.rpc.demo.model.TestParam;
 import com.soybeany.rpc.demo.model.TestVO;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,6 +17,8 @@ import java.util.List;
 public class TestFuseImpl implements ITestService {
     @Override
     public List<TestVO> getValue(List<TestParam> param) {
-        return null;
+        TestVO vo = new TestVO();
+        vo.setValue("熔断");
+        return Collections.singletonList(vo);
     }
 }

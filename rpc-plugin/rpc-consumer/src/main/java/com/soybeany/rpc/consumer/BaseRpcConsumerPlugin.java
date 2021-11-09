@@ -4,7 +4,6 @@ import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.consumer.picker.ServerInfoPicker;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.exception.RpcRequestException;
 import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.model.MethodInfo;
 import com.soybeany.rpc.core.model.RpcDTO;
@@ -25,6 +24,7 @@ import org.springframework.util.ClassUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -51,11 +51,6 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
      */
     private final Map<Class<?>, Object> proxies = new HashMap<>();
 
-    /**
-     * 用于熔断的实现
-     */
-    private final Map<Class<?>, Object> fallbackImpls = new HashMap<>();
-
     private final Set<String> serviceIdSet = new HashSet<>();
 
     /**
@@ -72,8 +67,17 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     @Override
     public synchronized void onHandleSync(Context ctx, Map<String, String> param) {
         Map<String, ServerInfo[]> map = GSON.fromJson(param.get(KEY_PROVIDER_MAP), PROVIDERS_TYPE);
-        pickers.clear();
-        map.forEach((k, v) -> pickers.put(k, new ServerInfoPicker(v)));
+        Set<String> keys = new HashSet<>(pickers.keySet());
+        // 更新数据
+        map.forEach((id, v) -> {
+            keys.remove(id);
+            ServerInfoPicker picker = pickers.computeIfAbsent(id, k -> onGetNewServerInfoPicker());
+            picker.set(v);
+        });
+        // 移除已失效条目
+        for (String key : keys) {
+            Optional.ofNullable(pickers.remove(key)).ifPresent(ServerInfoPicker::onDestroy);
+        }
     }
 
     @Override
@@ -105,22 +109,38 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         scanAndSetupNeededService();
     }
 
-    private <T> T request(ServerInfoPicker provider, MethodInfo methodInfo, Type resultType) throws Throwable {
+    private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId) throws Throwable {
+        ServerInfoPicker provider;
+        if (null == (provider = pickers.get(serviceId))) {
+            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无此id的服务提供者信息");
+        }
         ServerInfo serverInfo = provider.get();
+        if (null == serverInfo) {
+            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "此id的服务提供者暂未注册");
+        }
         String url = serverInfo.getProtocol() + "://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
                 + serverInfo.getContextPath() + PATH
                 + (null != serverInfo.getSuffix() ? serverInfo.getSuffix() : "");
         Map<String, String> headers = new HashMap<>();
         headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
         Map<String, String> params = new HashMap<>();
-        params.put(KEY_METHOD_INFO, GSON.toJson(methodInfo));
+        params.put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
         RpcDTO dto;
         try {
             dto = RequestUtils.request(url, headers, params, RpcDTO.class);
         } catch (IOException e) {
-            throw new RpcRequestException(e.getMessage());
+            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());
         }
-        return dto.getIsNorm() ? dto.getData(resultType) : dto.throwException();
+        return dto.getIsNorm() ? dto.getData(method.getGenericReturnType()) : dto.throwException();
+    }
+
+    private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
+        if (null == fallbackImpl) {
+            throw new RpcPluginException(errMsg);
+        } else {
+            //noinspection unchecked
+            return (T) method.invoke(fallbackImpl, args);
+        }
     }
 
     private void scanAndSetupNeededService() {
@@ -154,22 +174,20 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
             throw new RpcPluginException("@BdRpc的serviceId(" + serviceId + ")需唯一");
         }
         // 本地服务
+        Object[] fallbackImpl = new Object[1];
         Optional.ofNullable(getBeanFromContext(interfaceClass)).ifPresent(impl -> {
             if (isFallbackImpl(impl)) {
-                fallbackImpls.put(interfaceClass, impl);
+                fallbackImpl[0] = impl;
             } else {
                 proxies.put(interfaceClass, impl);
             }
         });
         // 远端服务
-        Object instance = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, (proxy, method, args) -> {
-            ServerInfoPicker provider;
-            if (null == (provider = pickers.get(serviceId))) {
-                throw new RpcPluginException("暂无此id的服务提供者信息");
-            }
-            MethodInfo info = new MethodInfo(serviceId, method, args);
-            return request(provider, info, method.getGenericReturnType());
-        });
+        Object instance = Proxy.newProxyInstance(
+                interfaceClass.getClassLoader(),
+                new Class[]{interfaceClass},
+                (proxy, method, args) -> invoke(method, args, fallbackImpl[0], serviceId)
+        );
         proxies.put(interfaceClass, instance);
     }
 
@@ -181,4 +199,9 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
             return null;
         }
     }
+
+    // ***********************子类实现****************************
+
+    protected abstract ServerInfoPicker onGetNewServerInfoPicker();
+
 }
