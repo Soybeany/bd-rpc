@@ -127,7 +127,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
-            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(onSetupScanPkg()) + RESOURCE_PATTERN;
+            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(onSetupPkgToScan()) + RESOURCE_PATTERN;
             Resource[] resources = resourcePatternResolver.getResources(pattern);
             //MetadataReader 的工厂类
             MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver);

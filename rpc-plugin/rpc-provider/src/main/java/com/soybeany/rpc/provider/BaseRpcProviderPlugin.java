@@ -73,7 +73,7 @@ public abstract class BaseRpcProviderPlugin extends BaseRpcClientPlugin implemen
     private void onInit() {
         for (String name : appContext.getBeanDefinitionNames()) {
             Object bean = appContext.getBean(name);
-            Optional.ofNullable(ReflectUtils.getAnnotation(onSetupScanPkg(), BdRpc.class, bean.getClass()))
+            Optional.ofNullable(ReflectUtils.getAnnotation(onSetupPkgToScan(), BdRpc.class, bean.getClass()))
                     .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
         }
     }

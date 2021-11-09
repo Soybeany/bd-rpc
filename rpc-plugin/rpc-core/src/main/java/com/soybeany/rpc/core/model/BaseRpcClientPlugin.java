@@ -23,10 +23,10 @@ public abstract class BaseRpcClientPlugin implements IClientPlugin {
     // ***********************子类实现****************************
 
     /**
-     * 设置扫描的路径
+     * 设置待扫描的路径
      *
      * @return 路径值(以该值开始)
      */
-    protected abstract String onSetupScanPkg();
+    protected abstract String onSetupPkgToScan();
 
 }
