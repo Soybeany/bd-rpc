@@ -75,9 +75,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
             picker.set(v);
         });
         // 移除已失效条目
-        for (String key : keys) {
-            Optional.ofNullable(pickers.remove(key)).ifPresent(ServerInfoPicker::onDestroy);
-        }
+        keys.forEach(pickers::remove);
     }
 
     @Override
@@ -110,11 +108,11 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     }
 
     private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId) throws Throwable {
-        ServerInfoPicker provider;
-        if (null == (provider = pickers.get(serviceId))) {
+        ServerInfoPicker picker;
+        if (null == (picker = pickers.get(serviceId))) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无此id的服务提供者信息");
         }
-        ServerInfo serverInfo = provider.get();
+        ServerInfo serverInfo = picker.get();
         if (null == serverInfo) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "此id的服务提供者暂未注册");
         }
@@ -129,6 +127,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         try {
             dto = RequestUtils.request(url, headers, params, RpcDTO.class);
         } catch (IOException e) {
+            picker.onRequestFailure(serverInfo);
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());
         }
         return dto.getIsNorm() ? dto.getData(method.getGenericReturnType()) : dto.throwException();

@@ -12,7 +12,7 @@ public interface ServerInfoPicker {
 
     ServerInfo get();
 
-    default void onDestroy() {
+    default void onRequestFailure(ServerInfo info) {
     }
 
 }

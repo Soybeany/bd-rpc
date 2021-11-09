@@ -2,6 +2,7 @@ package com.soybeany.rpc.demo.server;
 
 import com.soybeany.rpc.registry.BaseRpcRegistryPlugin;
 import com.soybeany.rpc.registry.IResourceManager;
+import com.soybeany.rpc.registry.ResourceManagerAutoCleanImpl;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -14,11 +15,11 @@ import javax.annotation.PreDestroy;
 @Component
 public class RegistryPluginImpl extends BaseRpcRegistryPlugin {
 
-    private IResourceManager.MapImpl resourceManager;
+    private ResourceManagerAutoCleanImpl resourceManager;
 
     @Override
     protected IResourceManager onSetupResourceManager() {
-        return resourceManager = new IResourceManager.MapImpl();
+        return resourceManager = new ResourceManagerAutoCleanImpl();
     }
 
     @PostConstruct
