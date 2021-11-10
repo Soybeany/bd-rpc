@@ -1,10 +1,7 @@
 package com.soybeany.rpc.demo.provider;
 
 import com.soybeany.rpc.provider.BaseRpcProviderPlugin;
-import com.soybeany.rpc.provider.ring.RingDataDAO;
-import com.soybeany.rpc.provider.ring.RingDataProvider;
 import com.soybeany.sync.core.model.SyncSender;
-import com.soybeany.util.file.BdFileUtils;
 import lombok.extern.java.Log;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.server.WebServer;
@@ -46,11 +43,6 @@ public class ProviderPluginImpl extends BaseRpcProviderPlugin implements Applica
     @Override
     protected String onSetupServerContextPath() {
         return "";
-    }
-
-    @Override
-    protected RingDataProvider<String> onSetupAuthorizationProvider() {
-        return new RingDataProvider.Builder<>(BdFileUtils::getUuid, new RingDataDAO.MemImpl<>(), 20 * 1000).build();
     }
 
     @Override
