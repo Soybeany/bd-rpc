@@ -39,10 +39,14 @@ public class RequestUtils {
             throw new IOException("服务提供者参数异常，无法访问");
         }
         // 添加header
-        headers.forEach(requestBuilder::header);
+        if (null != headers) {
+            headers.forEach(requestBuilder::header);
+        }
         // 添加入参
         FormBody.Builder bodyBuilder = new FormBody.Builder();
-        params.forEach(bodyBuilder::add);
+        if (null != params) {
+            params.forEach(bodyBuilder::add);
+        }
         requestBuilder.post(bodyBuilder.build());
         // 请求
         Call call = CLIENT.newCall(requestBuilder.build());

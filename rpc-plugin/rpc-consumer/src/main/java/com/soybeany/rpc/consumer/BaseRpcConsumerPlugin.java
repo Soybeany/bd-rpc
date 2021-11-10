@@ -116,16 +116,13 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         if (null == serverInfo) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "此id的服务提供者暂未注册");
         }
-        String url = serverInfo.getProtocol() + "://" + serverInfo.getAddress() + ":" + serverInfo.getPort()
-                + serverInfo.getContextPath() + PATH
-                + (null != serverInfo.getSuffix() ? serverInfo.getSuffix() : "");
         Map<String, String> headers = new HashMap<>();
         headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
         Map<String, String> params = new HashMap<>();
         params.put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
         RpcDTO dto;
         try {
-            dto = RequestUtils.request(url, headers, params, RpcDTO.class);
+            dto = RequestUtils.request(serverInfo.toUrl(PATH_RPC), headers, params, RpcDTO.class);
         } catch (IOException e) {
             picker.onRequestFailure(serverInfo);
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());

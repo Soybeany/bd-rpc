@@ -41,4 +41,8 @@ public class ServerInfo {
      */
     private String authorization = "";
 
+    public String toUrl(String path) {
+        return getProtocol() + "://" + getAddress() + ":" + getPort() + getContextPath() + path + (null != getSuffix() ? getSuffix() : "");
+    }
+
 }

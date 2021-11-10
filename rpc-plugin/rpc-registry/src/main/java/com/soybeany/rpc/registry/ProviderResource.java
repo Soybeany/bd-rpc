@@ -1,16 +1,16 @@
 package com.soybeany.rpc.registry;
 
 import com.soybeany.rpc.core.model.ServerInfo;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.Date;
 
 /**
  * @author Soybeany
  * @date 2021/10/27
  */
 @EqualsAndHashCode(exclude = "syncTime")
+@AllArgsConstructor
 @Data
 public class ProviderResource {
 
@@ -27,16 +27,6 @@ public class ProviderResource {
     /**
      * 同步时间
      */
-    private Date syncTime;
-
-    // ***********************方法区****************************
-
-    public static ProviderResource getNew(String id, ServerInfo info, Date syncTime) {
-        ProviderResource resource = new ProviderResource();
-        resource.id = id;
-        resource.info = info;
-        resource.syncTime = syncTime;
-        return resource;
-    }
+    private long syncTime;
 
 }

@@ -59,8 +59,8 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
 
     private Set<ProviderResource> toResources(ServerInfo info, Collection<String> serviceIds) {
         Set<ProviderResource> set = new HashSet<>();
-        Date date = new Date();
-        serviceIds.forEach(id -> set.add(ProviderResource.getNew(id, info, date)));
+        long time = System.currentTimeMillis();
+        serviceIds.forEach(id -> set.add(new ProviderResource(id, info, time)));
         return set;
     }
 

@@ -19,7 +19,7 @@ public class RegistryPluginImpl extends BaseRpcRegistryPlugin {
 
     @Override
     protected IResourceManager onSetupResourceManager() {
-        return resourceManager = new ResourceManagerAutoCleanImpl();
+        return resourceManager = new ResourceManagerAutoCleanImpl(2);
     }
 
     @PostConstruct

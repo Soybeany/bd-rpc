@@ -3,6 +3,7 @@ package com.soybeany.rpc.provider;
 import com.soybeany.rpc.core.model.MethodInfo;
 import com.soybeany.rpc.core.model.RpcDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,7 +24,7 @@ class RpcProviderController {
     @Autowired
     private BaseRpcProviderPlugin plugin;
 
-    @PostMapping(PATH)
+    @PostMapping(PATH_RPC)
     RpcDTO bdRpc(HttpServletRequest request, HttpServletResponse response) {
         // 凭证校验
         if (!plugin.isAuthorizationValid(request.getHeader(HEADER_AUTHORIZATION))) {
@@ -41,6 +42,11 @@ class RpcProviderController {
                 return RpcDTO.error("异常信息构建失败:" + e2.getMessage());
             }
         }
+    }
+
+    @GetMapping(PATH_CHECK)
+    String check() {
+        return RESULT_OK;
     }
 
 }
