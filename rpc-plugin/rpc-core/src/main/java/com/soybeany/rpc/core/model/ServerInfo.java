@@ -1,14 +1,12 @@
 package com.soybeany.rpc.core.model;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * @author Soybeany
  * @date 2021/10/27
  */
 @Data
-@EqualsAndHashCode(exclude = "authorization")
 public class ServerInfo {
 
     /**

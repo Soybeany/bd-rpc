@@ -8,7 +8,9 @@ import com.soybeany.sync.core.model.Context;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
@@ -25,25 +27,22 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
     private static final Type TYPE_ID_SET = new TypeToken<Set<String>>() {
     }.getType();
 
-    private final IResourceManager resourceManager = onSetupResourceManager();
+    private final IServiceManager serviceManager = onSetupServiceManager();
 
     @Override
     public void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result) {
         switch (param.get(KEY_ACTION)) {
             case ACTION_GET_PROVIDERS:
-                Map<String, List<ServerInfo>> map = new HashMap<>();
+                Map<String, Set<ServerInfo>> map = new HashMap<>();
                 for (String id : GSON.fromJson(param.get(KEY_SERVICE_ID_ARR), String[].class)) {
-                    List<ServerInfo> infoList = new LinkedList<>();
-                    Optional.ofNullable(resourceManager.load(id))
-                            .ifPresent(resources -> resources.forEach(r -> infoList.add(r.getInfo())));
-                    map.put(id, infoList);
+                    map.put(id, serviceManager.load(id));
                 }
                 result.put(KEY_PROVIDER_MAP, GSON.toJson(map));
                 break;
             case ACTION_REGISTER_PROVIDERS:
                 ServerInfo info = GSON.fromJson(param.get(KEY_PROVIDER_INFO), ServerInfo.class);
                 Set<String> serviceIds = GSON.fromJson(param.get(KEY_SERVICE_ID_ARR), TYPE_ID_SET);
-                toResources(info, serviceIds).forEach(resourceManager::save);
+                serviceManager.save(info, serviceIds);
                 break;
             default:
                 throw new RpcPluginException("暂不支持此操作");
@@ -55,17 +54,8 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
         return TAG;
     }
 
-    // ***********************内部方法****************************
-
-    private Set<ProviderResource> toResources(ServerInfo info, Collection<String> serviceIds) {
-        Set<ProviderResource> set = new HashSet<>();
-        long time = System.currentTimeMillis();
-        serviceIds.forEach(id -> set.add(new ProviderResource(id, info, time)));
-        return set;
-    }
-
     // ***********************子类实现****************************
 
-    protected abstract IResourceManager onSetupResourceManager();
+    protected abstract IServiceManager onSetupServiceManager();
 
 }

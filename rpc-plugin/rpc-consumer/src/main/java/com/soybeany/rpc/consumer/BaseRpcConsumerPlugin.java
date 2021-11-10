@@ -11,6 +11,7 @@ import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ServiceProvider;
 import com.soybeany.sync.core.model.Context;
 import com.soybeany.sync.core.util.RequestUtils;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -36,6 +37,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2021/10/27
  */
+@Log
 public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implements ServiceProvider {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
@@ -131,6 +133,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     }
 
     private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
+        log.warning(errMsg);
         if (null == fallbackImpl) {
             throw new RpcPluginException(errMsg);
         } else {

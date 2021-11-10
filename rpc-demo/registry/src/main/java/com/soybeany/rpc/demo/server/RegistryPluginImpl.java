@@ -1,8 +1,8 @@
 package com.soybeany.rpc.demo.server;
 
 import com.soybeany.rpc.registry.BaseRpcRegistryPlugin;
-import com.soybeany.rpc.registry.IResourceManager;
-import com.soybeany.rpc.registry.ResourceManagerAutoCleanImpl;
+import com.soybeany.rpc.registry.IServiceManager;
+import com.soybeany.rpc.registry.ServiceManagerAutoCleanImpl;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -15,21 +15,21 @@ import javax.annotation.PreDestroy;
 @Component
 public class RegistryPluginImpl extends BaseRpcRegistryPlugin {
 
-    private ResourceManagerAutoCleanImpl resourceManager;
+    private ServiceManagerAutoCleanImpl serviceManager;
 
     @Override
-    protected IResourceManager onSetupResourceManager() {
-        return resourceManager = new ResourceManagerAutoCleanImpl(2);
+    protected IServiceManager onSetupServiceManager() {
+        return serviceManager = new ServiceManagerAutoCleanImpl();
     }
 
     @PostConstruct
     private void onInit() {
-        resourceManager.startAutoClean(7);
+        serviceManager.startAutoClean(7);
     }
 
     @PreDestroy
     private void onDestroy() {
-        resourceManager.shutdownAutoClean();
+        serviceManager.shutdownAutoClean();
     }
 
 }
