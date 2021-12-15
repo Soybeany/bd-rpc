@@ -1,7 +1,6 @@
 package com.soybeany.rpc.consumer;
 
 import com.google.gson.reflect.TypeToken;
-import com.soybeany.rpc.consumer.picker.ServerInfoPicker;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
@@ -10,6 +9,7 @@ import com.soybeany.rpc.core.model.RpcDTO;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ServiceProvider;
 import com.soybeany.sync.core.model.Context;
+import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.util.RequestUtils;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -58,7 +58,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     /**
      * 服务器信息提供者的映射
      */
-    private final Map<String, ServerInfoPicker> pickers = new HashMap<>();
+    private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
 
     @Override
     public void onSendSync(Context ctx, Map<String, String> result) {
@@ -73,7 +73,7 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         // 更新数据
         map.forEach((id, v) -> {
             keys.remove(id);
-            ServerInfoPicker picker = pickers.computeIfAbsent(id, k -> onGetNewServerInfoPicker());
+            DataPicker<ServerInfo> picker = pickers.computeIfAbsent(id, k -> onGetNewServerInfoPicker());
             picker.set(v);
         });
         // 移除已失效条目
@@ -110,23 +110,20 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     }
 
     private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId) throws Throwable {
-        ServerInfoPicker picker;
+        DataPicker<ServerInfo> picker;
         if (null == (picker = pickers.get(serviceId))) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无此id的服务提供者信息");
         }
-        ServerInfo serverInfo = picker.get();
-        if (null == serverInfo) {
-            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "此id的服务提供者暂未注册");
-        }
         Map<String, String> headers = new HashMap<>();
-        headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
         Map<String, String> params = new HashMap<>();
         params.put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
         RpcDTO dto;
         try {
-            dto = RequestUtils.request(serverInfo.toUrl(PATH_RPC), headers, params, RpcDTO.class);
+            dto = RequestUtils.request(picker, serverInfo -> {
+                headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
+                return serverInfo.toUrl(PATH_RPC);
+            }, headers, params, RpcDTO.class, "暂无此id可用的服务提供者");
         } catch (IOException e) {
-            picker.onRequestFailure(serverInfo);
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());
         }
         return dto.getIsNorm() ? dto.getData(method.getGenericReturnType()) : dto.throwException();
@@ -201,6 +198,6 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
 
     // ***********************子类实现****************************
 
-    protected abstract ServerInfoPicker onGetNewServerInfoPicker();
+    protected abstract DataPicker<ServerInfo> onGetNewServerInfoPicker();
 
 }

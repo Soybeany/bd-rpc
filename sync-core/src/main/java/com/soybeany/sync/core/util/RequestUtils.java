@@ -1,11 +1,13 @@
 package com.soybeany.sync.core.util;
 
 import com.google.gson.Gson;
+import com.soybeany.sync.core.picker.DataPicker;
 import okhttp3.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Soybeany
@@ -16,14 +18,25 @@ public class RequestUtils {
     public static final Gson GSON = new Gson();
     private static final OkHttpClient CLIENT = new OkHttpClient();
 
-    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Class<T> resultClass) throws IOException {
-        String bodyString = getBodyString(url, headers, params);
-        return GSON.fromJson(bodyString, resultClass);
+    public static <D, T> T request(DataPicker<D> picker, Function<D, String> urlMapper, Map<String, String> headers, Map<String, String> params, Type resultType, String errMsg) throws IOException {
+        for (D data : picker) {
+            //
+            if (null == data) {
+                continue;
+            }
+            try {
+                return request(urlMapper.apply(data), headers, params, resultType);
+            } catch (IOException e) {
+                picker.onUnusable(data);
+            }
+        }
+        throw new IOException(errMsg);
     }
 
-    /**
-     * 单url请求
-     */
+    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Class<T> resultClass) throws IOException {
+        return request(url, headers, params, (Type) resultClass);
+    }
+
     public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Type resultType) throws IOException {
         String bodyString = getBodyString(url, headers, params);
         return GSON.fromJson(bodyString, resultType);
