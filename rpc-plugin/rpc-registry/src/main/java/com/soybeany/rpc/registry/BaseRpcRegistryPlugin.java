@@ -4,7 +4,8 @@ import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.sync.core.api.IServerPlugin;
-import com.soybeany.sync.core.model.Context;
+import com.soybeany.sync.core.exception.SyncException;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
@@ -27,10 +28,14 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
     private static final Type TYPE_ID_SET = new TypeToken<Set<String>>() {
     }.getType();
 
-    private final IServiceManager serviceManager = onSetupServiceManager();
+    private final Map<String, IServiceManager> serviceManagerMap = getServiceManagerMap();
 
     @Override
-    public void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result) {
+    public void onHandleSync(Map<String, String> param, Map<String, String> result) throws SyncException {
+        IServiceManager serviceManager = serviceManagerMap.get(param.get(KEY_SYSTEM));
+        if (null == serviceManager) {
+            throw new SyncException("非注册系统，不允许同步");
+        }
         switch (param.get(KEY_ACTION)) {
             case ACTION_GET_PROVIDERS:
                 Map<String, Set<ServerInfo>> map = new HashMap<>();
@@ -54,8 +59,33 @@ public abstract class BaseRpcRegistryPlugin implements IServerPlugin {
         return TAG;
     }
 
+    // ***********************内部方法****************************
+
+    private Map<String, IServiceManager> getServiceManagerMap() {
+        Map<String, IServiceManager> map = new HashMap<>();
+        for (String system : onSetupAcceptableSystems()) {
+            map.put(system, onGetNewServiceManager(system));
+        }
+        return map;
+    }
+
     // ***********************子类实现****************************
 
-    protected abstract IServiceManager onSetupServiceManager();
+    /**
+     * 配置可接受的系统
+     *
+     * @return 系统名称数组
+     */
+    @NonNull
+    protected abstract String[] onSetupAcceptableSystems();
+
+    /**
+     * 获取指定系统的服务管理器
+     *
+     * @param system 系统名称
+     * @return 提供的管理器
+     */
+    @NonNull
+    protected abstract IServiceManager onGetNewServiceManager(String system);
 
 }

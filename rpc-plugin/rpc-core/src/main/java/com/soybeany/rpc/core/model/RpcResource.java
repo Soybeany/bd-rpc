@@ -19,11 +19,4 @@ public class RpcResource {
      */
     private String path;
 
-    // ***********************方法区****************************
-
-    protected void copy(RpcResource r) {
-        this.id = r.id;
-        this.path = r.path;
-    }
-
 }

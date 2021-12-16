@@ -18,7 +18,12 @@ public class RegistryPluginImpl extends BaseRpcRegistryPlugin {
     private ServiceManagerAutoCleanImpl serviceManager;
 
     @Override
-    protected IServiceManager onSetupServiceManager() {
+    protected String[] onSetupAcceptableSystems() {
+        return new String[]{null};
+    }
+
+    @Override
+    protected IServiceManager onGetNewServiceManager(String system) {
         return serviceManager = new ServiceManagerAutoCleanImpl();
     }
 

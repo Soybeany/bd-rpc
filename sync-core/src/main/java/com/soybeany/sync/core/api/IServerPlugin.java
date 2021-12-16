@@ -1,7 +1,7 @@
 package com.soybeany.sync.core.api;
 
 
-import com.soybeany.sync.core.model.Context;
+import com.soybeany.sync.core.exception.SyncException;
 
 import java.util.Map;
 
@@ -14,10 +14,9 @@ public interface IServerPlugin extends IBasePlugin {
     /**
      * 处理同步的回调(必须先配置{@link #onSetupSyncTagToHandle})
      *
-     * @param ctx    上下文
      * @param param  入参
      * @param result 数据
      */
-    void onHandleSync(Context ctx, Map<String, String> param, Map<String, String> result);
+    void onHandleSync(Map<String, String> param, Map<String, String> result) throws SyncException;
 
 }

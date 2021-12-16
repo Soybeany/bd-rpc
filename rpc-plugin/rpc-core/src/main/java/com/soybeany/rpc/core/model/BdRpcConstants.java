@@ -8,9 +8,7 @@ public class BdRpcConstants {
 
     public static final String TAG = "rpc";
 
-    public static final String PATH_RPC = "/bd-rpc";
-    public static final String PATH_CHECK = "/bd-check";
-
+    public static final String KEY_SYSTEM = "system";
     public static final String KEY_METHOD_INFO = "methodInfo";
     public static final String KEY_PROVIDER_MAP = "providerMap";
     public static final String KEY_ACTION = "action";
@@ -21,7 +19,5 @@ public class BdRpcConstants {
     public static final String ACTION_REGISTER_PROVIDERS = "registerProviders";
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
-
-    public static final String RESULT_OK = "ok";
 
 }

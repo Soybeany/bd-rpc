@@ -3,7 +3,7 @@ package com.soybeany.rpc.demo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"com.soybeany"})
+@SpringBootApplication
 class ConsumerApplication {
 
     public static void main(String[] args) {

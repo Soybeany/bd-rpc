@@ -42,6 +42,9 @@ public class DataPickerSimpleImpl<T> implements DataPicker<T> {
     }
 
     private int getNextIndex() {
+        if (infoArr.isEmpty()) {
+            return -1;
+        }
         return ++curIndex % infoArr.size();
     }
 

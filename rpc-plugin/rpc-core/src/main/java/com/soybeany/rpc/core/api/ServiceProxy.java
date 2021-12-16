@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.utl;
+package com.soybeany.rpc.core.api;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
 
@@ -6,7 +6,7 @@ import com.soybeany.rpc.core.exception.RpcPluginException;
  * @author Soybeany
  * @date 2021/10/29
  */
-public interface ServiceProvider {
+public interface ServiceProxy {
 
     /**
      * 创建指定接口的代理实例

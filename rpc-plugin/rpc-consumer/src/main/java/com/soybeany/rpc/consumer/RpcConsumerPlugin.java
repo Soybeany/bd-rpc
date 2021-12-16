@@ -2,18 +2,18 @@ package com.soybeany.rpc.consumer;
 
 import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.api.ServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.model.MethodInfo;
-import com.soybeany.rpc.core.model.RpcDTO;
 import com.soybeany.rpc.core.model.ServerInfo;
-import com.soybeany.rpc.core.utl.ServiceProvider;
-import com.soybeany.sync.core.model.Context;
+import com.soybeany.sync.core.exception.SyncRequestException;
+import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.util.RequestUtils;
+import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -23,12 +23,12 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Function;
 
 import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
@@ -38,15 +38,18 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/27
  */
 @Log
-public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implements ServiceProvider {
+@AllArgsConstructor
+public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> implements ServiceProxy {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
 
     private static final Type PROVIDERS_TYPE = new TypeToken<Map<String, ServerInfo[]>>() {
     }.getType();
 
-    @Autowired
-    private ApplicationContext appContext;
+    private final String system;
+    private final ApplicationContext appContext;
+    private final Function<String, DataPicker<ServerInfo>> dataPickerProvider;
+    private final String[] pkgToScan;
 
     /**
      * 已加载的代理（本地/远程）
@@ -61,19 +64,20 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
     private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
 
     @Override
-    public void onSendSync(Context ctx, Map<String, String> result) {
+    public void onSendSync(Map<String, String> result) {
+        super.onSendSync(result);
         result.put(KEY_ACTION, ACTION_GET_PROVIDERS);
         result.put(KEY_SERVICE_ID_ARR, GSON.toJson(serviceIdSet));
     }
 
     @Override
-    public synchronized void onHandleSync(Context ctx, Map<String, String> param) {
+    public synchronized void onHandleSync(Map<String, String> param) {
         Map<String, ServerInfo[]> map = GSON.fromJson(param.get(KEY_PROVIDER_MAP), PROVIDERS_TYPE);
         Set<String> keys = new HashSet<>(pickers.keySet());
         // 更新数据
         map.forEach((id, v) -> {
             keys.remove(id);
-            DataPicker<ServerInfo> picker = pickers.computeIfAbsent(id, k -> onGetNewServerInfoPicker());
+            DataPicker<ServerInfo> picker = pickers.computeIfAbsent(id, dataPickerProvider);
             picker.set(v);
         });
         // 移除已失效条目
@@ -102,51 +106,20 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
         throw new RpcPluginException("没有找到指定类的实现");
     }
 
-    // ***********************内部方法****************************
-
-    @PostConstruct
-    private void onInit() {
-        scanAndSetupNeededService();
-    }
-
-    private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId) throws Throwable {
-        DataPicker<ServerInfo> picker;
-        if (null == (picker = pickers.get(serviceId))) {
-            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无此id的服务提供者信息");
-        }
-        Map<String, String> headers = new HashMap<>();
-        Map<String, String> params = new HashMap<>();
-        params.put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
-        RpcDTO dto;
-        try {
-            dto = RequestUtils.request(picker, serverInfo -> {
-                headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
-                return serverInfo.toUrl(PATH_RPC);
-            }, headers, params, RpcDTO.class, "暂无此id可用的服务提供者");
-        } catch (IOException e) {
-            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());
-        }
-        return dto.getIsNorm() ? dto.getData(method.getGenericReturnType()) : dto.throwException();
-    }
-
-    private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
-        log.warning(errMsg);
-        if (null == fallbackImpl) {
-            throw new RpcPluginException(errMsg);
-        } else {
-            //noinspection unchecked
-            return (T) method.invoke(fallbackImpl, args);
-        }
-    }
-
-    private void scanAndSetupNeededService() {
+    @Override
+    public RpcConsumerPlugin init() {
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
-            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(onSetupPkgToScan()) + RESOURCE_PATTERN;
-            Resource[] resources = resourcePatternResolver.getResources(pattern);
+            List<Resource> resources = new ArrayList<>();
+            for (String path : onSetupPkgPathToScan()) {
+                String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(path) + RESOURCE_PATTERN;
+                Resource[] partResources = resourcePatternResolver.getResources(pattern);
+                Collections.addAll(resources, partResources);
+            }
             //MetadataReader 的工厂类
             MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
+            //noinspection RedundantOperationOnEmptyContainer
             for (Resource resource : resources) {
                 //用于读取类信息
                 MetadataReader reader = readerFactory.getMetadataReader(resource);
@@ -160,6 +133,49 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
+        }
+        return this;
+    }
+
+    @Override
+    protected String onSetupSystem() {
+        return system;
+    }
+
+    @Override
+    protected String[] onSetupPkgPathToScan() {
+        return pkgToScan;
+    }
+
+    // ***********************内部方法****************************
+
+    private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId) throws Throwable {
+        DataPicker<ServerInfo> picker;
+        if (null == (picker = pickers.get(serviceId))) {
+            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无此id的服务提供者信息");
+        }
+        Map<String, String> headers = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
+        params.put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
+        SyncDTO dto;
+        try {
+            dto = RequestUtils.request(picker, serverInfo -> {
+                headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
+                return serverInfo.getSyncUrl();
+            }, headers, params, SyncDTO.class, "暂无此id可用的服务提供者");
+        } catch (SyncRequestException e) {
+            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());
+        }
+        return dto.getIsNorm() ? dto.getData(method.getGenericReturnType()) : dto.throwException();
+    }
+
+    private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
+        log.warning(errMsg);
+        if (null == fallbackImpl) {
+            throw new RpcPluginException(errMsg);
+        } else {
+            //noinspection unchecked
+            return (T) method.invoke(fallbackImpl, args);
         }
     }
 
@@ -195,9 +211,5 @@ public abstract class BaseRpcConsumerPlugin extends BaseRpcClientPlugin implemen
             return null;
         }
     }
-
-    // ***********************子类实现****************************
-
-    protected abstract DataPicker<ServerInfo> onGetNewServerInfoPicker();
 
 }

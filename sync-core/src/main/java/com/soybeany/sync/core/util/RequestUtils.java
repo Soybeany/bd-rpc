@@ -1,12 +1,15 @@
 package com.soybeany.sync.core.util;
 
 import com.google.gson.Gson;
+import com.soybeany.sync.core.exception.SyncException;
+import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.picker.DataPicker;
 import okhttp3.*;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -18,7 +21,7 @@ public class RequestUtils {
     public static final Gson GSON = new Gson();
     private static final OkHttpClient CLIENT = new OkHttpClient();
 
-    public static <D, T> T request(DataPicker<D> picker, Function<D, String> urlMapper, Map<String, String> headers, Map<String, String> params, Type resultType, String errMsg) throws IOException {
+    public static <D, T> T request(DataPicker<D> picker, Function<D, String> urlMapper, Map<String, String> headers, Map<String, String> params, Type resultType, String errMsg) throws SyncRequestException {
         for (D data : picker) {
             //
             if (null == data) {
@@ -26,30 +29,30 @@ public class RequestUtils {
             }
             try {
                 return request(urlMapper.apply(data), headers, params, resultType);
-            } catch (IOException e) {
+            } catch (SyncException e) {
                 picker.onUnusable(data);
             }
         }
-        throw new IOException(errMsg);
+        throw new SyncRequestException(errMsg);
     }
 
-    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Class<T> resultClass) throws IOException {
+    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Class<T> resultClass) throws SyncRequestException {
         return request(url, headers, params, (Type) resultClass);
     }
 
-    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Type resultType) throws IOException {
+    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Type resultType) throws SyncRequestException {
         String bodyString = getBodyString(url, headers, params);
         return GSON.fromJson(bodyString, resultType);
     }
 
     // ***********************内部方法****************************
 
-    private static String getBodyString(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
+    private static String getBodyString(String url, Map<String, String> headers, Map<String, String> params) throws SyncRequestException {
         Request.Builder requestBuilder;
         try {
             requestBuilder = new Request.Builder().url(url);
         } catch (IllegalArgumentException e) {
-            throw new IOException("服务提供者参数异常，无法访问");
+            throw new SyncRequestException("服务提供者参数异常，无法访问");
         }
         // 添加header
         if (null != headers) {
@@ -58,19 +61,21 @@ public class RequestUtils {
         // 添加入参
         FormBody.Builder bodyBuilder = new FormBody.Builder();
         if (null != params) {
-            params.forEach(bodyBuilder::add);
+            params.forEach((k, v) -> Optional.ofNullable(v).ifPresent(v1 -> bodyBuilder.add(k, v1)));
         }
         requestBuilder.post(bodyBuilder.build());
         // 请求
         Call call = CLIENT.newCall(requestBuilder.build());
         try (Response response = call.execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("请求失败:" + response.code());
+                throw new SyncRequestException("请求失败:" + response.code());
             }
             if (null == response.body()) {
-                throw new IOException("body为null");
+                throw new SyncRequestException("body为null");
             }
             return response.body().string();
+        } catch (IOException e) {
+            throw new SyncRequestException(e.getMessage());
         }
     }
 
