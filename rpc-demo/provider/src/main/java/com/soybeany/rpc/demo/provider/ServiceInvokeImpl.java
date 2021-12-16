@@ -1,6 +1,8 @@
 package com.soybeany.rpc.demo.provider;
 
 import com.soybeany.rpc.provider.BaseServiceInvokeImpl;
+import com.soybeany.sync.core.picker.DataPicker;
+import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +28,8 @@ public class ServiceInvokeImpl extends BaseServiceInvokeImpl {
     }
 
     @Override
-    public String onGetSyncServerUrl() {
-        return "http://localhost:8080/bd-api/sync";
+    public DataPicker<String> onGetSyncServerPicker() {
+        return new DataPickerSimpleImpl<>("http://localhost:8080/bd-api/sync");
     }
 
     @Override

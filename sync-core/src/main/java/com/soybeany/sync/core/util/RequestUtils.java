@@ -27,21 +27,13 @@ public class RequestUtils {
                 continue;
             }
             try {
-                return request(urlMapper.apply(data), headers, params, resultType);
+                String bodyString = getBodyString(urlMapper.apply(data), headers, params);
+                return GSON.fromJson(bodyString, resultType);
             } catch (Exception e) {
                 picker.onUnusable(data);
             }
         }
         throw new SyncRequestException(errMsg);
-    }
-
-    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Class<T> resultClass) throws SyncRequestException {
-        return request(url, headers, params, (Type) resultClass);
-    }
-
-    public static <T> T request(String url, Map<String, String> headers, Map<String, String> params, Type resultType) throws SyncRequestException {
-        String bodyString = getBodyString(url, headers, params);
-        return GSON.fromJson(bodyString, resultType);
     }
 
     // ***********************内部方法****************************

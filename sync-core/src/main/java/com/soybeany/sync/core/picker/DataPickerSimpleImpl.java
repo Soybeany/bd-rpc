@@ -1,5 +1,7 @@
 package com.soybeany.sync.core.picker;
 
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -11,10 +13,16 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/10/29
  */
+@NoArgsConstructor
 public class DataPickerSimpleImpl<T> implements DataPicker<T> {
 
     private List<T> infoArr;
     private int curIndex;
+
+    @SafeVarargs
+    public DataPickerSimpleImpl(T... arr) {
+        set(arr);
+    }
 
     @Override
     public synchronized void set(T[] arr) {

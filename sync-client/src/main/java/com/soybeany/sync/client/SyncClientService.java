@@ -77,7 +77,7 @@ public class SyncClientService {
         }
         SyncDTO dto;
         try {
-            dto = RequestUtils.request(config.onGetSyncServerUrl(), null, params, SyncDTO.class);
+            dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, null, params, SyncDTO.class, "暂无可用的注册中心");
         } catch (SyncRequestException e) {
             log.warning(e.getMessage());
             return;

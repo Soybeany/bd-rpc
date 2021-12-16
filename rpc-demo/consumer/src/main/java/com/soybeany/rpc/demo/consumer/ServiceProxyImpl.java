@@ -31,8 +31,8 @@ public class ServiceProxyImpl extends BaseServiceProxyImpl {
     }
 
     @Override
-    public String onGetSyncServerUrl() {
-        return "http://localhost:8080/bd-api/sync";
+    public DataPicker<String> onGetSyncServerPicker() {
+        return new DataPickerSimpleImpl<>("http://localhost:8080/bd-api/sync");
     }
 
     @Override

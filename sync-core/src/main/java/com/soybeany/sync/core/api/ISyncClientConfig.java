@@ -1,5 +1,7 @@
 package com.soybeany.sync.core.api;
 
+import com.soybeany.sync.core.picker.DataPicker;
+import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import lombok.AllArgsConstructor;
 
 /**
@@ -8,14 +10,12 @@ import lombok.AllArgsConstructor;
  */
 public interface ISyncClientConfig {
 
-    // TODO: 2021/12/16 增加Picker配置
-
     /**
      * 获取同步服务器的url
      *
      * @return 值
      */
-    String onGetSyncServerUrl();
+    DataPicker<String> onGetSyncServerPicker();
 
     /**
      * 设置同步间隔
@@ -31,8 +31,8 @@ public interface ISyncClientConfig {
         private int syncIntervalInSec;
 
         @Override
-        public String onGetSyncServerUrl() {
-            return syncServerUrl;
+        public DataPicker<String> onGetSyncServerPicker() {
+            return new DataPickerSimpleImpl<>(syncServerUrl);
         }
 
         @Override
