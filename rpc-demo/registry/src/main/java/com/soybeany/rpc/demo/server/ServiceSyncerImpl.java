@@ -1,6 +1,6 @@
 package com.soybeany.rpc.demo.server;
 
-import com.soybeany.rpc.registry.BaseRpcRegistryPlugin;
+import com.soybeany.rpc.registry.BaseServiceSyncerImpl;
 import com.soybeany.rpc.registry.IServiceManager;
 import com.soybeany.rpc.registry.ServiceManagerAutoCleanImpl;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import javax.annotation.PreDestroy;
  * @date 2021/10/28
  */
 @Component
-public class RegistryPluginImpl extends BaseRpcRegistryPlugin {
+public class ServiceSyncerImpl extends BaseServiceSyncerImpl {
 
     private ServiceManagerAutoCleanImpl serviceManager;
 

@@ -1,7 +1,8 @@
 package com.soybeany.rpc.demo.server;
 
+import com.soybeany.rpc.core.api.ServiceSyncer;
 import com.soybeany.sync.core.model.SyncDTO;
-import com.soybeany.sync.server.SyncServerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,14 +19,15 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/bd-api")
 public class ApiController {
 
-    private final SyncServerService syncServerService = new SyncServerService(new RegistryPluginImpl());
+    @Autowired
+    private ServiceSyncer serviceSyncer;
 
     /**
      * 数据同步
      */
     @PostMapping("/sync")
     public SyncDTO sync(HttpServletRequest request) {
-        return syncServerService.sync(request);
+        return serviceSyncer.sync(request);
     }
 
 }

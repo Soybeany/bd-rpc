@@ -1,7 +1,6 @@
 package com.soybeany.sync.core.util;
 
 import com.google.gson.Gson;
-import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.picker.DataPicker;
 import okhttp3.*;
@@ -29,7 +28,7 @@ public class RequestUtils {
             }
             try {
                 return request(urlMapper.apply(data), headers, params, resultType);
-            } catch (SyncException e) {
+            } catch (Exception e) {
                 picker.onUnusable(data);
             }
         }

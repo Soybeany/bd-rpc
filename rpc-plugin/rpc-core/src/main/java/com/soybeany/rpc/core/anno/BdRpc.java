@@ -6,6 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * todo 允许配置超时
+ *
  * @author Soybeany
  * @date 2021/10/29
  */

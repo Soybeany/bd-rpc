@@ -1,7 +1,7 @@
 package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.api.ServiceInvoker;
-import com.soybeany.rpc.core.model.BaseServiceImpl;
+import com.soybeany.rpc.core.model.BaseClientServiceImpl;
 import com.soybeany.sync.client.SyncClientService;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.NetUtils;
@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseServiceInvokeImpl extends BaseServiceImpl implements ServiceInvoker {
+public abstract class BaseServiceInvokeImpl extends BaseClientServiceImpl implements ServiceInvoker {
 
     @Autowired
     private ApplicationContext appContext;
@@ -31,6 +31,7 @@ public abstract class BaseServiceInvokeImpl extends BaseServiceImpl implements S
 
     @Override
     protected void onStart() {
+        super.onStart();
         String syncUrl = onSetupServerSyncUrl(NetUtils.getLocalIpAddress());
         plugin = new RpcProviderPlugin(onSetupSystem(), appContext, syncUrl, onSetupPkgPathToScan()).init();
         service = new SyncClientService(this, plugin);
@@ -39,6 +40,7 @@ public abstract class BaseServiceInvokeImpl extends BaseServiceImpl implements S
 
     @Override
     protected void onStop() {
+        super.onStop();
         service.stop();
     }
 
