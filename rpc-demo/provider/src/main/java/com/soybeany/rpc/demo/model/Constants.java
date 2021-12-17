@@ -6,6 +6,6 @@ package com.soybeany.rpc.demo.model;
  */
 public class Constants {
 
-    public static final String PATH_RPC = "/bd-rpc";
+    public static final String PATH_RPC = "/bd-rpc/invoke";
 
 }

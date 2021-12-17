@@ -1,6 +1,6 @@
 package com.soybeany.rpc.demo.server;
 
-import com.soybeany.rpc.core.api.ServiceSyncer;
+import com.soybeany.sync.core.api.IServiceSyncer;
 import com.soybeany.sync.core.model.SyncDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 public class ApiController {
 
     @Autowired
-    private ServiceSyncer serviceSyncer;
+    private IServiceSyncer serviceSyncer;
 
     /**
      * 数据同步

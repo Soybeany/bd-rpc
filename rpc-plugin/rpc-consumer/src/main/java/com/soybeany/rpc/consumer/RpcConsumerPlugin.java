@@ -2,7 +2,7 @@ package com.soybeany.rpc.consumer;
 
 import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.api.ServiceProxy;
+import com.soybeany.rpc.core.api.IServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.model.MethodInfo;
@@ -39,7 +39,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  */
 @Log
 @AllArgsConstructor
-public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> implements ServiceProxy {
+public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> implements IServiceProxy {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
 
@@ -161,7 +161,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
         try {
             dto = RequestUtils.request(picker, serverInfo -> {
                 headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
-                return serverInfo.getSyncUrl();
+                return serverInfo.getInvokeUrl();
             }, headers, params, SyncDTO.class, "暂无此id可用的服务提供者");
         } catch (SyncRequestException e) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());

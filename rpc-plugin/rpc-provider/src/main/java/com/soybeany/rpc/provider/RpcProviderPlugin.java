@@ -1,7 +1,7 @@
 package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.api.ServiceInvoker;
+import com.soybeany.rpc.core.api.IServiceInvoker;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.model.MethodInfo;
@@ -28,7 +28,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/27
  */
 @AllArgsConstructor
-public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> implements ServiceInvoker {
+public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> implements IServiceInvoker {
 
     private final Map<String, Object> serviceMap = new HashMap<>();
     private final String authorizationToken = BdFileUtils.getUuid();
@@ -36,7 +36,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> im
 
     private final String system;
     private final ApplicationContext appContext;
-    private final String syncUrl;
+    private final String invokeUrl;
     private final String[] pkgToScan;
 
     @Override
@@ -55,7 +55,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> im
     @Override
     public RpcProviderPlugin init() {
         // 配置服务器信息
-        serverInfo.setSyncUrl(syncUrl);
+        serverInfo.setInvokeUrl(invokeUrl);
         serverInfo.setAuthorization(authorizationToken);
         // 扫描
         for (String name : appContext.getBeanDefinitionNames()) {

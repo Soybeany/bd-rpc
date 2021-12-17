@@ -1,37 +1,19 @@
 package com.soybeany.rpc.registry;
 
-import com.soybeany.rpc.core.api.ServiceSyncer;
-import com.soybeany.rpc.core.model.BaseServiceImpl;
-import com.soybeany.sync.core.exception.SyncException;
-import com.soybeany.sync.core.model.SyncDTO;
-import com.soybeany.sync.server.SyncServerService;
+import com.soybeany.sync.core.api.IServerPlugin;
+import com.soybeany.sync.server.BaseServerServiceImpl;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseServiceSyncerImpl extends BaseServiceImpl implements ServiceSyncer {
-
-    private SyncServerService service;
+public abstract class BaseServiceSyncerImpl extends BaseServerServiceImpl {
 
     @Override
-    public SyncDTO sync(HttpServletRequest request) {
-        try {
-            Map<String, String> result = service.sync(request);
-            return SyncDTO.norm(result);
-        } catch (SyncException e) {
-            return SyncDTO.error(e);
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        RpcRegistryPlugin plugin = new RpcRegistryPlugin(onSetupAcceptableSystems(), this::onGetNewServiceManager);
-        service = new SyncServerService(plugin);
+    protected void onSetupPlugins(List<IServerPlugin> plugins) {
+        plugins.add(new RpcRegistryPlugin(onSetupAcceptableSystems(), this::onGetNewServiceManager));
     }
 
     // ***********************子类实现****************************

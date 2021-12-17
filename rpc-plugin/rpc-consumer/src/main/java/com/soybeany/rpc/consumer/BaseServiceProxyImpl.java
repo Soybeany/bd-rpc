@@ -1,25 +1,27 @@
 package com.soybeany.rpc.consumer;
 
-import com.soybeany.rpc.core.api.ServiceProxy;
+import com.soybeany.rpc.core.api.IRpcClientService;
+import com.soybeany.rpc.core.api.IServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.BaseClientServiceImpl;
 import com.soybeany.rpc.core.model.ServerInfo;
-import com.soybeany.sync.client.SyncClientService;
+import com.soybeany.sync.client.BaseClientServiceImpl;
+import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+
+import java.util.List;
 
 /**
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseServiceProxyImpl extends BaseClientServiceImpl implements ServiceProxy {
+public abstract class BaseServiceProxyImpl extends BaseClientServiceImpl implements IRpcClientService, IServiceProxy {
 
     @Autowired
     private ApplicationContext appContext;
 
     private RpcConsumerPlugin plugin;
-    private SyncClientService service;
 
     @Override
     public <T> T get(Class<T> interfaceClass) throws RpcPluginException {
@@ -27,21 +29,13 @@ public abstract class BaseServiceProxyImpl extends BaseClientServiceImpl impleme
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        plugin = new RpcConsumerPlugin(onSetupSystem(), appContext, this::onGetNewDataPicker, onSetupPkgPathToScan()).init();
-        service = new SyncClientService(this, plugin);
-        service.start();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        service.stop();
+    protected void onSetupPlugins(List<IClientPlugin> plugins) {
+        plugin = new RpcConsumerPlugin(onSetupSystem(), appContext, this::onGetNewServerPicker, onSetupPkgPathToScan()).init();
+        plugins.add(plugin);
     }
 
     // ***********************子类实现****************************
 
-    protected abstract DataPicker<ServerInfo> onGetNewDataPicker(String serviceId);
+    protected abstract DataPicker<ServerInfo> onGetNewServerPicker(String serviceId);
 
 }

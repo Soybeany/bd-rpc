@@ -16,18 +16,18 @@ import org.springframework.stereotype.Component;
 public class ServiceProxyImpl extends BaseServiceProxyImpl {
 
     @Override
-    protected String onSetupSystem() {
+    protected DataPicker<ServerInfo> onGetNewServerPicker(String serviceId) {
+        return new DataPickerSimpleImpl<>();
+    }
+
+    @Override
+    public String onSetupSystem() {
         return null;
     }
 
     @Override
-    protected String[] onSetupPkgPathToScan() {
+    public String[] onSetupPkgPathToScan() {
         return new String[]{"com.soybeany.rpc.demo.consumer"};
-    }
-
-    @Override
-    protected DataPicker<ServerInfo> onGetNewDataPicker(String serviceId) {
-        return new DataPickerSimpleImpl<>();
     }
 
     @Override

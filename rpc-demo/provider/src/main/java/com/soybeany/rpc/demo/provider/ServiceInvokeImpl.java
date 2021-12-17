@@ -18,12 +18,12 @@ import static com.soybeany.rpc.demo.model.Constants.PATH_RPC;
 public class ServiceInvokeImpl extends BaseServiceInvokeImpl {
 
     @Override
-    protected String onSetupSystem() {
+    public String onSetupSystem() {
         return null;
     }
 
     @Override
-    protected String[] onSetupPkgPathToScan() {
+    public String[] onSetupPkgPathToScan() {
         return new String[]{"com.soybeany.rpc.demo.provider"};
     }
 
@@ -38,7 +38,7 @@ public class ServiceInvokeImpl extends BaseServiceInvokeImpl {
     }
 
     @Override
-    protected String onSetupServerSyncUrl(String ip) {
+    protected String onSetupInvokeUrl(String ip) {
         return getUrl(false, ip, 8081, "", PATH_RPC, "");
     }
 

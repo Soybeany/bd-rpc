@@ -1,8 +1,9 @@
 package com.soybeany.rpc.provider;
 
-import com.soybeany.rpc.core.api.ServiceInvoker;
-import com.soybeany.rpc.core.model.BaseClientServiceImpl;
-import com.soybeany.sync.client.SyncClientService;
+import com.soybeany.rpc.core.api.IRpcClientService;
+import com.soybeany.rpc.core.api.IServiceInvoker;
+import com.soybeany.sync.client.BaseClientServiceImpl;
+import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.NetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,18 +12,18 @@ import org.springframework.lang.NonNull;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseServiceInvokeImpl extends BaseClientServiceImpl implements ServiceInvoker {
+public abstract class BaseServiceInvokeImpl extends BaseClientServiceImpl implements IRpcClientService, IServiceInvoker {
 
     @Autowired
     private ApplicationContext appContext;
 
     private RpcProviderPlugin plugin;
-    private SyncClientService service;
 
     @Override
     public SyncDTO invoke(HttpServletRequest request, HttpServletResponse response) {
@@ -30,29 +31,15 @@ public abstract class BaseServiceInvokeImpl extends BaseClientServiceImpl implem
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        String syncUrl = onSetupServerSyncUrl(NetUtils.getLocalIpAddress());
-        plugin = new RpcProviderPlugin(onSetupSystem(), appContext, syncUrl, onSetupPkgPathToScan()).init();
-        service = new SyncClientService(this, plugin);
-        service.start();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        service.stop();
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    protected String getUrl(boolean secure, String ip, int port, String context, String path, String suffix) {
-        String protocol = secure ? "https" : "http";
-        return protocol + "://" + ip + ":" + port + context + path + suffix;
+    protected void onSetupPlugins(List<IClientPlugin> plugins) {
+        String invokeUrl = onSetupInvokeUrl(NetUtils.getLocalIpAddress());
+        plugin = new RpcProviderPlugin(onSetupSystem(), appContext, invokeUrl, onSetupPkgPathToScan()).init();
+        plugins.add(plugin);
     }
 
     // ***********************子类实现****************************
 
     @NonNull
-    protected abstract String onSetupServerSyncUrl(String ip);
+    protected abstract String onSetupInvokeUrl(String ip);
 
 }

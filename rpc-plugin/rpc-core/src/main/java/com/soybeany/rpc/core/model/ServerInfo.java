@@ -10,9 +10,9 @@ import lombok.Data;
 public class ServerInfo {
 
     /**
-     * 同步的url
+     * 调用的url
      */
-    private String syncUrl;
+    private String invokeUrl;
 
     /**
      * 调用接口时使用的凭证
