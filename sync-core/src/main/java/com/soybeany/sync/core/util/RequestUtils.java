@@ -37,7 +37,7 @@ public class RequestUtils {
                 String bodyString = getBodyString(url, config);
                 return GSON.fromJson(bodyString, resultType);
             } catch (Exception e) {
-                log.warning("url请求异常(" + e.getMessage() + ")");
+                log.warning("请求“" + url + "”异常(" + e.getMessage() + ")");
                 picker.onUnusable(data);
             }
         }
