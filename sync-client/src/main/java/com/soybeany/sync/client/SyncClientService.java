@@ -68,16 +68,16 @@ public class SyncClientService {
     }
 
     private void sendSync() {
-        Map<String, String> params = new HashMap<>();
+        RequestUtils.Config rConfig = new RequestUtils.Config();
         for (IClientPlugin plugin : allPlugins) {
             Map<String, String> tmpParam = new HashMap<>();
             plugin.onSendSync(tmpParam);
             String tag = plugin.onSetupSyncTagToHandle();
-            tmpParam.forEach((k, v) -> params.put(TagUtils.addTag(tag, k), v));
+            tmpParam.forEach((k, v) -> rConfig.getParams().put(TagUtils.addTag(tag, k), v));
         }
         SyncDTO dto;
         try {
-            dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, null, params, SyncDTO.class, "暂无可用的注册中心");
+            dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
         } catch (SyncRequestException e) {
             log.warning(e.getMessage());
             return;

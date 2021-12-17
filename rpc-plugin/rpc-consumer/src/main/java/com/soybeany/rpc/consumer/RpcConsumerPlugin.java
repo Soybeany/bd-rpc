@@ -49,6 +49,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
     private final String system;
     private final ApplicationContext appContext;
     private final Function<String, DataPicker<ServerInfo>> dataPickerProvider;
+    private final Function<String, Integer> timeoutInSecProvider;
     private final String[] pkgToScan;
 
     /**
@@ -103,7 +104,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
             return impl;
         }
         // 没有找到实现类
-        throw new RpcPluginException("没有找到指定类的实现");
+        throw new RpcPluginException("没有找到指定类(" + interfaceClass + ")的实现");
     }
 
     @Override
@@ -129,7 +130,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
                 //处理指定的注解
                 Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
                         .filter(bdRpc -> clazz.isInterface())
-                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(bdRpc)));
+                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(bdRpc), bdRpc.timeoutInSec()));
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
@@ -149,20 +150,20 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
 
     // ***********************内部方法****************************
 
-    private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId) throws Throwable {
+    private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Throwable {
         DataPicker<ServerInfo> picker;
         if (null == (picker = pickers.get(serviceId))) {
-            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无此id的服务提供者信息");
+            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无serviceId(" + serviceId + ")的服务提供者信息");
         }
-        Map<String, String> headers = new HashMap<>();
-        Map<String, String> params = new HashMap<>();
-        params.put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
+        RequestUtils.Config config = new RequestUtils.Config();
+        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
+        config.setTimeoutInSec(timeoutInSec);
         SyncDTO dto;
         try {
             dto = RequestUtils.request(picker, serverInfo -> {
-                headers.put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
+                config.getHeaders().put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
                 return serverInfo.getInvokeUrl();
-            }, headers, params, SyncDTO.class, "暂无此id可用的服务提供者");
+            }, config, SyncDTO.class, "暂无serviceId(" + serviceId + ")可用的服务提供者");
         } catch (SyncRequestException e) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());
         }
@@ -179,7 +180,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
         }
     }
 
-    private void setupServiceImpl(Class<?> interfaceClass, String serviceId) {
+    private void setupServiceImpl(Class<?> interfaceClass, String serviceId, int referTimeoutInSec) {
         // 记录serviceId
         boolean success = serviceIdSet.add(serviceId);
         if (!success) {
@@ -195,10 +196,11 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
             }
         });
         // 远端服务
+        int timeoutInSec = (referTimeoutInSec >= 0 ? referTimeoutInSec : timeoutInSecProvider.apply(serviceId));
         Object instance = Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class[]{interfaceClass},
-                (proxy, method, args) -> invoke(method, args, fallbackImpl[0], serviceId)
+                (proxy, method, args) -> invoke(method, args, fallbackImpl[0], serviceId, timeoutInSec)
         );
         proxies.put(interfaceClass, instance);
     }

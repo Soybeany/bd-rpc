@@ -30,11 +30,19 @@ public abstract class BaseServiceProxyImpl extends BaseClientServiceImpl impleme
 
     @Override
     protected void onSetupPlugins(List<IClientPlugin> plugins) {
-        plugin = new RpcConsumerPlugin(onSetupSystem(), appContext, this::onGetNewServerPicker, onSetupPkgPathToScan()).init();
+        plugin = new RpcConsumerPlugin(onSetupSystem(), appContext,
+                this::onGetNewServerPicker,
+                this::onSetupTimeoutInSec,
+                onSetupPkgPathToScan()
+        ).init();
         plugins.add(plugin);
     }
 
     // ***********************子类实现****************************
+
+    protected int onSetupTimeoutInSec(String serviceId) {
+        return 5;
+    }
 
     protected abstract DataPicker<ServerInfo> onGetNewServerPicker(String serviceId);
 
