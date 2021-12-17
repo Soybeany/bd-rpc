@@ -52,19 +52,22 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> im
         return TAG;
     }
 
+    @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     @Override
     public RpcProviderPlugin init() {
         // 配置服务器信息
         serverInfo.setInvokeUrl(invokeUrl);
         serverInfo.setAuthorization(authorizationToken);
         // 扫描
-        for (String name : appContext.getBeanDefinitionNames()) {
-            Object bean = appContext.getBean(name);
-            for (String path : onSetupPkgPathToScan()) {
-                Optional.ofNullable(ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass()))
-                        .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
+        new Thread(() -> {
+            for (String name : appContext.getBeanDefinitionNames()) {
+                Object bean = appContext.getBean(name);
+                for (String path : onSetupPkgPathToScan()) {
+                    Optional.ofNullable(ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass()))
+                            .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
+                }
             }
-        }
+        }).start();
         return this;
     }
 
