@@ -29,12 +29,14 @@ public class ServiceSyncerImpl extends BaseServiceSyncerImpl {
 
     @PostConstruct
     private void onInit() {
+        start();
         serviceManager.startAutoClean(7);
     }
 
     @PreDestroy
     private void onDestroy() {
         serviceManager.shutdownAutoClean();
+        stop();
     }
 
 }

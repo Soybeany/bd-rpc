@@ -6,6 +6,9 @@ import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import static com.soybeany.rpc.demo.model.Constants.PATH_RPC;
 
 
@@ -40,6 +43,16 @@ public class ServiceInvokeImpl extends BaseServiceInvokeImpl {
     @Override
     protected String onSetupInvokeUrl(String ip) {
         return getUrl(false, ip, 8081, "", PATH_RPC, "");
+    }
+
+    @PostConstruct
+    private void onInit() {
+        start();
+    }
+
+    @PreDestroy
+    private void onDestroy() {
+        stop();
     }
 
 }

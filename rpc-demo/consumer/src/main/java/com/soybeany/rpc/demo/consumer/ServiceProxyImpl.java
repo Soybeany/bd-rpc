@@ -7,6 +7,9 @@ import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 /**
  * @author Soybeany
  * @date 2021/10/28
@@ -39,4 +42,15 @@ public class ServiceProxyImpl extends BaseServiceProxyImpl {
     public int onSetupSyncIntervalInSec() {
         return 3;
     }
+
+    @PostConstruct
+    private void onInit() {
+        start();
+    }
+
+    @PreDestroy
+    private void onDestroy() {
+        stop();
+    }
+
 }

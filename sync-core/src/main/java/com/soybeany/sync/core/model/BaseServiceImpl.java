@@ -1,8 +1,5 @@
 package com.soybeany.sync.core.model;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-
 import java.util.List;
 
 /**
@@ -21,24 +18,22 @@ public abstract class BaseServiceImpl<Plugin> {
         return protocol + "://" + ip + ":" + port + context + path + suffix;
     }
 
+    // ***********************公共方法****************************
+
+    public void start() {
+        onStart();
+    }
+
+    public void stop() {
+        onStop();
+    }
+
     // ***********************子类重写****************************
 
     protected void onStart() {
     }
 
     protected void onStop() {
-    }
-
-    // ***********************内部方法****************************
-
-    @PostConstruct
-    private void start() {
-        onStart();
-    }
-
-    @PreDestroy
-    private void stop() {
-        onStop();
     }
 
     // ***********************子类实现****************************
