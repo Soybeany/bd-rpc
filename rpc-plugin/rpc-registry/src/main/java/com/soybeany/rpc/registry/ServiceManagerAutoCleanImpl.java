@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ServiceManagerAutoCleanImpl implements IServiceManager {
 
+    private static final Set<ServerInfo> EMPTY_SET = Collections.unmodifiableSet(new HashSet<>());
     private final Map<String, Map<ServerInfo, Long>> providersMap = new HashMap<>();
     @SuppressWarnings("AlibabaThreadPoolCreation")
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
@@ -21,7 +22,7 @@ public class ServiceManagerAutoCleanImpl implements IServiceManager {
     public synchronized Set<ServerInfo> load(String id) {
         return Optional.ofNullable(providersMap.get(id))
                 .map(Map::keySet)
-                .orElse(Collections.emptySet());
+                .orElse(EMPTY_SET);
     }
 
     @Override
