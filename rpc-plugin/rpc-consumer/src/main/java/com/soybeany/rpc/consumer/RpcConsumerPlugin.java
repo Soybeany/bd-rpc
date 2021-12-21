@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.api.IServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.model.MethodInfo;
 import com.soybeany.rpc.core.model.ServerInfo;
@@ -173,7 +174,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
     private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
         log.warning(errMsg);
         if (null == fallbackImpl) {
-            throw new RpcPluginException(errMsg);
+            throw new RpcPluginNoFallbackException(errMsg);
         } else {
             //noinspection unchecked
             return (T) method.invoke(fallbackImpl, args);
