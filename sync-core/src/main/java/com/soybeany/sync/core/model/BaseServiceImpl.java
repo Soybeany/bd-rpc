@@ -18,6 +18,14 @@ public abstract class BaseServiceImpl<Plugin> {
         return protocol + "://" + ip + ":" + port + context + path + suffix;
     }
 
+    protected String[] getUrls(String[] hosts, String path) {
+        String[] urls = new String[hosts.length];
+        for (int i = 0; i < hosts.length; i++) {
+            urls[i] = hosts[i] + path;
+        }
+        return urls;
+    }
+
     // ***********************公共方法****************************
 
     public void start() {
