@@ -172,12 +172,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         return dto.getIsNorm() ? dto.getData(method.getGenericReturnType()) : dto.throwException();
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
         log.warning(errMsg);
         if (null == fallbackImpl) {
             throw new RpcPluginNoFallbackException(errMsg);
         } else {
-            //noinspection unchecked
             return (T) method.invoke(fallbackImpl, args);
         }
     }

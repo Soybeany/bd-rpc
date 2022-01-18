@@ -21,10 +21,10 @@ public class RingDataProvider<T> {
 
     private boolean loaded;
 
+    @SuppressWarnings("unchecked")
     private RingDataProvider(Builder<T> builder) {
         this.b = builder;
         this.targetLength = b.preCount + b.nextCount + 1;
-        //noinspection unchecked
         this.containers = new RingDataContainer[targetLength];
     }
 

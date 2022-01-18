@@ -29,12 +29,12 @@ public abstract class BaseServerServiceImpl extends BaseServiceImpl<IServerPlugi
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void onStart() {
         super.onStart();
         List<IServerPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
-        //noinspection unchecked
         service = new SyncServerService(plugins.toArray(new IServerPlugin[0]));
     }
 

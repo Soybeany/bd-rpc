@@ -15,12 +15,12 @@ public abstract class BaseClientServiceImpl extends BaseServiceImpl<IClientPlugi
 
     private SyncClientService service;
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void onStart() {
         super.onStart();
         List<IClientPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
-        //noinspection unchecked
         service = new SyncClientService(this, plugins.toArray(new IClientPlugin[0]));
         service.start();
     }
