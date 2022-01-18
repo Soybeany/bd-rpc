@@ -1,5 +1,6 @@
 package com.soybeany.rpc.consumer;
 
+import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -41,6 +42,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private static final String RESOURCE_PATTERN = "/**/*.class";
 
     private final String system;
+    private final String version;
     private final ApplicationContext appContext;
     private final Function<String, DataPicker<ServerInfo>> dataPickerProvider;
     private final Function<String, Integer> timeoutInSecProvider;
@@ -133,7 +135,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 //处理指定的注解
                 Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
                         .filter(bdRpc -> clazz.isInterface())
-                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(bdRpc), bdRpc.timeoutInSec()));
+                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(version, bdRpc), bdRpc.timeoutInSec()));
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
@@ -200,6 +202,10 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 (proxy, method, args) -> invoke(method, args, fallbackImpl[0], serviceId, timeoutInSec)
         );
         proxies.put(interfaceClass, instance);
+    }
+
+    private boolean isFallbackImpl(Object obj) {
+        return null != obj.getClass().getAnnotation(BdFallback.class);
     }
 
     @SuppressWarnings("unchecked")

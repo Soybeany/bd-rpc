@@ -33,6 +33,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     private final ServerInfo serverInfo = new ServerInfo();
 
     private final String system;
+    private final String version;
     private final ApplicationContext appContext;
     private final String invokeUrl;
     private final String[] pkgToScan;
@@ -112,7 +113,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     }
 
     private void onHandleBean(BdRpc bdRpc, Object bean) {
-        String id = getId(bdRpc);
+        String id = getId(version, bdRpc);
         Object previous = serviceMap.put(id, bean);
         if (null != previous) {
             throw new RpcPluginException("@BdRpc的serviceId(" + id + ")需唯一");

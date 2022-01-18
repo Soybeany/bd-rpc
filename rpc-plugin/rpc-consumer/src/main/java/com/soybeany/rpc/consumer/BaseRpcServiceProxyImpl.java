@@ -30,7 +30,7 @@ public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl impl
 
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        plugin = new RpcConsumerPlugin(onSetupSystem(), appContext,
+        plugin = new RpcConsumerPlugin(onSetupSystem(), onSetupVersion(), appContext,
                 this::onGetNewServerPicker,
                 this::onSetupTimeoutInSec,
                 onSetupPkgPathToScan()
@@ -40,6 +40,10 @@ public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl impl
     }
 
     // ***********************子类实现****************************
+
+    protected String onSetupVersion() {
+        return "0";
+    }
 
     protected int onSetupTimeoutInSec(String serviceId) {
         return 5;

@@ -20,12 +20,7 @@ public @interface BdRpc {
     String serviceId();
 
     /**
-     * 服务版本号
-     */
-    int version() default 0;
-
-    /**
-     * 调用超时(单位：秒)
+     * 指定调用超时，若值小于0则使用全局配置(单位：秒)
      */
     int timeoutInSec() default -1;
 

@@ -1,6 +1,5 @@
 package com.soybeany.rpc.core.model;
 
-import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.sync.core.api.IClientPlugin;
 import org.springframework.lang.NonNull;
@@ -11,14 +10,8 @@ import org.springframework.lang.NonNull;
  */
 public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugin<Input, Output> {
 
-    protected static String getId(BdRpc annotation) {
-        return annotation.serviceId() + "-" + annotation.version();
-    }
-
-    // ***********************子类方法****************************
-
-    protected boolean isFallbackImpl(Object obj) {
-        return null != obj.getClass().getAnnotation(BdFallback.class);
+    protected static String getId(String version, BdRpc annotation) {
+        return annotation.serviceId() + "-" + version;
     }
 
     // ***********************子类实现****************************
