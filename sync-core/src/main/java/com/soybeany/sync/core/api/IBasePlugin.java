@@ -4,10 +4,10 @@ package com.soybeany.sync.core.api;
  * @author Soybeany
  * @date 2021/10/27
  */
-public interface IBasePlugin extends Comparable<IBasePlugin> {
+public interface IBasePlugin<Input, Output> extends Comparable<IBasePlugin<?, ?>> {
 
     @Override
-    default int compareTo(IBasePlugin o) {
+    default int compareTo(IBasePlugin<?, ?> o) {
         return o.priority() - priority();
     }
 
@@ -26,5 +26,15 @@ public interface IBasePlugin extends Comparable<IBasePlugin> {
      * @return 标签值
      */
     String onSetupSyncTagToHandle();
+
+    /**
+     * 配置输入的类型
+     */
+    Class<Input> onGetInputClass();
+
+    /**
+     * 配置输出的类型
+     */
+    Class<Output> onGetOutputClass();
 
 }

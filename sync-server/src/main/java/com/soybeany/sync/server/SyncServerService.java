@@ -2,10 +2,11 @@ package com.soybeany.sync.server;
 
 import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.exception.SyncException;
-import com.soybeany.sync.core.util.TagUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+
+import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
 /**
  * @author Soybeany
@@ -13,39 +14,43 @@ import java.util.*;
  */
 public class SyncServerService {
 
-    private final List<IServerPlugin> allPlugins;
+    private final List<IServerPlugin<Object, Object>> allPlugins;
 
-    public SyncServerService(IServerPlugin... plugins) {
+    public SyncServerService(IServerPlugin<Object, Object>[] plugins) {
         this.allPlugins = Arrays.asList(plugins);
         Collections.sort(allPlugins);
     }
 
     public Map<String, String> sync(HttpServletRequest request) throws SyncException {
-        Map<String, String> result = new HashMap<>();
-        Map<String, Map<String, String>> paramMap = TagUtils.split(getParam(request));
-        for (IServerPlugin plugin : allPlugins) {
+        Map<String, String> output = new HashMap<>();
+        Map<String, String> inputMap = getInput(request);
+        for (IServerPlugin<Object, Object> plugin : allPlugins) {
             String tag = plugin.onSetupSyncTagToHandle();
-            Map<String, String> tagParam = paramMap.get(tag);
-            if (null == tagParam) {
+            String tagInputJson = inputMap.get(tag);
+            if (null == tagInputJson) {
                 continue;
             }
-            Map<String, String> tmpResult = new HashMap<>();
-            plugin.onHandleSync(tagParam, tmpResult);
-            tmpResult.forEach((k, v) -> result.put(TagUtils.addTag(tag, k), v));
+            try {
+                Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
+                plugin.onHandleSync(GSON.fromJson(tagInputJson, plugin.onGetInputClass()), tmpOutput);
+                output.put(tag, GSON.toJson(tmpOutput));
+            } catch (Exception e) {
+                throw new SyncException(e.getMessage());
+            }
         }
-        return result;
+        return output;
     }
 
     // ***********************内部方法****************************
 
-    private Map<String, String> getParam(HttpServletRequest request) {
-        Map<String, String> param = new HashMap<>();
+    private Map<String, String> getInput(HttpServletRequest request) {
+        Map<String, String> input = new HashMap<>();
         Enumeration<String> names = request.getParameterNames();
         while (names.hasMoreElements()) {
             String name = names.nextElement();
-            param.put(name, request.getParameter(name));
+            input.put(name, request.getParameter(name));
         }
-        return param;
+        return input;
     }
 
 }

@@ -5,9 +5,7 @@ import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.api.IServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
-import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
-import com.soybeany.rpc.core.model.MethodInfo;
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.*;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.picker.DataPicker;
@@ -40,7 +38,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  */
 @Log
 @AllArgsConstructor
-public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> implements IServiceProxy {
+public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, RpcConsumerOutput> implements IServiceProxy {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
 
@@ -66,29 +64,39 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
     private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
 
     @Override
-    public void onSendSync(Map<String, String> result) {
-        super.onSendSync(result);
-        result.put(KEY_ACTION, ACTION_GET_PROVIDERS);
-        result.put(KEY_SERVICE_ID_ARR, GSON.toJson(serviceIdSet));
+    public String onSetupSyncTagToHandle() {
+        return TAG_C;
     }
 
     @Override
-    public synchronized void onHandleSync(Map<String, String> param) {
-        Map<String, ServerInfo[]> map = GSON.fromJson(param.get(KEY_PROVIDER_MAP), PROVIDERS_TYPE);
+    public Class<RpcConsumerInput> onGetInputClass() {
+        return RpcConsumerInput.class;
+    }
+
+    @Override
+    public Class<RpcConsumerOutput> onGetOutputClass() {
+        return RpcConsumerOutput.class;
+    }
+
+    @Override
+    public void onHandleOutput(RpcConsumerOutput output) {
+        super.onHandleOutput(output);
+        output.setSystem(system);
+        output.setServiceIds(serviceIdSet);
+    }
+
+    @Override
+    public void onHandleInput(RpcConsumerInput input) {
+        super.onHandleInput(input);
         Set<String> keys = new HashSet<>(pickers.keySet());
         // 更新数据
-        map.forEach((id, v) -> {
+        input.getProviderMap().forEach((id, v) -> {
             keys.remove(id);
             DataPicker<ServerInfo> picker = pickers.computeIfAbsent(id, dataPickerProvider);
-            picker.set(v);
+            picker.set(v.toArray(new ServerInfo[0]));
         });
         // 移除已失效条目
         keys.forEach(pickers::remove);
-    }
-
-    @Override
-    public String onSetupSyncTagToHandle() {
-        return TAG;
     }
 
     @SuppressWarnings("unchecked")
@@ -109,7 +117,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
     }
 
     @Override
-    public RpcConsumerPlugin init() {
+    public void init() {
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
@@ -121,7 +129,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
             }
             //MetadataReader 的工厂类
             MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
-            //noinspection RedundantOperationOnEmptyContainer
             for (Resource resource : resources) {
                 //用于读取类信息
                 MetadataReader reader = readerFactory.getMetadataReader(resource);
@@ -136,12 +143,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerPlugin> im
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
         }
-        return this;
-    }
-
-    @Override
-    protected String onSetupSystem() {
-        return system;
     }
 
     @Override

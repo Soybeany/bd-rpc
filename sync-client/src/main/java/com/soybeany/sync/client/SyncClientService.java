@@ -6,14 +6,18 @@ import com.soybeany.sync.core.api.ISyncClientConfig;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.RequestUtils;
-import com.soybeany.sync.core.util.TagUtils;
 import lombok.extern.java.Log;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
 /**
  * @author Soybeany
@@ -28,11 +32,11 @@ public class SyncClientService {
     }.getType();
 
     private final ISyncClientConfig config;
-    private final List<IClientPlugin> allPlugins;
+    private final List<IClientPlugin<Object, Object>> allPlugins;
 
     private Boolean started;
 
-    public SyncClientService(ISyncClientConfig config, IClientPlugin... plugins) {
+    public SyncClientService(ISyncClientConfig config, IClientPlugin<Object, Object>[] plugins) {
         this.config = config;
         this.allPlugins = Arrays.asList(plugins);
         Collections.sort(allPlugins);
@@ -69,11 +73,16 @@ public class SyncClientService {
 
     private void sendSync() {
         RequestUtils.Config rConfig = new RequestUtils.Config();
-        for (IClientPlugin plugin : allPlugins) {
-            Map<String, String> tmpParam = new HashMap<>();
-            plugin.onSendSync(tmpParam);
-            String tag = plugin.onSetupSyncTagToHandle();
-            tmpParam.forEach((k, v) -> rConfig.getParams().put(TagUtils.addTag(tag, k), v));
+        for (IClientPlugin<Object, Object> plugin : allPlugins) {
+            try {
+                Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
+                plugin.onHandleOutput(tmpOutput);
+                rConfig.getParams().put(plugin.onSetupSyncTagToHandle(), GSON.toJson(tmpOutput));
+            } catch (Exception e) {
+                String message = e.getMessage();
+                log.warning(message);
+                throw new RuntimeException(message);
+            }
         }
         SyncDTO dto;
         try {
@@ -87,14 +96,13 @@ public class SyncClientService {
             return;
         }
         Map<String, String> result = dto.getData(type);
-        Map<String, Map<String, String>> paramMap = TagUtils.split(result);
-        for (IClientPlugin plugin : allPlugins) {
+        for (IClientPlugin<Object, Object> plugin : allPlugins) {
             String tag = plugin.onSetupSyncTagToHandle();
-            Map<String, String> tagResult = paramMap.get(tag);
-            if (null == tagResult) {
+            String tagInputJson = result.get(tag);
+            if (null == tagInputJson) {
                 continue;
             }
-            plugin.onHandleSync(tagResult);
+            plugin.onHandleInput(GSON.fromJson(tagInputJson, plugin.onGetInputClass()));
         }
     }
 

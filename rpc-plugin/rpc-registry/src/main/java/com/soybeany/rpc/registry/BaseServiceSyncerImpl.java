@@ -12,8 +12,8 @@ import java.util.List;
 public abstract class BaseServiceSyncerImpl extends BaseServerServiceImpl {
 
     @Override
-    protected void onSetupPlugins(List<IServerPlugin> plugins) {
-        plugins.add(new RpcRegistryPlugin(onSetupAcceptableSystems(), this::onGetNewServiceManager));
+    protected void onSetupPlugins(List<IServerPlugin<?, ?>> plugins) {
+        plugins.addAll(RpcRegistryPlugin.get(onSetupAcceptableSystems(), this::onGetNewServiceManager));
     }
 
     // ***********************子类实现****************************

@@ -11,15 +11,16 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseClientServiceImpl extends BaseServiceImpl<IClientPlugin> implements ISyncClientConfig {
+public abstract class BaseClientServiceImpl extends BaseServiceImpl<IClientPlugin<?, ?>> implements ISyncClientConfig {
 
     private SyncClientService service;
 
     @Override
     protected void onStart() {
         super.onStart();
-        List<IClientPlugin> plugins = new ArrayList<>();
+        List<IClientPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
+        //noinspection unchecked
         service = new SyncClientService(this, plugins.toArray(new IClientPlugin[0]));
         service.start();
     }

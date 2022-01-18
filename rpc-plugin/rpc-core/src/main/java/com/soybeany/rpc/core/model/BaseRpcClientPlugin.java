@@ -5,20 +5,11 @@ import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.sync.core.api.IClientPlugin;
 import org.springframework.lang.NonNull;
 
-import java.util.Map;
-
-import static com.soybeany.rpc.core.model.BdRpcConstants.KEY_SYSTEM;
-
 /**
  * @author Soybeany
  * @date 2021/10/29
  */
-public abstract class BaseRpcClientPlugin<T> implements IClientPlugin {
-
-    @Override
-    public void onSendSync(Map<String, String> result) {
-        result.put(KEY_SYSTEM, onSetupSystem());
-    }
+public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugin<Input, Output> {
 
     protected static String getId(BdRpc annotation) {
         return annotation.serviceId() + "-" + annotation.version();
@@ -32,9 +23,7 @@ public abstract class BaseRpcClientPlugin<T> implements IClientPlugin {
 
     // ***********************子类实现****************************
 
-    public abstract T init();
-
-    protected abstract String onSetupSystem();
+    public abstract void init();
 
     /**
      * 设置待扫描的路径

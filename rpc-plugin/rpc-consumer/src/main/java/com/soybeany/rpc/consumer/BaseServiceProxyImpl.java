@@ -29,12 +29,13 @@ public abstract class BaseServiceProxyImpl extends BaseClientServiceImpl impleme
     }
 
     @Override
-    protected void onSetupPlugins(List<IClientPlugin> plugins) {
+    protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         plugin = new RpcConsumerPlugin(onSetupSystem(), appContext,
                 this::onGetNewServerPicker,
                 this::onSetupTimeoutInSec,
                 onSetupPkgPathToScan()
-        ).init();
+        );
+        plugin.init();
         plugins.add(plugin);
     }
 

@@ -3,9 +3,7 @@ package com.soybeany.rpc.provider;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.api.IServiceInvoker;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.BaseRpcClientPlugin;
-import com.soybeany.rpc.core.model.MethodInfo;
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.*;
 import com.soybeany.rpc.core.utl.ReflectUtils;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.util.file.BdFileUtils;
@@ -28,7 +26,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/27
  */
 @AllArgsConstructor
-public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> implements IServiceInvoker {
+public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, RpcProviderOutput> implements IServiceInvoker {
 
     private final Map<String, Object> serviceMap = new HashMap<>();
     private final String authorizationToken = BdFileUtils.getUuid();
@@ -40,21 +38,23 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> im
     private final String[] pkgToScan;
 
     @Override
-    public void onSendSync(Map<String, String> result) {
-        super.onSendSync(result);
-        result.put(KEY_ACTION, ACTION_REGISTER_PROVIDERS);
-        result.put(KEY_PROVIDER_INFO, GSON.toJson(serverInfo));
-        result.put(KEY_SERVICE_ID_ARR, GSON.toJson(serviceMap.keySet()));
+    public String onSetupSyncTagToHandle() {
+        return TAG_P;
     }
 
     @Override
-    public String onSetupSyncTagToHandle() {
-        return TAG;
+    public Class<RpcProviderInput> onGetInputClass() {
+        return RpcProviderInput.class;
+    }
+
+    @Override
+    public Class<RpcProviderOutput> onGetOutputClass() {
+        return RpcProviderOutput.class;
     }
 
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     @Override
-    public RpcProviderPlugin init() {
+    public void init() {
         // 配置服务器信息
         serverInfo.setInvokeUrl(invokeUrl);
         serverInfo.setAuthorization(authorizationToken);
@@ -68,12 +68,14 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderPlugin> im
                 }
             }
         }).start();
-        return this;
     }
 
     @Override
-    protected String onSetupSystem() {
-        return system;
+    public void onHandleOutput(RpcProviderOutput output) {
+        super.onHandleOutput(output);
+        output.setSystem(system);
+        output.setServerInfo(serverInfo);
+        output.setServiceIds(serviceMap.keySet());
     }
 
     @Override

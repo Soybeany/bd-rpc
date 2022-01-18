@@ -15,7 +15,7 @@ import java.util.Map;
  * @author Soybeany
  * @date 2021/12/17
  */
-public abstract class BaseServerServiceImpl extends BaseServiceImpl<IServerPlugin> implements IServiceSyncer {
+public abstract class BaseServerServiceImpl extends BaseServiceImpl<IServerPlugin<?, ?>> implements IServiceSyncer {
 
     private SyncServerService service;
 
@@ -32,8 +32,9 @@ public abstract class BaseServerServiceImpl extends BaseServiceImpl<IServerPlugi
     @Override
     protected void onStart() {
         super.onStart();
-        List<IServerPlugin> plugins = new ArrayList<>();
+        List<IServerPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
+        //noinspection unchecked
         service = new SyncServerService(plugins.toArray(new IServerPlugin[0]));
     }
 

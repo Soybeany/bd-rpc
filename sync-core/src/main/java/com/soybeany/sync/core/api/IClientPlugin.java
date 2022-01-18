@@ -1,12 +1,10 @@
 package com.soybeany.sync.core.api;
 
-import java.util.Map;
-
 /**
  * @author Soybeany
  * @date 2021/10/27
  */
-public interface IClientPlugin extends IBasePlugin {
+public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output> {
 
     /**
      * 应用启动时的回调
@@ -15,18 +13,19 @@ public interface IClientPlugin extends IBasePlugin {
     }
 
     /**
-     * 触发心跳时的回调
+     * 处理数据输出（触发心跳时的回调）
      *
-     * @param result 待传输至服务器的数据
+     * @param output 待传输至服务器的数据
      */
-    void onSendSync(Map<String, String> result);
+    default void onHandleOutput(Output output) {
+    }
 
     /**
-     * 处理同步的回调(必须先配置{@link #onSetupSyncTagToHandle})
+     * 处理数据输入(必须先配置{@link #onSetupSyncTagToHandle})
      *
-     * @param param 入参
+     * @param input 入参
      */
-    default void onHandleSync(Map<String, String> param) {
+    default void onHandleInput(Input input) {
     }
 
 }
