@@ -2,6 +2,7 @@ package com.soybeany.rpc.demo.consumer;
 
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.model.ProxySelector;
 import com.soybeany.rpc.demo.model.TestParam;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +23,13 @@ public class TestController {
     @Autowired
     private IRpcServiceProxy serviceProxy;
 
-    private ITestService service;
+    private ProxySelector<ITestService> service;
 
     @GetMapping("/test")
-    public String test() {
+    public String test(String tag) {
         try {
             TestParam param = new TestParam(3, "success");
-            return service.getValue(Collections.singletonList(param)).get(0).getValue();
+            return service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
         } catch (RpcPluginException e) {
             String message = e.getMessage();
             log.warning(message);
@@ -41,7 +42,7 @@ public class TestController {
 
     @PostConstruct
     private void onInit() {
-        service = serviceProxy.get(ITestService.class);
+        service = serviceProxy.getSelector(ITestService.class);
     }
 
 }

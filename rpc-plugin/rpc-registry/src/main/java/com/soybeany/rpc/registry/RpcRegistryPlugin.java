@@ -30,6 +30,9 @@ public abstract class RpcRegistryPlugin<Input extends BaseRpcClientOutput, Outpu
 
     private static Map<String, IServiceManager> getServiceManagerMap(String[] acceptableSystems, Function<String, IServiceManager> serviceManagerProvider) {
         Map<String, IServiceManager> map = new HashMap<>();
+        if (null == acceptableSystems) {
+            acceptableSystems = new String[]{null};
+        }
         for (String system : acceptableSystems) {
             map.put(system, serviceManagerProvider.apply(system));
         }

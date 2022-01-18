@@ -10,6 +10,11 @@ import lombok.Data;
 public class ServerInfo {
 
     /**
+     * 服务器标签
+     */
+    String tag;
+
+    /**
      * 调用的url
      */
     private String invokeUrl;

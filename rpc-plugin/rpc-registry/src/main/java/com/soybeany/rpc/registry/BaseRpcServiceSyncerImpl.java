@@ -18,7 +18,9 @@ public abstract class BaseRpcServiceSyncerImpl extends BaseServiceSyncerImpl {
 
     // ***********************子类实现****************************
 
-    protected abstract String[] onSetupAcceptableSystems();
+    protected String[] onSetupAcceptableSystems() {
+        return null;
+    }
 
     protected abstract IServiceManager onGetNewServiceManager(String system);
 

@@ -34,6 +34,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     private final String system;
     private final String version;
+    private final String tag;
     private final ApplicationContext appContext;
     private final String invokeUrl;
     private final String[] pkgToScan;
@@ -57,6 +58,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     @Override
     public void init() {
         // 配置服务器信息
+        serverInfo.setTag(tag);
         serverInfo.setInvokeUrl(invokeUrl);
         serverInfo.setAuthorization(authorizationToken);
         // 扫描
@@ -104,6 +106,9 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     private Object invoke(MethodInfo info) throws Throwable {
         Object obj = serviceMap.get(info.getServiceId());
+        if (null == obj) {
+            throw new RpcPluginException("没有找到指定的服务(" + info.getServiceId() + ")");
+        }
         Method method = info.getMethod(obj);
         try {
             return method.invoke(obj, info.getArgs(method));

@@ -21,8 +21,8 @@ import static com.soybeany.rpc.demo.model.Constants.PATH_RPC;
 public class RpcServiceInvokeImpl extends BaseRpcServiceInvokeImpl {
 
     @Override
-    public String onSetupSystem() {
-        return null;
+    protected String onSetupTag() {
+        return "cz";
     }
 
     @Override

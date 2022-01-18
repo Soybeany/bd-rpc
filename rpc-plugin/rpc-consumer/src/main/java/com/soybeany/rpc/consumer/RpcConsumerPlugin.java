@@ -21,6 +21,7 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -40,6 +41,20 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
 public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, RpcConsumerOutput> implements IRpcServiceProxy {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
+    private static final String TAG_SEPARATOR = ":";
+
+    /**
+     * 已加载的代理（本地/远程）
+     */
+    private final Map<Class<?>, Object> proxies = new HashMap<>();
+
+    /**
+     * 服务器信息提供者的映射
+     */
+    private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
+
+    private final Set<String> serviceIdSet = new HashSet<>();
+    private final String[] md5 = new String[1];
 
     private final String system;
     private final String version;
@@ -47,18 +62,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Function<String, DataPicker<ServerInfo>> dataPickerProvider;
     private final Function<String, Integer> timeoutInSecProvider;
     private final String[] pkgToScan;
-
-    /**
-     * 已加载的代理（本地/远程）
-     */
-    private final Map<Class<?>, Object> proxies = new HashMap<>();
-
-    private final Set<String> serviceIdSet = new HashSet<>();
-
-    /**
-     * 服务器信息提供者的映射
-     */
-    private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
 
     @Override
     public String onSetupSyncTagToHandle() {
@@ -80,17 +83,33 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         super.onHandleOutput(output);
         output.setSystem(system);
         output.setServiceIds(serviceIdSet);
+        output.setMd5(md5[0]);
     }
 
     @Override
     public void onHandleInput(RpcConsumerInput input) {
         super.onHandleInput(input);
+        if (!input.isUpdated()) {
+            return;
+        }
+        md5[0] = input.getMd5();
         Set<String> keys = new HashSet<>(pickers.keySet());
-        // 更新数据
-        input.getProviderMap().forEach((id, v) -> {
-            keys.remove(id);
-            DataPicker<ServerInfo> picker = pickers.computeIfAbsent(id, dataPickerProvider);
-            picker.set(v.toArray(new ServerInfo[0]));
+        Optional.ofNullable(input.getProviderMap()).ifPresent(map -> {
+            // 数据预处理，添加带标签的记录
+            Map<String, Set<ServerInfo>> tmpMap = new HashMap<>();
+            map.forEach((id, v) -> v.forEach(info -> {
+                String newId = getMergedServiceId(info.getTag(), id);
+                if (!newId.equals(id)) {
+                    tmpMap.computeIfAbsent(newId, s -> new HashSet<>()).add(info);
+                }
+            }));
+            map.putAll(tmpMap);
+            // 更新数据
+            map.forEach((id, v) -> {
+                keys.remove(id);
+                DataPicker<ServerInfo> picker = pickers.computeIfAbsent(id, dataPickerProvider);
+                picker.set(v.toArray(new ServerInfo[0]));
+            });
         });
         // 移除已失效条目
         keys.forEach(pickers::remove);
@@ -111,6 +130,11 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         }
         // 没有找到实现类
         throw new RpcPluginException("没有找到指定类(" + interfaceClass + ")的实现");
+    }
+
+    @Override
+    public <T> ProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
+        return new ProxySelector<>(get(interfaceClass));
     }
 
     @Override
@@ -151,11 +175,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Throwable {
         DataPicker<ServerInfo> picker;
+        serviceId = getMergedServiceId(ProxySelector.getAndRemoveTag(), serviceId);
         if (null == (picker = pickers.get(serviceId))) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无serviceId(" + serviceId + ")的服务提供者信息");
         }
         RequestUtils.Config config = new RequestUtils.Config();
-        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(serviceId, method, args)));
+        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(getSplitServiceId(serviceId), method, args)));
         config.setTimeoutInSec(timeoutInSec);
         SyncDTO dto;
         try {
@@ -215,6 +240,15 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         } catch (NoSuchBeanDefinitionException ignore) {
             return null;
         }
+    }
+
+    private String getSplitServiceId(String serviceId) {
+        String[] parts = serviceId.split(TAG_SEPARATOR);
+        return parts.length > 1 ? parts[1] : serviceId;
+    }
+
+    private String getMergedServiceId(String tag, String serviceId) {
+        return StringUtils.hasText(tag) ? (tag + TAG_SEPARATOR + serviceId) : serviceId;
     }
 
 }

@@ -2,7 +2,6 @@ package com.soybeany.rpc.core.model;
 
 import lombok.Data;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +12,8 @@ import java.util.Set;
 @Data
 public class RpcConsumerInput {
 
-    private final Map<String, Set<ServerInfo>> providerMap = new HashMap<>();
+    private boolean updated;
+    private String md5;
+    private Map<String, Set<ServerInfo>> providerMap;
 
 }

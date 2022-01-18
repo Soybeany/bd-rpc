@@ -24,11 +24,6 @@ public class RpcServiceProxyImpl extends BaseRpcServiceProxyImpl {
     }
 
     @Override
-    public String onSetupSystem() {
-        return null;
-    }
-
-    @Override
     public String[] onSetupPkgPathToScan() {
         return new String[]{"com.soybeany.rpc.demo.consumer"};
     }

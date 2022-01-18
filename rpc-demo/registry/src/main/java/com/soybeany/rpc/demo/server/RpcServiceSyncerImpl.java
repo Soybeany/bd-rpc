@@ -18,11 +18,6 @@ public class RpcServiceSyncerImpl extends BaseRpcServiceSyncerImpl {
     private ServiceManagerAutoCleanImpl serviceManager;
 
     @Override
-    protected String[] onSetupAcceptableSystems() {
-        return new String[]{null};
-    }
-
-    @Override
     protected IServiceManager onGetNewServiceManager(String system) {
         return serviceManager = new ServiceManagerAutoCleanImpl();
     }

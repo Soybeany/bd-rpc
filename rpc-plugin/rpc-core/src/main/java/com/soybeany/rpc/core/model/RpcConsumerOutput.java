@@ -14,5 +14,6 @@ import java.util.Set;
 public class RpcConsumerOutput extends BaseRpcClientOutput {
 
     private Set<String> serviceIds;
+    private String md5;
 
 }

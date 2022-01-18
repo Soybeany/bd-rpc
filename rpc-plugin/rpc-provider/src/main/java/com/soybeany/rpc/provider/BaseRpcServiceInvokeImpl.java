@@ -15,8 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
- * todo 修改为由IServiceInvoker提供
- *
  * @author Soybeany
  * @date 2021/12/16
  */
@@ -35,15 +33,24 @@ public abstract class BaseRpcServiceInvokeImpl extends BaseClientServiceImpl imp
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         String invokeUrl = onSetupInvokeUrl(NetUtils.getLocalIpAddress());
-        plugin = new RpcProviderPlugin(onSetupSystem(), onSetupVersion(), appContext, invokeUrl, onSetupPkgPathToScan());
+        plugin = new RpcProviderPlugin(onSetupSystem(), onSetupVersion(), onSetupTag(), appContext, invokeUrl, onSetupPkgPathToScan());
         plugin.init();
         plugins.add(plugin);
     }
 
     // ***********************子类实现****************************
 
+    @Override
+    public String onSetupSystem() {
+        return null;
+    }
+
     protected String onSetupVersion() {
         return "0";
+    }
+
+    protected String onSetupTag() {
+        return null;
     }
 
     @NonNull

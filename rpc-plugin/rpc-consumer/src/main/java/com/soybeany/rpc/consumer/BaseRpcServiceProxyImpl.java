@@ -3,6 +3,7 @@ package com.soybeany.rpc.consumer;
 import com.soybeany.rpc.core.api.IRpcClientService;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.model.ProxySelector;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.sync.client.BaseClientServiceImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
@@ -29,6 +30,11 @@ public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl impl
     }
 
     @Override
+    public <T> ProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
+        return plugin.getSelector(interfaceClass);
+    }
+
+    @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         plugin = new RpcConsumerPlugin(onSetupSystem(), onSetupVersion(), appContext,
                 this::onGetNewServerPicker,
@@ -40,6 +46,11 @@ public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl impl
     }
 
     // ***********************子类实现****************************
+
+    @Override
+    public String onSetupSystem() {
+        return null;
+    }
 
     protected String onSetupVersion() {
         return "0";
