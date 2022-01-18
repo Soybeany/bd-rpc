@@ -1,6 +1,6 @@
 package com.soybeany.rpc.demo.provider;
 
-import com.soybeany.rpc.core.api.IServiceInvoker;
+import com.soybeany.rpc.core.api.IRpcServiceInvoker;
 import com.soybeany.sync.core.model.SyncDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +19,7 @@ import static com.soybeany.rpc.demo.model.Constants.PATH_RPC;
 class ProviderController {
 
     @Autowired
-    private IServiceInvoker invoker;
+    private IRpcServiceInvoker invoker;
 
     @PostMapping(PATH_RPC)
     SyncDTO bdRpc(HttpServletRequest request, HttpServletResponse response) {

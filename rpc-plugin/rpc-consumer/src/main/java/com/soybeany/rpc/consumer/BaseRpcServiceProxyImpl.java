@@ -1,7 +1,7 @@
 package com.soybeany.rpc.consumer;
 
 import com.soybeany.rpc.core.api.IRpcClientService;
-import com.soybeany.rpc.core.api.IServiceProxy;
+import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.sync.client.BaseClientServiceImpl;
@@ -16,7 +16,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseServiceProxyImpl extends BaseClientServiceImpl implements IRpcClientService, IServiceProxy {
+public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl implements IRpcClientService, IRpcServiceProxy {
 
     @Autowired
     private ApplicationContext appContext;

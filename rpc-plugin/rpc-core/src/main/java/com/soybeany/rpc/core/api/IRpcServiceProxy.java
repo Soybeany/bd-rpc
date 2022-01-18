@@ -6,7 +6,7 @@ import com.soybeany.rpc.core.exception.RpcPluginException;
  * @author Soybeany
  * @date 2021/10/29
  */
-public interface IServiceProxy {
+public interface IRpcServiceProxy {
 
     /**
      * 创建指定接口的代理实例

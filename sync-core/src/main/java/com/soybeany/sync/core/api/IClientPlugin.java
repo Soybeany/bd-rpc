@@ -13,6 +13,12 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
     }
 
     /**
+     * 应用关闭时的回调
+     */
+    default void onShutdown() {
+    }
+
+    /**
      * 处理数据输出（触发心跳时的回调）
      *
      * @param output 待传输至服务器的数据

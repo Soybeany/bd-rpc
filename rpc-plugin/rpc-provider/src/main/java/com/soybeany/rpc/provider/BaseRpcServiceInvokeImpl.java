@@ -1,7 +1,7 @@
 package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.api.IRpcClientService;
-import com.soybeany.rpc.core.api.IServiceInvoker;
+import com.soybeany.rpc.core.api.IRpcServiceInvoker;
 import com.soybeany.sync.client.BaseClientServiceImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.model.SyncDTO;
@@ -20,7 +20,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseServiceInvokeImpl extends BaseClientServiceImpl implements IRpcClientService, IServiceInvoker {
+public abstract class BaseRpcServiceInvokeImpl extends BaseClientServiceImpl implements IRpcClientService, IRpcServiceInvoker {
 
     @Autowired
     private ApplicationContext appContext;

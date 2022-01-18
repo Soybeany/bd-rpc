@@ -1,7 +1,7 @@
 package com.soybeany.rpc.registry;
 
 import com.soybeany.sync.core.api.IServerPlugin;
-import com.soybeany.sync.server.BaseServerServiceImpl;
+import com.soybeany.sync.server.BaseServiceSyncerImpl;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseServiceSyncerImpl extends BaseServerServiceImpl {
+public abstract class BaseRpcServiceSyncerImpl extends BaseServiceSyncerImpl {
 
     @Override
     protected void onSetupPlugins(List<IServerPlugin<?, ?>> plugins) {

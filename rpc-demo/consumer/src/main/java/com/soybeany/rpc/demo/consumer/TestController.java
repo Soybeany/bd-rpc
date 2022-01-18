@@ -1,6 +1,6 @@
 package com.soybeany.rpc.demo.consumer;
 
-import com.soybeany.rpc.core.api.IServiceProxy;
+import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.demo.model.TestParam;
 import lombok.extern.java.Log;
@@ -20,7 +20,7 @@ import java.util.Collections;
 public class TestController {
 
     @Autowired
-    private IServiceProxy serviceProxy;
+    private IRpcServiceProxy serviceProxy;
 
     private ITestService service;
 

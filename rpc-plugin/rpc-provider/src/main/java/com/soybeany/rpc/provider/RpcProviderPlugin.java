@@ -1,7 +1,7 @@
 package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.api.IServiceInvoker;
+import com.soybeany.rpc.core.api.IRpcServiceInvoker;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.*;
 import com.soybeany.rpc.core.utl.ReflectUtils;
@@ -26,7 +26,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/27
  */
 @AllArgsConstructor
-public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, RpcProviderOutput> implements IServiceInvoker {
+public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, RpcProviderOutput> implements IRpcServiceInvoker {
 
     private final Map<String, Object> serviceMap = new HashMap<>();
     private final String authorizationToken = BdFileUtils.getUuid();

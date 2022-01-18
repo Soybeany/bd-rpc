@@ -68,6 +68,7 @@ public class SyncClientService {
     }
 
     private void onStop() {
+        service.submit(() -> allPlugins.forEach(IClientPlugin::onShutdown));
         service.shutdown();
     }
 

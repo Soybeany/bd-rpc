@@ -15,7 +15,7 @@ import java.util.Map;
  * @author Soybeany
  * @date 2021/12/17
  */
-public abstract class BaseServerServiceImpl extends BaseServiceImpl<IServerPlugin<?, ?>> implements IServiceSyncer {
+public abstract class BaseServiceSyncerImpl extends BaseServiceImpl<IServerPlugin<?, ?>> implements IServiceSyncer {
 
     private SyncServerService service;
 

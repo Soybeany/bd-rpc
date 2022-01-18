@@ -1,8 +1,7 @@
 package com.soybeany.rpc.consumer;
 
-import com.google.gson.reflect.TypeToken;
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.api.IServiceProxy;
+import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.core.model.*;
@@ -25,7 +24,6 @@ import org.springframework.util.ClassUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
 
@@ -38,12 +36,9 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  */
 @Log
 @AllArgsConstructor
-public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, RpcConsumerOutput> implements IServiceProxy {
+public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, RpcConsumerOutput> implements IRpcServiceProxy {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
-
-    private static final Type PROVIDERS_TYPE = new TypeToken<Map<String, ServerInfo[]>>() {
-    }.getType();
 
     private final String system;
     private final ApplicationContext appContext;
