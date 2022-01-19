@@ -16,8 +16,6 @@ public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugi
 
     // ***********************子类实现****************************
 
-    public abstract void init();
-
     /**
      * 设置待扫描的路径
      *

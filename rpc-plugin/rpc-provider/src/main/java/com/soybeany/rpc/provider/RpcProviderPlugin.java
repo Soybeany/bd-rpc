@@ -56,7 +56,8 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     @Override
-    public void init() {
+    public void onStartup() {
+        super.onStartup();
         // 配置服务器信息
         serverInfo.setTag(tag);
         serverInfo.setInvokeUrl(invokeUrl);

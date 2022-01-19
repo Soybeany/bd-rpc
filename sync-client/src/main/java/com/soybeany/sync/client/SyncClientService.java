@@ -62,13 +62,13 @@ public class SyncClientService {
 
     private void onStart() {
         // 启动回调
-        service.submit(() -> allPlugins.forEach(IClientPlugin::onStartup));
+        allPlugins.forEach(IClientPlugin::onStartup);
         // 执行定时任务
         service.scheduleWithFixedDelay(this::sendSync, 0, config.onSetupSyncIntervalInSec(), TimeUnit.SECONDS);
     }
 
     private void onStop() {
-        service.submit(() -> allPlugins.forEach(IClientPlugin::onShutdown));
+        allPlugins.forEach(IClientPlugin::onShutdown);
         service.shutdown();
     }
 

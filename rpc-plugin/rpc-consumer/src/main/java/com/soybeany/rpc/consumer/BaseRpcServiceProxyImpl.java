@@ -41,7 +41,6 @@ public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl impl
                 this::onSetupTimeoutInSec,
                 onSetupPkgPathToScan()
         );
-        plugin.init();
         plugins.add(plugin);
     }
 

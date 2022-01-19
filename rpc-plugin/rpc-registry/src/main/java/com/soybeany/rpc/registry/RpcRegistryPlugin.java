@@ -23,9 +23,10 @@ public abstract class RpcRegistryPlugin<Input extends BaseRpcClientOutput, Outpu
 
     public static List<IServerPlugin<?, ?>> get(String[] acceptableSystems, Function<String, IServiceManager> serviceManagerProvider) {
         Map<String, IServiceManager> serviceManagerMap = getServiceManagerMap(acceptableSystems, serviceManagerProvider);
-        RpcRegistryPlugin<?, ?> pluginC = new RpcRegistryPluginC(serviceManagerMap);
-        RpcRegistryPlugin<?, ?> pluginP = new RpcRegistryPluginP(serviceManagerMap);
-        return Arrays.asList(pluginC, pluginP);
+        return Arrays.asList(
+                new RpcRegistryPluginC(serviceManagerMap),
+                new RpcRegistryPluginP(serviceManagerMap)
+        );
     }
 
     private static Map<String, IServiceManager> getServiceManagerMap(String[] acceptableSystems, Function<String, IServiceManager> serviceManagerProvider) {

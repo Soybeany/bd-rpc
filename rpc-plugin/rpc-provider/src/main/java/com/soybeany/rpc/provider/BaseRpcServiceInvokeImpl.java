@@ -34,7 +34,6 @@ public abstract class BaseRpcServiceInvokeImpl extends BaseClientServiceImpl imp
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         String invokeUrl = onSetupInvokeUrl(NetUtils.getLocalIpAddress());
         plugin = new RpcProviderPlugin(onSetupSystem(), onSetupVersion(), onSetupTag(), appContext, invokeUrl, onSetupPkgPathToScan());
-        plugin.init();
         plugins.add(plugin);
     }
 

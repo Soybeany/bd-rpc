@@ -79,6 +79,36 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
+    public void onStartup() {
+        super.onStartup();
+        //spring工具类，可以获取指定路径下的全部类
+        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+        try {
+            List<Resource> resources = new ArrayList<>();
+            for (String path : onSetupPkgPathToScan()) {
+                String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(path) + RESOURCE_PATTERN;
+                Resource[] partResources = resourcePatternResolver.getResources(pattern);
+                Collections.addAll(resources, partResources);
+            }
+            //MetadataReader 的工厂类
+            MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
+            for (Resource resource : resources) {
+                //用于读取类信息
+                MetadataReader reader = readerFactory.getMetadataReader(resource);
+                //扫描到的class
+                String classname = reader.getClassMetadata().getClassName();
+                Class<?> clazz = Class.forName(classname);
+                //处理指定的注解
+                Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
+                        .filter(bdRpc -> clazz.isInterface())
+                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(version, bdRpc), bdRpc.timeoutInSec()));
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
+        }
+    }
+
+    @Override
     public void onHandleOutput(RpcConsumerOutput output) {
         super.onHandleOutput(output);
         output.setSystem(system);
@@ -135,35 +165,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     @Override
     public <T> ProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
         return new ProxySelector<>(get(interfaceClass));
-    }
-
-    @Override
-    public void init() {
-        //spring工具类，可以获取指定路径下的全部类
-        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-        try {
-            List<Resource> resources = new ArrayList<>();
-            for (String path : onSetupPkgPathToScan()) {
-                String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(path) + RESOURCE_PATTERN;
-                Resource[] partResources = resourcePatternResolver.getResources(pattern);
-                Collections.addAll(resources, partResources);
-            }
-            //MetadataReader 的工厂类
-            MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
-            for (Resource resource : resources) {
-                //用于读取类信息
-                MetadataReader reader = readerFactory.getMetadataReader(resource);
-                //扫描到的class
-                String classname = reader.getClassMetadata().getClassName();
-                Class<?> clazz = Class.forName(classname);
-                //处理指定的注解
-                Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
-                        .filter(bdRpc -> clazz.isInterface())
-                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(version, bdRpc), bdRpc.timeoutInSec()));
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
-        }
     }
 
     @Override
