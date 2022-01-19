@@ -22,7 +22,16 @@ import java.util.regex.Pattern;
 public class ReverseProxyUtils {
 
     private static final OkHttpClient CLIENT = new OkHttpClient();
-    private static final Pattern PATH_PATTERN = Pattern.compile("(/.+)(/.+)");
+    private static final Pattern PATH_PATTERN = Pattern.compile("((?:/.+?){1})(/.+)");
+
+    public static void main(String[] args) {
+        Pattern pattern = Pattern.compile("((?:/.+?){0})(/.+)");
+        Matcher matcher = pattern.matcher("/dsf/er/fsdf/rer");
+        if (matcher.find()){
+            System.out.println(matcher.group(1));
+            System.out.println(matcher.group(2));
+        }
+    }
 
     public static void start(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String uri = request.getRequestURI();

@@ -13,10 +13,10 @@
         <module>sync-core</module>
         <module>sync-server</module>
         <module>sync-client</module>
-        <module>rpc-demo</module>
         <module>rpc-plugin</module>
         <module>mq-plugin</module>
         <module>api-plugin</module>
+        <module>all-demo</module>
     </modules>
 
     <properties>
