@@ -1,8 +1,7 @@
 package com.soybeany.mq.producer;
 
-import com.soybeany.mq.core.api.IMqMsgAsyncSendCallback;
+import com.soybeany.mq.core.api.IMqMsgSendCallback;
 import com.soybeany.mq.core.api.IMqMsgSender;
-import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.sync.client.BaseClientServiceImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
@@ -23,12 +22,7 @@ public abstract class BaseMqMsgSenderImpl extends BaseClientServiceImpl implemen
     }
 
     @Override
-    public void syncSend(String topic, MqProducerMsg msg) throws MqPluginException {
-        plugin.syncSend(topic, msg);
-    }
-
-    @Override
-    public void asyncSend(String topic, MqProducerMsg msg, IMqMsgAsyncSendCallback callback) {
-        plugin.asyncSend(topic, msg, callback);
+    public void send(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
+        plugin.send(topic, msg, callback);
     }
 }

@@ -35,7 +35,7 @@ public class TestController {
         try {
             TestParam param = new TestParam(3, "success");
             String value = service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
-            mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(10), value));
+            mqMsgSender.send(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value), null);
             return value;
         } catch (RpcPluginException e) {
             String message = e.getMessage();

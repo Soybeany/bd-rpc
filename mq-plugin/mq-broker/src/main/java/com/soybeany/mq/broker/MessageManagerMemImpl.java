@@ -34,7 +34,7 @@ public class MessageManagerMemImpl implements IMessageManager, IAutoCleaner {
         map.forEach((topic, messages) -> {
             TreeMap<Long, MqProducerMsg> treeMap = msgMap.computeIfAbsent(topic, t -> new TreeMap<>());
             messages.forEach(msg -> {
-                long stamp = Optional.ofNullable(stampMap.get(topic)).orElse(-1L) + 1;
+                long stamp = Optional.ofNullable(stampMap.get(topic)).orElse(0L) + 1;
                 stampMap.put(topic, stamp);
                 treeMap.put(stamp, msg);
             });

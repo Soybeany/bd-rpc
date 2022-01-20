@@ -7,7 +7,7 @@ import com.soybeany.mq.core.model.MqProducerInput;
  * @author Soybeany
  * @date 2022/1/20
  */
-public interface IMqMsgAsyncSendCallback {
+public interface IMqMsgSendCallback {
 
     void onFinish(MqProducerInput input) throws MqPluginException;
 
