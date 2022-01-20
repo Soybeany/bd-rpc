@@ -6,7 +6,9 @@ import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.core.model.*;
+import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.exception.SyncRequestException;
+import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.util.RequestUtils;
@@ -80,8 +82,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
-    public void onStartup(int syncIntervalInSec) {
-        super.onStartup(syncIntervalInSec);
+    public void onStartup(SyncClientInfo info) {
+        super.onStartup(info);
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
@@ -110,16 +112,16 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
-    public synchronized void onHandleOutput(String uid, RpcConsumerOutput output) throws Exception {
-        super.onHandleOutput(uid, output);
+    public synchronized boolean onBeforeSync(String uid, RpcConsumerOutput output) throws Exception {
         output.setSystem(system);
         output.setServiceIds(serviceIdSet);
         output.setMd5(md5);
+        return super.onBeforeSync(uid, output);
     }
 
     @Override
-    public synchronized void onHandleInput(String uid, RpcConsumerInput input) throws Exception {
-        super.onHandleInput(uid, input);
+    public synchronized void onAfterSync(String uid, RpcConsumerInput input) throws Exception {
+        super.onAfterSync(uid, input);
         if (!input.isUpdated()) {
             return;
         }

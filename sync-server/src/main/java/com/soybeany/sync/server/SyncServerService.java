@@ -1,5 +1,6 @@
 package com.soybeany.sync.server;
 
+import com.soybeany.sync.core.api.IBasePlugin;
 import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.exception.SyncException;
 
@@ -17,7 +18,8 @@ public class SyncServerService {
     private final List<IServerPlugin<Object, Object>> allPlugins;
 
     public SyncServerService(IServerPlugin<Object, Object>[] plugins) {
-        this.allPlugins = Arrays.asList(plugins);
+        allPlugins = Arrays.asList(plugins);
+        IBasePlugin.checkPlugins(allPlugins);
         Collections.sort(allPlugins);
     }
 

@@ -10,6 +10,7 @@ import com.soybeany.mq.core.model.MqProducerInput;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.core.model.MqProducerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
+import com.soybeany.sync.core.model.SyncClientInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -23,12 +24,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProducerOutput>, IMqMsgSender {
 
-    private static final int DEFAULT_TIMEOUT = 300;
+    private static final int DEFAULT_AWAIT_TIMEOUT_IN_SEC = 300;
 
     private final Map<String, List<MqProducerMsg>> msgBuffer = new HashMap<>();
     private final Set<IMqMsgAsyncSendCallback> callbackBuffer = new HashSet<>();
     private final Map<String, Archive> archiveMap = new HashMap<>();
-    private int syncIntervalInSec = DEFAULT_TIMEOUT;
+    private int awaitTimeoutInSec = DEFAULT_AWAIT_TIMEOUT_IN_SEC;
     private MqProducerInput lastInput;
     private CountDownLatch syncLatch = getNewSyncLatch();
     private CountDownLatch callbackLatch;
@@ -50,14 +51,17 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
     }
 
     @Override
-    public void onStartup(int syncIntervalInSec) {
-        IClientPlugin.super.onStartup(syncIntervalInSec);
-        this.syncIntervalInSec = syncIntervalInSec;
+    public void onStartup(SyncClientInfo info) {
+        IClientPlugin.super.onStartup(info);
+        awaitTimeoutInSec = info.getSyncIntervalInSec() + info.getSyncTimeout() + 1;
     }
 
     @Override
-    public synchronized void onHandleOutput(String uid, MqProducerOutput output) throws Exception {
-        IClientPlugin.super.onHandleOutput(uid, output);
+    public synchronized boolean onBeforeSync(String uid, MqProducerOutput output) throws Exception {
+        // 当缓冲区没数据时，不需执行同步
+        if (msgBuffer.isEmpty()) {
+            return false;
+        }
         // 处理消息缓冲
         output.getMessages().putAll(msgBuffer);
         msgBuffer.clear();
@@ -67,17 +71,18 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
         callbackBuffer.clear();
         // 使用新的锁
         syncLatch = getNewSyncLatch();
+        return IClientPlugin.super.onBeforeSync(uid, output);
     }
 
     @Override
-    public synchronized void onHandleInput(String uid, MqProducerInput input) throws Exception {
-        IClientPlugin.super.onHandleInput(uid, input);
+    public synchronized void onAfterSync(String uid, MqProducerInput input) throws Exception {
+        IClientPlugin.super.onAfterSync(uid, input);
         handleInput(uid, input);
     }
 
     @Override
-    public synchronized void onHandleException(String uid, Exception e) throws Exception {
-        IClientPlugin.super.onHandleException(uid, e);
+    public synchronized void onSyncException(String uid, Exception e) throws Exception {
+        IClientPlugin.super.onSyncException(uid, e);
         handleInput(uid, new MqProducerInput(false, e.getMessage()));
     }
 
@@ -91,7 +96,7 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
             latch = syncLatch;
         }
         // 等待消息发送
-        awaitLatch("mq消息发送", latch, syncIntervalInSec);
+        awaitLatch("mq消息发送", latch, awaitTimeoutInSec);
         MqProducerInput lastInput = this.lastInput;
         callbackLatch.countDown();
         // 处理消息发送结果

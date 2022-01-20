@@ -5,6 +5,8 @@ import com.soybeany.rpc.core.api.IRpcServiceInvoker;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.*;
 import com.soybeany.rpc.core.utl.ReflectUtils;
+import com.soybeany.sync.core.api.IClientPlugin;
+import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.util.file.BdFileUtils;
 import lombok.AllArgsConstructor;
@@ -56,8 +58,8 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     @Override
-    public void onStartup(int syncIntervalInSec) {
-        super.onStartup(syncIntervalInSec);
+    public void onStartup(SyncClientInfo info) {
+        super.onStartup(info);
         // 配置服务器信息
         serverInfo.setTag(tag);
         serverInfo.setInvokeUrl(invokeUrl);
@@ -75,11 +77,11 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     }
 
     @Override
-    public synchronized void onHandleOutput(String uid, RpcProviderOutput output) throws Exception {
-        super.onHandleOutput(uid, output);
+    public synchronized boolean onBeforeSync(String uid, RpcProviderOutput output) throws Exception {
         output.setSystem(system);
         output.setServerInfo(serverInfo);
         output.setServiceIds(serviceMap.keySet());
+        return super.onBeforeSync(uid, output);
     }
 
     @Override

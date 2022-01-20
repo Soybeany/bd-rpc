@@ -45,14 +45,14 @@ public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsum
     }
 
     @Override
-    public synchronized void onHandleOutput(String uid, MqConsumerOutput output) throws Exception {
-        IClientPlugin.super.onHandleOutput(uid, output);
+    public synchronized boolean onBeforeSync(String uid, MqConsumerOutput output) throws Exception {
         output.getTopics().putAll(topics);
+        return IClientPlugin.super.onBeforeSync(uid, output);
     }
 
     @Override
-    public synchronized void onHandleInput(String uid, MqConsumerInput input) throws Exception {
-        IClientPlugin.super.onHandleInput(uid, input);
+    public synchronized void onAfterSync(String uid, MqConsumerInput input) throws Exception {
+        IClientPlugin.super.onAfterSync(uid, input);
         input.getMessages().forEach((topic, message) -> {
             // 更新topic的戳
             topics.put(topic, message.getStamp());
