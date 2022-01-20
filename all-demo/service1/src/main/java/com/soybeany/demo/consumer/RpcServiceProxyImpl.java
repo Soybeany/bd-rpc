@@ -4,7 +4,7 @@ import com.soybeany.rpc.consumer.BaseRpcServiceProxyImpl;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -14,7 +14,7 @@ import javax.annotation.PreDestroy;
  * @author Soybeany
  * @date 2021/10/28
  */
-@Log
+@Slf4j
 @Component
 public class RpcServiceProxyImpl extends BaseRpcServiceProxyImpl {
 

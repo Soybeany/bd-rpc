@@ -10,8 +10,8 @@ import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.util.RequestUtils;
-import lombok.AllArgsConstructor;
-import lombok.extern.java.Log;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -36,8 +36,8 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2021/10/27
  */
-@Log
-@AllArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, RpcConsumerOutput> implements IRpcServiceProxy {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
@@ -54,7 +54,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
 
     private final Set<String> serviceIdSet = new HashSet<>();
-    private final String[] md5 = new String[1];
 
     private final String system;
     private final String version;
@@ -62,6 +61,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Function<String, DataPicker<ServerInfo>> dataPickerProvider;
     private final Function<String, Integer> timeoutInSecProvider;
     private final String[] pkgToScan;
+
+    private String md5;
 
     @Override
     public String onSetupSyncTagToHandle() {
@@ -79,8 +80,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
-    public void onStartup() {
-        super.onStartup();
+    public void onStartup(int syncIntervalInSec) {
+        super.onStartup(syncIntervalInSec);
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
@@ -109,20 +110,20 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
-    public void onHandleOutput(RpcConsumerOutput output) {
-        super.onHandleOutput(output);
+    public synchronized void onHandleOutput(String uid, RpcConsumerOutput output) throws Exception {
+        super.onHandleOutput(uid, output);
         output.setSystem(system);
         output.setServiceIds(serviceIdSet);
-        output.setMd5(md5[0]);
+        output.setMd5(md5);
     }
 
     @Override
-    public void onHandleInput(RpcConsumerInput input) {
-        super.onHandleInput(input);
+    public synchronized void onHandleInput(String uid, RpcConsumerInput input) throws Exception {
+        super.onHandleInput(uid, input);
         if (!input.isUpdated()) {
             return;
         }
-        md5[0] = input.getMd5();
+        md5 = input.getMd5();
         Set<String> keys = new HashSet<>(pickers.keySet());
         Optional.ofNullable(input.getProviderMap()).ifPresent(map -> {
             // 数据预处理，添加带标签的记录
@@ -197,7 +198,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     @SuppressWarnings("unchecked")
     private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
-        log.warning(errMsg);
+        log.warn(errMsg);
         if (null == fallbackImpl) {
             throw new RpcPluginNoFallbackException(errMsg);
         } else {

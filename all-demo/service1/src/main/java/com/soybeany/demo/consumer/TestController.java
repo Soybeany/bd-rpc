@@ -1,10 +1,10 @@
 package com.soybeany.demo.consumer;
 
+import com.soybeany.demo.model.TestParam;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.ProxySelector;
-import com.soybeany.demo.model.TestParam;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +16,7 @@ import java.util.Collections;
  * @author Soybeany
  * @date 2021/10/30
  */
-@Log
+@Slf4j
 @RestController
 public class TestController {
 
@@ -32,7 +32,7 @@ public class TestController {
             return service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
         } catch (RpcPluginException e) {
             String message = e.getMessage();
-            log.warning(message);
+            log.warn(message);
             return "exception:" + message;
         } catch (Exception e) {
             e.printStackTrace();

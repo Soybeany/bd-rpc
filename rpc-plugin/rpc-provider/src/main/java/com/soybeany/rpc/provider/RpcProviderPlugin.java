@@ -56,8 +56,8 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     @Override
-    public void onStartup() {
-        super.onStartup();
+    public void onStartup(int syncIntervalInSec) {
+        super.onStartup(syncIntervalInSec);
         // 配置服务器信息
         serverInfo.setTag(tag);
         serverInfo.setInvokeUrl(invokeUrl);
@@ -75,8 +75,8 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     }
 
     @Override
-    public void onHandleOutput(RpcProviderOutput output) {
-        super.onHandleOutput(output);
+    public synchronized void onHandleOutput(String uid, RpcProviderOutput output) throws Exception {
+        super.onHandleOutput(uid, output);
         output.setSystem(system);
         output.setServerInfo(serverInfo);
         output.setServiceIds(serviceMap.keySet());

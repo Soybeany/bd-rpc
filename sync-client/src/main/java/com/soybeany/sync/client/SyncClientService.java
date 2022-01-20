@@ -6,7 +6,8 @@ import com.soybeany.sync.core.api.ISyncClientConfig;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.RequestUtils;
-import lombok.extern.java.Log;
+import com.soybeany.util.file.BdFileUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -23,7 +24,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2021/10/27
  */
-@Log
+@Slf4j
 public class SyncClientService {
 
     @SuppressWarnings("AlibabaThreadPoolCreation")
@@ -61,10 +62,11 @@ public class SyncClientService {
     // ***********************内部方法****************************
 
     private void onStart() {
+        int interval = config.onSetupSyncIntervalInSec();
         // 启动回调
-        allPlugins.forEach(IClientPlugin::onStartup);
+        allPlugins.forEach(plugin -> plugin.onStartup(interval));
         // 执行定时任务
-        service.scheduleWithFixedDelay(this::sendSync, 0, config.onSetupSyncIntervalInSec(), TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(this::sendSync, 0, interval, TimeUnit.SECONDS);
     }
 
     private void onStop() {
@@ -73,28 +75,30 @@ public class SyncClientService {
     }
 
     private void sendSync() {
+        String uid = BdFileUtils.getUuid();
+        try {
+            onSendSync(uid);
+        } catch (Exception e) {
+            allPlugins.forEach(plugin -> {
+                try {
+                    plugin.onHandleException(uid, e);
+                } catch (Exception e2) {
+                    log.error(e2.getMessage());
+                }
+            });
+        }
+    }
+
+    private void onSendSync(String uid) throws Exception {
         RequestUtils.Config rConfig = new RequestUtils.Config();
         for (IClientPlugin<Object, Object> plugin : allPlugins) {
-            try {
-                Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
-                plugin.onHandleOutput(tmpOutput);
-                rConfig.getParams().put(plugin.onSetupSyncTagToHandle(), GSON.toJson(tmpOutput));
-            } catch (Exception e) {
-                String message = e.getMessage();
-                log.warning(message);
-                throw new RuntimeException(message);
-            }
+            Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
+            plugin.onHandleOutput(uid, tmpOutput);
+            rConfig.getParams().put(plugin.onSetupSyncTagToHandle(), GSON.toJson(tmpOutput));
         }
-        SyncDTO dto;
-        try {
-            dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
-        } catch (SyncRequestException e) {
-            log.warning(e.getMessage());
-            return;
-        }
+        SyncDTO dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
         if (!dto.getIsNorm()) {
-            log.warning(dto.getParsedErrMsg());
-            return;
+            throw new SyncRequestException(dto.getParsedErrMsg());
         }
         Map<String, String> result = dto.getData(type);
         for (IClientPlugin<Object, Object> plugin : allPlugins) {
@@ -103,7 +107,7 @@ public class SyncClientService {
             if (null == tagInputJson) {
                 continue;
             }
-            plugin.onHandleInput(GSON.fromJson(tagInputJson, plugin.onGetInputClass()));
+            plugin.onHandleInput(uid, GSON.fromJson(tagInputJson, plugin.onGetInputClass()));
         }
     }
 

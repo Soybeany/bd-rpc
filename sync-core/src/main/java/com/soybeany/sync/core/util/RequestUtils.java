@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.picker.DataPicker;
 import lombok.Data;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.function.Function;
  * @author Soybeany
  * @date 2021/10/29
  */
-@Log
+@Slf4j
 public class RequestUtils {
 
     public static final Gson GSON = new Gson();
@@ -37,7 +37,7 @@ public class RequestUtils {
                 String bodyString = getBodyString(url, config);
                 return GSON.fromJson(bodyString, resultType);
             } catch (Exception e) {
-                log.warning("请求“" + url + "”异常(" + e.getMessage() + ")");
+                log.warn("请求“" + url + "”异常(" + e.getMessage() + ")");
                 picker.onUnusable(data);
             }
         }

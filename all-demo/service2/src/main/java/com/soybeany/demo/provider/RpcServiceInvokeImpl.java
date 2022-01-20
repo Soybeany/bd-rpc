@@ -3,7 +3,7 @@ package com.soybeany.demo.provider;
 import com.soybeany.rpc.provider.BaseRpcServiceInvokeImpl;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -16,7 +16,7 @@ import static com.soybeany.demo.model.Constants.PATH_RPC;
  * @author Soybeany
  * @date 2021/10/28
  */
-@Log
+@Slf4j
 @Component
 public class RpcServiceInvokeImpl extends BaseRpcServiceInvokeImpl {
 
