@@ -3,13 +3,16 @@ package com.soybeany.mq.broker;
 import com.soybeany.mq.core.model.BdMqConstants;
 import com.soybeany.mq.core.model.MqProducerInput;
 import com.soybeany.mq.core.model.MqProducerOutput;
-import com.soybeany.sync.core.exception.SyncException;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author Soybeany
  * @date 2022/1/19
  */
+@RequiredArgsConstructor
 class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutput, MqProducerInput> {
+
+    private final IMessageManager messageManager;
 
     @Override
     public String onSetupSyncTagToHandle() {
@@ -27,8 +30,12 @@ class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutput, MqProducerInput> 
     }
 
     @Override
-    public void onHandleSync(MqProducerOutput mqProducerOutput, MqProducerInput mqProducerInput) throws SyncException {
-
+    public void onHandleSync(MqProducerOutput in, MqProducerInput out) {
+        try {
+            messageManager.save(in.getMessages());
+            out.setSuccess(true);
+        } catch (Exception e) {
+            out.setMsg(e.getMessage());
+        }
     }
-
 }

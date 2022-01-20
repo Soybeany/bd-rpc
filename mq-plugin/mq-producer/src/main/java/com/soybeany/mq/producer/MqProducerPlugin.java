@@ -25,7 +25,7 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
 
     private static final int DEFAULT_TIMEOUT = 300;
 
-    private final List<MqProducerMsg> msgBuffer = new ArrayList<>();
+    private final Map<String, List<MqProducerMsg>> msgBuffer = new HashMap<>();
     private final Set<IMqMsgAsyncSendCallback> callbackBuffer = new HashSet<>();
     private final Map<String, Archive> archiveMap = new HashMap<>();
     private int syncIntervalInSec = DEFAULT_TIMEOUT;
@@ -59,7 +59,7 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
     public synchronized void onHandleOutput(String uid, MqProducerOutput output) throws Exception {
         IClientPlugin.super.onHandleOutput(uid, output);
         // 处理消息缓冲
-        output.getMessages().addAll(msgBuffer);
+        output.getMessages().putAll(msgBuffer);
         msgBuffer.clear();
         // 归档
         archiveMap.put(uid, new Archive(syncLatch, syncCount, callbackBuffer));
@@ -82,11 +82,11 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
     }
 
     @Override
-    public void syncSend(MqProducerMsg msg) throws MqPluginException {
+    public void syncSend(String topic, MqProducerMsg msg) throws MqPluginException {
         // 消息写入到缓冲
         CountDownLatch latch;
         synchronized (this) {
-            msgBuffer.add(msg);
+            addMsg(topic, msg);
             syncCount++;
             latch = syncLatch;
         }
@@ -101,8 +101,8 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
     }
 
     @Override
-    public synchronized void asyncSend(MqProducerMsg msg, IMqMsgAsyncSendCallback callback) {
-        msgBuffer.add(msg);
+    public synchronized void asyncSend(String topic, MqProducerMsg msg, IMqMsgAsyncSendCallback callback) {
+        addMsg(topic, msg);
         if (null != callback) {
             callbackBuffer.add(callback);
         }
@@ -139,6 +139,10 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
         } catch (InterruptedException e) {
             throw new MqPluginInterruptException(desc + "等待中断");
         }
+    }
+
+    private void addMsg(String topic, MqProducerMsg msg) {
+        msgBuffer.computeIfAbsent(topic, t -> new ArrayList<>()).add(msg);
     }
 
     private CountDownLatch getNewSyncLatch() {

@@ -1,6 +1,7 @@
 package com.soybeany.rpc.registry;
 
 import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.sync.server.IAutoCleaner;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -8,10 +9,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 需手工调用{@link #startAutoClean}与{@link #shutdownAutoClean}
+ *
  * @author Soybeany
  * @date 2021/11/9
  */
-public class ServiceManagerAutoCleanImpl implements IServiceManager {
+public class ServiceManagerMemImpl implements IServiceManager, IAutoCleaner {
 
     private static final Set<ServerInfo> EMPTY_SET = Collections.unmodifiableSet(new HashSet<>());
     private final Map<String, Map<ServerInfo, Long>> providersMap = new HashMap<>();
@@ -33,6 +36,7 @@ public class ServiceManagerAutoCleanImpl implements IServiceManager {
         }
     }
 
+    @Override
     public void startAutoClean(long validPeriodInSec) {
         long validPeriodInMillis = validPeriodInSec * 1000;
         service.scheduleWithFixedDelay(() -> {
@@ -43,6 +47,7 @@ public class ServiceManagerAutoCleanImpl implements IServiceManager {
         }, validPeriodInMillis, validPeriodInMillis, TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void shutdownAutoClean() {
         service.shutdown();
     }

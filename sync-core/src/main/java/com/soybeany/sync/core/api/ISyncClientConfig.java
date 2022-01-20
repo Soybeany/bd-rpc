@@ -24,6 +24,13 @@ public interface ISyncClientConfig {
      */
     int onSetupSyncIntervalInSec();
 
+    /**
+     * 配置同步的等待超时
+     */
+    default int onSetupSyncTimeoutInSec() {
+        return 10;
+    }
+
     @AllArgsConstructor
     class StdImpl implements ISyncClientConfig {
 

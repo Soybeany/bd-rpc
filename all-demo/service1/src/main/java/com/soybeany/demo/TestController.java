@@ -1,6 +1,8 @@
-package com.soybeany.demo.consumer;
+package com.soybeany.demo;
 
 import com.soybeany.demo.model.TestParam;
+import com.soybeany.mq.core.api.IMqMsgSender;
+import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.ProxySelector;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 /**
@@ -22,14 +25,18 @@ public class TestController {
 
     @Autowired
     private IRpcServiceProxy serviceProxy;
+    @Autowired
+    private IMqMsgSender mqMsgSender;
 
     private ProxySelector<ITestService> service;
 
     @GetMapping("/test")
-    public String test(String tag) {
+    public String test(String tag, String topic) {
         try {
             TestParam param = new TestParam(3, "success");
-            return service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
+            String value = service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
+            mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(10), value));
+            return value;
         } catch (RpcPluginException e) {
             String message = e.getMessage();
             log.warn(message);

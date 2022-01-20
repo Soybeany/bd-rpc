@@ -4,7 +4,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Soybeany
@@ -14,6 +16,6 @@ import java.util.List;
 @Data
 public class MqProducerOutput extends BaseMqClientOutput {
 
-    private final List<MqProducerMsg> messages = new ArrayList<>();
+    private final Map<String, List<MqProducerMsg>> messages = new HashMap<>();
 
 }

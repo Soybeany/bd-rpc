@@ -91,6 +91,7 @@ public class SyncClientService {
 
     private void onSendSync(String uid) throws Exception {
         RequestUtils.Config rConfig = new RequestUtils.Config();
+        rConfig.setTimeoutInSec(config.onSetupSyncTimeoutInSec());
         for (IClientPlugin<Object, Object> plugin : allPlugins) {
             Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
             plugin.onHandleOutput(uid, tmpOutput);

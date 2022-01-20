@@ -19,13 +19,14 @@ public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsum
 
     private final Map<String, List<IMqMsgHandler>> msgHandlerMap = new HashMap<>();
     private final IMqExceptionHandler exceptionHandler;
-    private final Map<String, String> actStamps = new HashMap<>();
+    private final Map<String, Long> topics = new HashMap<>();
 
     public MqConsumerPlugin(List<IMqMsgHandler> msgHandlers, IMqExceptionHandler exceptionHandler) {
         msgHandlers.forEach(handler ->
                 msgHandlerMap.computeIfAbsent(handler.onSetupTopic(), topic -> new ArrayList<>()).add(handler)
         );
         this.exceptionHandler = (null != exceptionHandler ? exceptionHandler : new IMqExceptionHandler.LogImpl());
+        this.msgHandlerMap.keySet().forEach(topic -> topics.put(topic, 0L));
     }
 
     @Override
@@ -46,21 +47,23 @@ public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsum
     @Override
     public synchronized void onHandleOutput(String uid, MqConsumerOutput output) throws Exception {
         IClientPlugin.super.onHandleOutput(uid, output);
-        output.getActStamps().putAll(actStamps);
-        output.setTopics(msgHandlerMap.keySet());
+        output.getTopics().putAll(topics);
     }
 
     @Override
     public synchronized void onHandleInput(String uid, MqConsumerInput input) throws Exception {
         IClientPlugin.super.onHandleInput(uid, input);
-        actStamps.clear();
-        // 分发事件
-        input.getMessages().forEach((topic, message) -> msgHandlerMap.get(topic).forEach(handler -> message.getPayloads().forEach(payload -> {
-            try {
-                handler.onHandle(payload);
-            } catch (Exception e) {
-                exceptionHandler.onException(e, payload, handler);
-            }
-        })));
+        input.getMessages().forEach((topic, message) -> {
+            // 更新topic的戳
+            topics.put(topic, message.getStamp());
+            // 事件分发
+            msgHandlerMap.get(topic).forEach(handler -> message.getMessages().forEach(msg -> {
+                try {
+                    handler.onHandle(msg);
+                } catch (Exception e) {
+                    exceptionHandler.onException(e, msg, handler);
+                }
+            }));
+        });
     }
 }

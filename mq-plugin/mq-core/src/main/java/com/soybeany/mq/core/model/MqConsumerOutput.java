@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Soybeany
@@ -15,7 +14,9 @@ import java.util.Set;
 @Data
 public class MqConsumerOutput extends BaseMqClientOutput {
 
-    private final Map<String, String> actStamps = new HashMap<>();
-    private Set<String> topics;
+    /**
+     * key为topic，value为stamp
+     */
+    private final Map<String, Long> topics = new HashMap<>();
 
 }

@@ -1,4 +1,4 @@
-package com.soybeany.demo.provider;
+package com.soybeany.demo;
 
 import com.soybeany.demo.model.TestParam;
 import com.soybeany.demo.model.TestVO;

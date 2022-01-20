@@ -3,7 +3,7 @@ package com.soybeany.sync.core.model;
 import java.util.List;
 
 /**
- * 基础的服务实现，需要注册为spring bean来使用
+ * 基础的服务实现，需要注册为spring bean，并手工调用{@link #start()}与{@link #stop()}
  *
  * @author Soybeany
  * @date 2021/12/16

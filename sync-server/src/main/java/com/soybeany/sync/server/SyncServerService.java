@@ -34,6 +34,8 @@ public class SyncServerService {
                 Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
                 plugin.onHandleSync(GSON.fromJson(tagInputJson, plugin.onGetInputClass()), tmpOutput);
                 output.put(tag, GSON.toJson(tmpOutput));
+            } catch (SyncException e) {
+                throw e;
             } catch (Exception e) {
                 throw new SyncException(e.getMessage());
             }

@@ -2,6 +2,7 @@ package com.soybeany.mq.core.model;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
 @Data
 public class MqConsumerMsg {
 
-    private String stamp;
-    private List<String> payloads;
+    private Long stamp;
+    private final List<String> messages = new ArrayList<>();
 
 }

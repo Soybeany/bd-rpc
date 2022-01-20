@@ -1,4 +1,4 @@
-package com.soybeany.demo.provider;
+package com.soybeany.demo;
 
 import com.soybeany.demo.model.Constants;
 import com.soybeany.rpc.core.api.IRpcServiceInvoker;

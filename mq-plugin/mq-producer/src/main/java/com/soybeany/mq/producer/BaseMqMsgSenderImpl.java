@@ -13,7 +13,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseMqProducerImpl extends BaseClientServiceImpl implements IMqMsgSender {
+public abstract class BaseMqMsgSenderImpl extends BaseClientServiceImpl implements IMqMsgSender {
 
     private MqProducerPlugin plugin;
 
@@ -23,12 +23,12 @@ public abstract class BaseMqProducerImpl extends BaseClientServiceImpl implement
     }
 
     @Override
-    public void syncSend(MqProducerMsg msg) throws MqPluginException {
-        plugin.syncSend(msg);
+    public void syncSend(String topic, MqProducerMsg msg) throws MqPluginException {
+        plugin.syncSend(topic, msg);
     }
 
     @Override
-    public void asyncSend(MqProducerMsg msg, IMqMsgAsyncSendCallback callback) {
-        plugin.asyncSend(msg, callback);
+    public void asyncSend(String topic, MqProducerMsg msg, IMqMsgAsyncSendCallback callback) {
+        plugin.asyncSend(topic, msg, callback);
     }
 }

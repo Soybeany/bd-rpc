@@ -9,8 +9,8 @@ import com.soybeany.mq.core.model.MqProducerMsg;
  */
 public interface IMqMsgSender {
 
-    void syncSend(MqProducerMsg msg) throws MqPluginException;
+    void syncSend(String topic, MqProducerMsg msg) throws MqPluginException;
 
-    void asyncSend(MqProducerMsg msg, IMqMsgAsyncSendCallback callback);
+    void asyncSend(String topic, MqProducerMsg msg, IMqMsgAsyncSendCallback callback);
 
 }

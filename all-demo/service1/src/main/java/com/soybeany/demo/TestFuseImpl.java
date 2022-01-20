@@ -1,4 +1,4 @@
-package com.soybeany.demo.consumer;
+package com.soybeany.demo;
 
 import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.demo.model.TestParam;
