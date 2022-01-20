@@ -25,12 +25,12 @@ public class MqServiceSyncerImpl extends BaseMqServiceSyncerImpl {
     @PostConstruct
     private void onInit() {
         start();
-//        manager.startAutoClean(7);
+        manager.startAutoClean(7);
     }
 
     @PreDestroy
     private void onDestroy() {
-//        manager.shutdownAutoClean();
+        manager.shutdownAutoClean();
         stop();
     }
 
