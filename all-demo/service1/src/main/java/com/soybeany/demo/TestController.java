@@ -2,6 +2,7 @@ package com.soybeany.demo;
 
 import com.soybeany.demo.model.TestParam;
 import com.soybeany.mq.core.api.IMqMsgSender;
+import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -35,9 +36,9 @@ public class TestController {
         try {
             TestParam param = new TestParam(3, "success");
             String value = service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
-            mqMsgSender.send(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value), null);
+            mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
             return value;
-        } catch (RpcPluginException e) {
+        } catch (RpcPluginException | MqPluginException e) {
             String message = e.getMessage();
             log.warn(message);
             return "exception:" + message;

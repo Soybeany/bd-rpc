@@ -78,43 +78,41 @@ public class SyncClientService {
 
     private void sendSync() {
         String uid = BdFileUtils.getUuid();
-        try {
-            onSendSync(uid);
-        } catch (Exception e) {
-            allPlugins.forEach(plugin -> handleException(plugin, uid, e));
-        }
-    }
-
-    private void onSendSync(String uid) throws Exception {
         RequestUtils.Config rConfig = new RequestUtils.Config();
         rConfig.setTimeoutInSec(config.onSetupSyncTimeoutInSec());
-        Set<String> syncPlugins = new HashSet<>();
+        List<IClientPlugin<Object, Object>> syncPlugins = new ArrayList<>();
         // 同步前回调
         for (IClientPlugin<Object, Object> plugin : allPlugins) {
-            Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
             try {
+                Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
                 boolean needSync = plugin.onBeforeSync(uid, tmpOutput);
                 if (needSync) {
-                    String tag = plugin.onSetupSyncTagToHandle();
-                    syncPlugins.add(tag);
-                    rConfig.getParams().put(tag, GSON.toJson(tmpOutput));
+                    rConfig.getParams().put(plugin.onSetupSyncTagToHandle(), GSON.toJson(tmpOutput));
+                    syncPlugins.add(plugin);
                 }
             } catch (Exception e) {
                 handleException(plugin, uid, e);
             }
         }
+        // 若没有需要同步的插件，则直接返回
+        if (syncPlugins.isEmpty()) {
+            return;
+        }
         // 执行同步
-        SyncDTO dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
-        if (!dto.getIsNorm()) {
-            throw new SyncRequestException(dto.getParsedErrMsg());
+        SyncDTO dto;
+        try {
+            dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
+            if (!dto.getIsNorm()) {
+                throw new SyncRequestException(dto.getParsedErrMsg());
+            }
+        } catch (Exception e) {
+            syncPlugins.forEach(plugin -> handleException(plugin, uid, e));
+            return;
         }
         // 同步后回调
         Map<String, String> result = dto.getData(type);
-        for (IClientPlugin<Object, Object> plugin : allPlugins) {
+        for (IClientPlugin<Object, Object> plugin : syncPlugins) {
             String tag = plugin.onSetupSyncTagToHandle();
-            if (!syncPlugins.contains(tag)) {
-                continue;
-            }
             String tagInputJson = result.get(tag);
             if (null == tagInputJson) {
                 handleException(plugin, uid, new SyncException("缺失“" + tag + "”的同步数据"));

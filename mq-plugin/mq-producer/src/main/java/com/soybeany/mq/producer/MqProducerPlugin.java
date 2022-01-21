@@ -9,7 +9,10 @@ import com.soybeany.mq.core.model.MqProducerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Soybeany
@@ -18,9 +21,8 @@ import java.util.*;
 @Slf4j
 public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProducerOutput>, IMqMsgSender {
 
-    private final Map<String, List<MqProducerMsg>> msgBuffer = new HashMap<>();
-    private final Set<IMqMsgSendCallback> callbackBuffer = new HashSet<>();
-    private final Map<String, Archive> archiveMap = new HashMap<>();
+    private final Map<String, Holder> buffer = new HashMap<>();
+    private final Map<String, List<IMqMsgSendCallback>> callbackMap = new HashMap<>();
 
     @Override
     public String onSetupSyncTagToHandle() {
@@ -40,16 +42,16 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
     @Override
     public synchronized boolean onBeforeSync(String uid, MqProducerOutput output) throws Exception {
         // 当缓冲区没数据时，不需执行同步
-        if (msgBuffer.isEmpty()) {
+        if (buffer.isEmpty()) {
             return false;
         }
-        // 处理消息缓冲
-        output.getMessages().putAll(msgBuffer);
-        msgBuffer.clear();
-        // 归档
-        archiveMap.put(uid, new Archive(callbackBuffer));
-        callbackBuffer.clear();
-
+        // 处理缓冲
+        buffer.forEach((topic, holder) -> {
+            output.getMessages().put(topic, holder.msgList);
+            callbackMap.put(uid, holder.callbackList);
+        });
+        // 清空缓冲
+        buffer.clear();
         return IClientPlugin.super.onBeforeSync(uid, output);
     }
 
@@ -66,24 +68,20 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
     }
 
     @Override
-    public synchronized void send(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
-        addMsg(topic, msg);
-        if (null != callback) {
-            callbackBuffer.add(callback);
-        }
+    public synchronized void asyncSend(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
+        buffer.computeIfAbsent(topic, t -> new Holder()).add(msg, callback);
     }
 
     // ***********************内部方法****************************
 
     private synchronized void handleInput(String uid, MqProducerInput input) {
-        log.warn("调用处理");
-        Archive archive = archiveMap.remove(uid);
-        if (null == archive) {
+        List<IMqMsgSendCallback> callbacks = callbackMap.remove(uid);
+        if (null == callbacks) {
             log.warn("无法找到uid(" + uid + ")的归档");
             return;
         }
         // 调用异步回调
-        for (IMqMsgSendCallback callback : archive.callbacks) {
+        for (IMqMsgSendCallback callback : callbacks) {
             try {
                 callback.onFinish(input);
             } catch (Exception ignore) {
@@ -91,17 +89,17 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
         }
     }
 
-    private void addMsg(String topic, MqProducerMsg msg) {
-        msgBuffer.computeIfAbsent(topic, t -> new ArrayList<>()).add(msg);
-    }
-
     // ***********************内部类****************************
 
-    private static class Archive {
-        final Set<IMqMsgSendCallback> callbacks;
+    private static class Holder {
+        final List<MqProducerMsg> msgList = new ArrayList<>();
+        final List<IMqMsgSendCallback> callbackList = new ArrayList<>();
 
-        public Archive(Set<IMqMsgSendCallback> callbacks) {
-            this.callbacks = new HashSet<>(callbacks);
+        public void add(MqProducerMsg msg, IMqMsgSendCallback callback) {
+            msgList.add(msg);
+            if (null != callback) {
+                callbackList.add(callback);
+            }
         }
     }
 

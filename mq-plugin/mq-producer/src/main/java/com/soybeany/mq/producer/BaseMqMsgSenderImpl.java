@@ -22,7 +22,7 @@ public abstract class BaseMqMsgSenderImpl extends BaseClientServiceImpl implemen
     }
 
     @Override
-    public void send(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
-        plugin.send(topic, msg, callback);
+    public void asyncSend(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
+        plugin.asyncSend(topic, msg, callback);
     }
 }
