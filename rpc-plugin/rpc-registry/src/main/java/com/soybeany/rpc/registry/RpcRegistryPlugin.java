@@ -12,7 +12,7 @@ import java.util.List;
  */
 public abstract class RpcRegistryPlugin<Input extends BaseClientOutput, Output> implements IServerPlugin<Input, Output> {
 
-    public static List<IServerPlugin<?, ?>> get(IStorageManager manager) {
+    public static List<IServerPlugin<?, ?>> get(IRpcStorageManager manager) {
         return Arrays.asList(
                 new RpcRegistryPluginC(manager),
                 new RpcRegistryPluginP(manager)

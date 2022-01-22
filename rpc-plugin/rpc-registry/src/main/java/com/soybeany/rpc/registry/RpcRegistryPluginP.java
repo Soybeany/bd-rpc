@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProviderInput> {
 
-    private final IStorageManager storageManager;
+    private final IRpcStorageManager storageManager;
 
     @Override
     public String onSetupSyncTagToHandle() {

@@ -2,7 +2,7 @@ package com.soybeany.sync.client;
 
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.api.ISyncClientConfig;
-import com.soybeany.sync.core.model.BaseServiceImpl;
+import com.soybeany.sync.core.model.BaseSyncerImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseClientSyncerImpl extends BaseServiceImpl<IClientPlugin<?, ?>> implements ISyncClientConfig {
+public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncClientConfig {
 
     protected SyncClientService service;
 

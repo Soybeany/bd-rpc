@@ -22,7 +22,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
 @RequiredArgsConstructor
 class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsumerInput> {
 
-    private final IStorageManager storageManager;
+    private final IRpcStorageManager storageManager;
 
     @Override
     public String onSetupSyncTagToHandle() {

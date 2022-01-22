@@ -11,11 +11,11 @@ import lombok.AllArgsConstructor;
 public interface ISyncClientConfig {
 
     /**
-     * 获取同步服务器的url
+     * 设置同步服务器的url
      *
      * @return 值
      */
-    DataPicker<String> onGetSyncServerPicker();
+    DataPicker<String> onSetupSyncServerPicker();
 
     /**
      * 设置同步间隔
@@ -38,7 +38,7 @@ public interface ISyncClientConfig {
         private int syncIntervalInSec;
 
         @Override
-        public DataPicker<String> onGetSyncServerPicker() {
+        public DataPicker<String> onSetupSyncServerPicker() {
             return new DataPickerSimpleImpl<>(syncServerUrl);
         }
 

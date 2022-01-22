@@ -12,7 +12,7 @@ import java.util.List;
  */
 public abstract class MqRegistryPlugin<Input extends BaseClientOutput, Output> implements IServerPlugin<Input, Output> {
 
-    public static List<IServerPlugin<?, ?>> get(IStorageManager storageManager) {
+    public static List<IServerPlugin<?, ?>> get(IMqStorageManager storageManager) {
         return Arrays.asList(
                 new MqRegistryPluginC(storageManager),
                 new MqRegistryPluginB(storageManager)

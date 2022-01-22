@@ -43,7 +43,7 @@ public class SyncClientService {
 
     public SyncClientService(ISyncClientConfig config, IClientPlugin<Object, Object>[] plugins) {
         this.config = config;
-        urlPicker = config.onGetSyncServerPicker();
+        urlPicker = config.onSetupSyncServerPicker();
         allPlugins = Arrays.asList(plugins);
         IBasePlugin.checkPlugins(allPlugins);
         Collections.sort(allPlugins);

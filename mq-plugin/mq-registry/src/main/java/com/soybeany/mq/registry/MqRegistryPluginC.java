@@ -17,7 +17,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
 @RequiredArgsConstructor
 class MqRegistryPluginC extends MqRegistryPlugin<MqClientOutput, MqClientInput> {
 
-    private final IStorageManager storageManager;
+    private final IMqStorageManager storageManager;
 
     @Override
     public String onSetupSyncTagToHandle() {

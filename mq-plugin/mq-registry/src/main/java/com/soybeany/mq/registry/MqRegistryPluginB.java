@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class MqRegistryPluginB extends MqRegistryPlugin<MqBrokerOutput, MqBrokerInput> {
 
-    private final IStorageManager storageManager;
+    private final IMqStorageManager storageManager;
 
     @Override
     public String onSetupSyncTagToHandle() {

@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>com.soybeany</groupId>
-            <artifactId>mq-broker</artifactId>
+            <artifactId>mq-registry</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
