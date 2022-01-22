@@ -46,11 +46,6 @@ public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl impl
 
     // ***********************子类实现****************************
 
-    @Override
-    public String onSetupSystem() {
-        return null;
-    }
-
     protected String onSetupVersion() {
         return "0";
     }

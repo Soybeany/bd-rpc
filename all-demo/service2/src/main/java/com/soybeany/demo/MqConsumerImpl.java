@@ -1,6 +1,6 @@
 package com.soybeany.demo;
 
-import com.soybeany.mq.consumer.BaseMqConsumerImpl;
+import com.soybeany.mq.consumer.BaseMqConsumerImplB;
 import com.soybeany.mq.consumer.IMqExceptionHandler;
 import com.soybeany.mq.core.api.IMqMsgHandler;
 import com.soybeany.sync.core.picker.DataPicker;
@@ -17,7 +17,7 @@ import java.util.List;
  * @date 2022/1/20
  */
 @Component
-public class MqConsumerImpl extends BaseMqConsumerImpl {
+public class MqConsumerImpl extends BaseMqConsumerImplB {
 
     @Autowired
     private List<IMqMsgHandler> handlers;

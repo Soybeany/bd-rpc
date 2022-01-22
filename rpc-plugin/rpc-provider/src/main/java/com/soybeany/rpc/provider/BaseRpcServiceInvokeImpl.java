@@ -39,11 +39,6 @@ public abstract class BaseRpcServiceInvokeImpl extends BaseClientServiceImpl imp
 
     // ***********************子类实现****************************
 
-    @Override
-    public String onSetupSystem() {
-        return null;
-    }
-
     protected String onSetupVersion() {
         return "0";
     }

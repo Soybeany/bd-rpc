@@ -1,5 +1,7 @@
 package com.soybeany.sync.core.model;
 
+import com.soybeany.sync.core.api.IClientPlugin;
+
 import java.util.List;
 
 /**
@@ -24,6 +26,11 @@ public abstract class BaseServiceImpl<Plugin> {
             urls[i] = hosts[i] + path;
         }
         return urls;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected IClientPlugin<Object, Object>[] toPluginArr(List<IClientPlugin<?, ?>> list) {
+        return list.toArray(new IClientPlugin[0]);
     }
 
     // ***********************公共方法****************************

@@ -8,8 +8,10 @@ import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.util.RequestUtils;
 import com.soybeany.util.file.BdFileUtils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
@@ -33,12 +35,15 @@ public class SyncClientService {
     }.getType();
 
     private final ISyncClientConfig config;
+    @Getter
+    private final DataPicker<String> urlPicker;
     private final List<IClientPlugin<Object, Object>> allPlugins;
 
     private Boolean started;
 
     public SyncClientService(ISyncClientConfig config, IClientPlugin<Object, Object>[] plugins) {
         this.config = config;
+        urlPicker = config.onGetSyncServerPicker();
         allPlugins = Arrays.asList(plugins);
         IBasePlugin.checkPlugins(allPlugins);
         Collections.sort(allPlugins);
@@ -101,7 +106,7 @@ public class SyncClientService {
         // 执行同步
         SyncDTO dto;
         try {
-            dto = RequestUtils.request(config.onGetSyncServerPicker(), url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
+            dto = RequestUtils.request(urlPicker, url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
             if (!dto.getIsNorm()) {
                 throw new SyncRequestException(dto.getParsedErrMsg());
             }

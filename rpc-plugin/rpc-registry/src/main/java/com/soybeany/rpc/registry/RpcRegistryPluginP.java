@@ -14,8 +14,8 @@ import java.util.Map;
  */
 class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProviderInput> {
 
-    protected RpcRegistryPluginP(Map<String, IServiceManager> serviceManagerMap) {
-        super(serviceManagerMap);
+    protected RpcRegistryPluginP(Map<String, IStorageManager> storageManagerMap) {
+        super(storageManagerMap);
     }
 
     @Override
@@ -34,7 +34,7 @@ class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProvide
     }
 
     @Override
-    protected void onHandleSync(IServiceManager manager, RpcProviderOutput in, RpcProviderInput out) {
+    protected void onHandleSync(IStorageManager manager, RpcProviderOutput in, RpcProviderInput out) {
         manager.save(in.getServerInfo(), in.getServiceIds());
     }
 }

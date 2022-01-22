@@ -1,5 +1,6 @@
 package com.soybeany.rpc.core.model;
 
+import com.soybeany.sync.core.model.BaseClientOutput;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,7 +12,7 @@ import java.util.Set;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class RpcProviderOutput extends BaseRpcClientOutput {
+public class RpcProviderOutput extends BaseClientOutput {
 
     private ServerInfo serverInfo;
     private Set<String> serviceIds;

@@ -15,7 +15,7 @@
         <module>sync-client</module>
         <module>rpc-plugin</module>
         <module>mq-plugin</module>
-        <module>api-plugin</module>
+        <module>config-plugin</module>
         <module>all-demo</module>
     </modules>
 

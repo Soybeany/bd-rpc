@@ -14,10 +14,10 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class MqBrokerPlugin<Input, Output> implements IServerPlugin<Input, Output> {
 
-    public static List<IServerPlugin<?, ?>> get(IMessageManager messageManager) {
+    public static List<IServerPlugin<?, ?>> get(IStorageManager storageManager) {
         return Arrays.asList(
-                new MqBrokerPluginC(messageManager),
-                new MqBrokerPluginP(messageManager)
+                new MqBrokerPluginC(storageManager),
+                new MqBrokerPluginP(storageManager)
         );
     }
 

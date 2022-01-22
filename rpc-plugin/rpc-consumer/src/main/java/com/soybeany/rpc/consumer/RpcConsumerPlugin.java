@@ -6,7 +6,7 @@ import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.core.model.*;
-import com.soybeany.sync.core.api.IClientPlugin;
+import com.soybeany.rpc.core.plugin.BaseRpcClientPlugin;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;

@@ -20,8 +20,8 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  */
 class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsumerInput> {
 
-    protected RpcRegistryPluginC(Map<String, IServiceManager> serviceManagerMap) {
-        super(serviceManagerMap);
+    protected RpcRegistryPluginC(Map<String, IStorageManager> storageManagerMap) {
+        super(storageManagerMap);
     }
 
     @Override
@@ -40,7 +40,7 @@ class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsume
     }
 
     @Override
-    protected void onHandleSync(IServiceManager manager, RpcConsumerOutput in, RpcConsumerInput out) {
+    protected void onHandleSync(IStorageManager manager, RpcConsumerOutput in, RpcConsumerInput out) {
         Map<String, Set<ServerInfo>> map = new LinkedHashMap<>();
         in.getServiceIds().forEach(id -> map.put(id, manager.load(id)));
         // 当md5不一致时，再返回数据

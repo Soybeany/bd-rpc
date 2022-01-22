@@ -13,15 +13,14 @@ import java.util.List;
  */
 public abstract class BaseClientServiceImpl extends BaseServiceImpl<IClientPlugin<?, ?>> implements ISyncClientConfig {
 
-    private SyncClientService service;
+    protected SyncClientService service;
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void onStart() {
         super.onStart();
         List<IClientPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
-        service = new SyncClientService(this, plugins.toArray(new IClientPlugin[0]));
+        service = new SyncClientService(this, toPluginArr(plugins));
         service.start();
     }
 
