@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.registry;
 
 import com.soybeany.sync.core.model.BaseClientOutput;
 import lombok.Data;
@@ -10,8 +10,8 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MqBrokerOutputR extends BaseClientOutput {
+public class MqClientOutput extends BaseClientOutput {
 
-    private String syncUrl;
+    private String md5;
 
 }

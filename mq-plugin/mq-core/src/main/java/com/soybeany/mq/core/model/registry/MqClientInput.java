@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.registry;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 2022/1/21
  */
 @Data
-public class MqClientInputR {
+public class MqClientInput {
 
     private boolean updated;
     private String md5;

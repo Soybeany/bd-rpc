@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.registry;
 
 import lombok.Data;
 
@@ -7,5 +7,5 @@ import lombok.Data;
  * @date 2022/1/21
  */
 @Data
-public class MqBrokerInputR {
+public class MqBrokerInput {
 }

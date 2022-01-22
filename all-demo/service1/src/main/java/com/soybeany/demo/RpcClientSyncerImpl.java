@@ -1,14 +1,19 @@
 package com.soybeany.demo;
 
-import com.soybeany.rpc.consumer.BaseRpcServiceProxyImpl;
+import com.soybeany.mq.core.api.IMqClientInputRListener;
+import com.soybeany.mq.core.plugin.MqClientPluginR;
+import com.soybeany.rpc.consumer.BaseRpcClientSyncerImpl;
 import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.List;
 
 /**
  * @author Soybeany
@@ -16,7 +21,16 @@ import javax.annotation.PreDestroy;
  */
 @Slf4j
 @Component
-public class RpcServiceProxyImpl extends BaseRpcServiceProxyImpl {
+public class RpcClientSyncerImpl extends BaseRpcClientSyncerImpl {
+
+    @Autowired
+    private IMqClientInputRListener listener;
+
+    @Override
+    protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
+        super.onSetupPlugins(plugins);
+        plugins.add(new MqClientPluginR(onSetupSystem(), listener));
+    }
 
     @Override
     protected DataPicker<ServerInfo> onGetNewServerPicker(String serviceId) {

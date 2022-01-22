@@ -5,7 +5,7 @@ import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.ProxySelector;
 import com.soybeany.rpc.core.model.ServerInfo;
-import com.soybeany.sync.client.BaseClientServiceImpl;
+import com.soybeany.sync.client.BaseClientSyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseRpcServiceProxyImpl extends BaseClientServiceImpl implements IRpcClientService, IRpcServiceProxy {
+public abstract class BaseRpcClientSyncerImpl extends BaseClientSyncerImpl implements IRpcClientService, IRpcServiceProxy {
 
     @Autowired
     private ApplicationContext appContext;

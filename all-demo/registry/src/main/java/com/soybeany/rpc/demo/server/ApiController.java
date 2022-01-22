@@ -1,6 +1,6 @@
 package com.soybeany.rpc.demo.server;
 
-import com.soybeany.sync.core.api.IServiceSyncer;
+import com.soybeany.sync.core.api.IServerSyncer;
 import com.soybeany.sync.core.model.SyncDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,11 +20,11 @@ public class ApiController {
 
     @Autowired
     @Qualifier("RpcServiceSyncer")
-    private IServiceSyncer rpcServiceSyncer;
+    private IServerSyncer rpcServiceSyncer;
 
     @Autowired
     @Qualifier("MqServiceSyncer")
-    private IServiceSyncer mqServiceSyncer;
+    private IServerSyncer mqServiceSyncer;
 
     @PostMapping("/rpcSync")
     public SyncDTO rpcSync(HttpServletRequest request) {

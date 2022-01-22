@@ -22,17 +22,17 @@ public class StorageManagerMemImpl implements IStorageManager, IAutoCleaner {
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
     @Override
-    public synchronized Set<ServerInfo> load(String id) {
-        return Optional.ofNullable(providersMap.get(id))
+    public synchronized Set<ServerInfo> load(String system, String serviceId) {
+        return Optional.ofNullable(providersMap.get(getId(system, serviceId)))
                 .map(Map::keySet)
                 .orElse(EMPTY_SET);
     }
 
     @Override
-    public synchronized void save(ServerInfo info, Set<String> serviceIds) {
+    public synchronized void save(String system, ServerInfo info, Set<String> serviceIds) {
         long time = System.currentTimeMillis();
         for (String serviceId : serviceIds) {
-            providersMap.computeIfAbsent(serviceId, id -> new HashMap<>()).put(info, time);
+            providersMap.computeIfAbsent(getId(system, serviceId), id -> new HashMap<>()).put(info, time);
         }
     }
 
@@ -53,6 +53,10 @@ public class StorageManagerMemImpl implements IStorageManager, IAutoCleaner {
     }
 
     // ***********************内部方法****************************
+
+    private String getId(String system, String serviceId) {
+        return system + "-" + serviceId;
+    }
 
     private boolean isInvalid(long curTimestamp, long syncTime, long validPeriodInMillis) {
         return curTimestamp - syncTime > validPeriodInMillis;

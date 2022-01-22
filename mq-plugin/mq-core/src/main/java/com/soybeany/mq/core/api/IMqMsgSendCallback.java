@@ -1,7 +1,7 @@
 package com.soybeany.mq.core.api;
 
 import com.soybeany.mq.core.exception.MqPluginException;
-import com.soybeany.mq.core.model.MqProducerInputB;
+import com.soybeany.mq.core.model.broker.MqProducerInput;
 
 /**
  * @author Soybeany
@@ -9,6 +9,6 @@ import com.soybeany.mq.core.model.MqProducerInputB;
  */
 public interface IMqMsgSendCallback {
 
-    void onFinish(MqProducerInputB input) throws MqPluginException;
+    void onFinish(MqProducerInput input) throws MqPluginException;
 
 }

@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.broker;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import java.util.List;
  * @date 2022/1/19
  */
 @Data
-public class MqConsumerMsgB {
+public class MqConsumerMsg {
 
     private Long stamp;
     private final List<String> messages = new ArrayList<>();

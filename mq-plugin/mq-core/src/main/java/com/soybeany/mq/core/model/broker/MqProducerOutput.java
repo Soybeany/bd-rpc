@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.broker;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,8 +13,8 @@ import java.util.Map;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MqProducerOutputB extends BaseMqClientOutputB {
+public class MqProducerOutput extends BaseMqClientOutput {
 
-    private final Map<String, List<MqProducerMsgB>> messages = new HashMap<>();
+    private final Map<String, List<MqProducerMsg>> messages = new HashMap<>();
 
 }

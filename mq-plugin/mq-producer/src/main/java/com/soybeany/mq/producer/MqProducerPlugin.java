@@ -3,9 +3,9 @@ package com.soybeany.mq.producer;
 import com.soybeany.mq.core.api.IMqMsgSendCallback;
 import com.soybeany.mq.core.api.IMqMsgSender;
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqProducerInputB;
-import com.soybeany.mq.core.model.MqProducerMsgB;
-import com.soybeany.mq.core.model.MqProducerOutputB;
+import com.soybeany.mq.core.model.broker.MqProducerInput;
+import com.soybeany.mq.core.model.broker.MqProducerMsg;
+import com.soybeany.mq.core.model.broker.MqProducerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,7 @@ import java.util.Map;
  * @date 2022/1/19
  */
 @Slf4j
-public class MqProducerPluginB implements IClientPlugin<MqProducerInputB, MqProducerOutputB>, IMqMsgSender {
+public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProducerOutput>, IMqMsgSender {
 
     private final Map<String, Holder> buffer = new HashMap<>();
     private final Map<String, List<IMqMsgSendCallback>> callbackMap = new HashMap<>();
@@ -30,17 +30,17 @@ public class MqProducerPluginB implements IClientPlugin<MqProducerInputB, MqProd
     }
 
     @Override
-    public Class<MqProducerInputB> onGetInputClass() {
-        return MqProducerInputB.class;
+    public Class<MqProducerInput> onGetInputClass() {
+        return MqProducerInput.class;
     }
 
     @Override
-    public Class<MqProducerOutputB> onGetOutputClass() {
-        return MqProducerOutputB.class;
+    public Class<MqProducerOutput> onGetOutputClass() {
+        return MqProducerOutput.class;
     }
 
     @Override
-    public synchronized boolean onBeforeSync(String uid, MqProducerOutputB output) throws Exception {
+    public synchronized boolean onBeforeSync(String uid, MqProducerOutput output) throws Exception {
         // 当缓冲区没数据时，不需执行同步
         if (buffer.isEmpty()) {
             return false;
@@ -56,7 +56,7 @@ public class MqProducerPluginB implements IClientPlugin<MqProducerInputB, MqProd
     }
 
     @Override
-    public synchronized void onAfterSync(String uid, MqProducerInputB input) throws Exception {
+    public synchronized void onAfterSync(String uid, MqProducerInput input) throws Exception {
         IClientPlugin.super.onAfterSync(uid, input);
         handleInput(uid, input);
     }
@@ -64,17 +64,17 @@ public class MqProducerPluginB implements IClientPlugin<MqProducerInputB, MqProd
     @Override
     public synchronized void onSyncException(String uid, Exception e) throws Exception {
         IClientPlugin.super.onSyncException(uid, e);
-        handleInput(uid, new MqProducerInputB(false, e.getMessage()));
+        handleInput(uid, new MqProducerInput(false, e.getMessage()));
     }
 
     @Override
-    public synchronized void asyncSend(String topic, MqProducerMsgB msg, IMqMsgSendCallback callback) {
+    public synchronized void asyncSend(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
         buffer.computeIfAbsent(topic, t -> new Holder()).add(msg, callback);
     }
 
     // ***********************内部方法****************************
 
-    private synchronized void handleInput(String uid, MqProducerInputB input) {
+    private synchronized void handleInput(String uid, MqProducerInput input) {
         List<IMqMsgSendCallback> callbacks = callbackMap.remove(uid);
         if (null == callbacks) {
             log.warn("无法找到uid(" + uid + ")的归档");
@@ -92,10 +92,10 @@ public class MqProducerPluginB implements IClientPlugin<MqProducerInputB, MqProd
     // ***********************内部类****************************
 
     private static class Holder {
-        final List<MqProducerMsgB> msgList = new ArrayList<>();
+        final List<MqProducerMsg> msgList = new ArrayList<>();
         final List<IMqMsgSendCallback> callbackList = new ArrayList<>();
 
-        public void add(MqProducerMsgB msg, IMqMsgSendCallback callback) {
+        public void add(MqProducerMsg msg, IMqMsgSendCallback callback) {
             msgList.add(msg);
             if (null != callback) {
                 callbackList.add(callback);

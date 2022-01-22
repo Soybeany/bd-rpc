@@ -1,7 +1,7 @@
 package com.soybeany.mq.broker;
 
-import com.soybeany.mq.core.model.MqConsumerMsgB;
-import com.soybeany.mq.core.model.MqProducerMsgB;
+import com.soybeany.mq.core.model.broker.MqConsumerMsg;
+import com.soybeany.mq.core.model.broker.MqProducerMsg;
 import com.soybeany.sync.server.IAutoCleaner;
 
 import java.util.*;
@@ -21,15 +21,15 @@ public class StorageManagerMemImpl implements IStorageManager, IAutoCleaner {
     private static final int STATE_ACTIVE = 0;
     private static final int STATE_NOT_ACTIVE = 1;
 
-    private final Map<String, TreeMap<Long, MqProducerMsgB>> msgMap = new HashMap<>();
+    private final Map<String, TreeMap<Long, MqProducerMsg>> msgMap = new HashMap<>();
     private final Map<String, Long> stampMap = new HashMap<>();
     @SuppressWarnings("AlibabaThreadPoolCreation")
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
     @Override
-    public synchronized void save(Map<String, List<MqProducerMsgB>> map) {
+    public synchronized void save(Map<String, List<MqProducerMsg>> map) {
         map.forEach((topic, messages) -> {
-            TreeMap<Long, MqProducerMsgB> treeMap = msgMap.computeIfAbsent(topic, t -> new TreeMap<>());
+            TreeMap<Long, MqProducerMsg> treeMap = msgMap.computeIfAbsent(topic, t -> new TreeMap<>());
             messages.forEach(msg -> {
                 long stamp = Optional.ofNullable(stampMap.get(topic)).orElse(0L) + 1;
                 stampMap.put(topic, stamp);
@@ -39,11 +39,11 @@ public class StorageManagerMemImpl implements IStorageManager, IAutoCleaner {
     }
 
     @Override
-    public synchronized Map<String, MqConsumerMsgB> load(Map<String, Long> topics) {
-        Map<String, MqConsumerMsgB> result = new HashMap<>();
+    public synchronized Map<String, MqConsumerMsg> load(Map<String, Long> topics) {
+        Map<String, MqConsumerMsg> result = new HashMap<>();
         long now = System.currentTimeMillis();
         topics.forEach((topic, stamp) -> Optional.ofNullable(msgMap.get(topic)).ifPresent(treeMap -> treeMap.tailMap(stamp, false).forEach((s, pMsg) -> {
-            MqConsumerMsgB cMsg = result.computeIfAbsent(topic, t -> new MqConsumerMsgB());
+            MqConsumerMsg cMsg = result.computeIfAbsent(topic, t -> new MqConsumerMsg());
             cMsg.setStamp(s);
             if (STATE_ACTIVE == getState(now, pMsg)) {
                 cMsg.getMessages().add(pMsg.getMsg());
@@ -67,7 +67,7 @@ public class StorageManagerMemImpl implements IStorageManager, IAutoCleaner {
         service.shutdown();
     }
 
-    private int getState(long now, MqProducerMsgB msg) {
+    private int getState(long now, MqProducerMsg msg) {
         if (now < msg.getStartTime()) {
             return STATE_NOT_ACTIVE;
         }

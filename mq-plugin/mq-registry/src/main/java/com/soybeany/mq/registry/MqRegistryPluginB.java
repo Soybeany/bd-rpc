@@ -1,8 +1,8 @@
 package com.soybeany.mq.registry;
 
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqBrokerInputR;
-import com.soybeany.mq.core.model.MqBrokerOutputR;
+import com.soybeany.mq.core.model.registry.MqBrokerInput;
+import com.soybeany.mq.core.model.registry.MqBrokerOutput;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
  * @date 2022/1/19
  */
 @RequiredArgsConstructor
-class MqRegistryPluginB extends MqRegistryPlugin<MqBrokerOutputR, MqBrokerInputR> {
+class MqRegistryPluginB extends MqRegistryPlugin<MqBrokerOutput, MqBrokerInput> {
 
     private final IStorageManager storageManager;
 
@@ -20,17 +20,17 @@ class MqRegistryPluginB extends MqRegistryPlugin<MqBrokerOutputR, MqBrokerInputR
     }
 
     @Override
-    public Class<MqBrokerOutputR> onGetInputClass() {
-        return MqBrokerOutputR.class;
+    public Class<MqBrokerOutput> onGetInputClass() {
+        return MqBrokerOutput.class;
     }
 
     @Override
-    public Class<MqBrokerInputR> onGetOutputClass() {
-        return MqBrokerInputR.class;
+    public Class<MqBrokerInput> onGetOutputClass() {
+        return MqBrokerInput.class;
     }
 
     @Override
-    public void onHandleSync(MqBrokerOutputR in, MqBrokerInputR out) {
+    public void onHandleSync(MqBrokerOutput in, MqBrokerInput out) {
         storageManager.save(in.getSystem(), in.getSyncUrl());
     }
 

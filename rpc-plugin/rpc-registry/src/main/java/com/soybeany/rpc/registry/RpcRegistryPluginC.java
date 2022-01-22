@@ -5,6 +5,7 @@ import com.soybeany.rpc.core.model.RpcConsumerInput;
 import com.soybeany.rpc.core.model.RpcConsumerOutput;
 import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.util.Md5Utils;
+import lombok.RequiredArgsConstructor;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -18,11 +19,10 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2022/1/17
  */
+@RequiredArgsConstructor
 class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsumerInput> {
 
-    protected RpcRegistryPluginC(Map<String, IStorageManager> storageManagerMap) {
-        super(storageManagerMap);
-    }
+    private final IStorageManager storageManager;
 
     @Override
     public String onSetupSyncTagToHandle() {
@@ -40,9 +40,10 @@ class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsume
     }
 
     @Override
-    protected void onHandleSync(IStorageManager manager, RpcConsumerOutput in, RpcConsumerInput out) {
+    public void onHandleSync(RpcConsumerOutput in, RpcConsumerInput out) {
         Map<String, Set<ServerInfo>> map = new LinkedHashMap<>();
-        in.getServiceIds().forEach(id -> map.put(id, manager.load(id)));
+        String system = in.getSystem();
+        in.getServiceIds().forEach(serviceId -> map.put(serviceId, storageManager.load(system, serviceId)));
         // 当md5不一致时，再返回数据
         String md5 = Md5Utils.strToMd5(GSON.toJson(map));
         if (!md5.equals(in.getMd5())) {

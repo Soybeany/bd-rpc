@@ -1,8 +1,8 @@
 package com.soybeany.mq.broker;
 
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqConsumerInputB;
-import com.soybeany.mq.core.model.MqConsumerOutputB;
+import com.soybeany.mq.core.model.broker.MqConsumerInput;
+import com.soybeany.mq.core.model.broker.MqConsumerOutput;
 import com.soybeany.sync.core.exception.SyncException;
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
  * @date 2022/1/19
  */
 @RequiredArgsConstructor
-class MqBrokerPluginC extends MqBrokerPlugin<MqConsumerOutputB, MqConsumerInputB> {
+class MqBrokerPluginC extends MqBrokerPlugin<MqConsumerOutput, MqConsumerInput> {
 
     private final IStorageManager storageManager;
 
@@ -21,17 +21,17 @@ class MqBrokerPluginC extends MqBrokerPlugin<MqConsumerOutputB, MqConsumerInputB
     }
 
     @Override
-    public Class<MqConsumerOutputB> onGetInputClass() {
-        return MqConsumerOutputB.class;
+    public Class<MqConsumerOutput> onGetInputClass() {
+        return MqConsumerOutput.class;
     }
 
     @Override
-    public Class<MqConsumerInputB> onGetOutputClass() {
-        return MqConsumerInputB.class;
+    public Class<MqConsumerInput> onGetOutputClass() {
+        return MqConsumerInput.class;
     }
 
     @Override
-    public void onHandleSync(MqConsumerOutputB in, MqConsumerInputB out) throws SyncException {
+    public void onHandleSync(MqConsumerOutput in, MqConsumerInput out) throws SyncException {
         try {
             out.getMessages().putAll(storageManager.load(in.getTopics()));
         } catch (Exception e) {

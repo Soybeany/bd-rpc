@@ -1,8 +1,8 @@
 package com.soybeany.mq.broker;
 
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqBrokerInputR;
-import com.soybeany.mq.core.model.MqBrokerOutputR;
+import com.soybeany.mq.core.model.registry.MqBrokerInput;
+import com.soybeany.mq.core.model.registry.MqBrokerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
  * @date 2022/1/22
  */
 @RequiredArgsConstructor
-public class MqBrokerPluginR implements IClientPlugin<MqBrokerInputR, MqBrokerOutputR> {
+public class MqBrokerPluginR implements IClientPlugin<MqBrokerInput, MqBrokerOutput> {
 
     private final String system;
     private final String syncUrl;
@@ -22,17 +22,17 @@ public class MqBrokerPluginR implements IClientPlugin<MqBrokerInputR, MqBrokerOu
     }
 
     @Override
-    public Class<MqBrokerInputR> onGetInputClass() {
-        return MqBrokerInputR.class;
+    public Class<MqBrokerInput> onGetInputClass() {
+        return MqBrokerInput.class;
     }
 
     @Override
-    public Class<MqBrokerOutputR> onGetOutputClass() {
-        return MqBrokerOutputR.class;
+    public Class<MqBrokerOutput> onGetOutputClass() {
+        return MqBrokerOutput.class;
     }
 
     @Override
-    public boolean onBeforeSync(String uid, MqBrokerOutputR output) throws Exception {
+    public boolean onBeforeSync(String uid, MqBrokerOutput output) throws Exception {
         output.setSystem(system);
         output.setSyncUrl(syncUrl);
         return IClientPlugin.super.onBeforeSync(uid, output);

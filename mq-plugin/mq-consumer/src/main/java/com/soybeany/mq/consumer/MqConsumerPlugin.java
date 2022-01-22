@@ -2,8 +2,8 @@ package com.soybeany.mq.consumer;
 
 import com.soybeany.mq.core.api.IMqMsgHandler;
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqConsumerInputB;
-import com.soybeany.mq.core.model.MqConsumerOutputB;
+import com.soybeany.mq.core.model.broker.MqConsumerInput;
+import com.soybeany.mq.core.model.broker.MqConsumerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
 
 import java.util.ArrayList;
@@ -15,13 +15,13 @@ import java.util.Map;
  * @author Soybeany
  * @date 2022/1/19
  */
-public class MqConsumerPluginB implements IClientPlugin<MqConsumerInputB, MqConsumerOutputB> {
+public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsumerOutput> {
 
     private final Map<String, List<IMqMsgHandler>> msgHandlerMap = new HashMap<>();
     private final IMqExceptionHandler exceptionHandler;
     private final Map<String, Long> topics = new HashMap<>();
 
-    public MqConsumerPluginB(List<IMqMsgHandler> msgHandlers, IMqExceptionHandler exceptionHandler) {
+    public MqConsumerPlugin(List<IMqMsgHandler> msgHandlers, IMqExceptionHandler exceptionHandler) {
         msgHandlers.forEach(handler ->
                 msgHandlerMap.computeIfAbsent(handler.onSetupTopic(), topic -> new ArrayList<>()).add(handler)
         );
@@ -35,23 +35,23 @@ public class MqConsumerPluginB implements IClientPlugin<MqConsumerInputB, MqCons
     }
 
     @Override
-    public Class<MqConsumerInputB> onGetInputClass() {
-        return MqConsumerInputB.class;
+    public Class<MqConsumerInput> onGetInputClass() {
+        return MqConsumerInput.class;
     }
 
     @Override
-    public Class<MqConsumerOutputB> onGetOutputClass() {
-        return MqConsumerOutputB.class;
+    public Class<MqConsumerOutput> onGetOutputClass() {
+        return MqConsumerOutput.class;
     }
 
     @Override
-    public synchronized boolean onBeforeSync(String uid, MqConsumerOutputB output) throws Exception {
+    public synchronized boolean onBeforeSync(String uid, MqConsumerOutput output) throws Exception {
         output.getTopics().putAll(topics);
         return IClientPlugin.super.onBeforeSync(uid, output);
     }
 
     @Override
-    public synchronized void onAfterSync(String uid, MqConsumerInputB input) throws Exception {
+    public synchronized void onAfterSync(String uid, MqConsumerInput input) throws Exception {
         IClientPlugin.super.onAfterSync(uid, input);
         input.getMessages().forEach((topic, message) -> {
             // 更新topic的戳

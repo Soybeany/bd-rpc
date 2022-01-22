@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author Soybeany
  * @date 2021/12/16
  */
-public interface IServiceSyncer {
+public interface IServerSyncer {
 
     SyncDTO sync(HttpServletRequest request);
 

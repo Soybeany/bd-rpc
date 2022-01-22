@@ -3,8 +3,7 @@ package com.soybeany.rpc.registry;
 import com.soybeany.rpc.core.model.BdRpcConstants;
 import com.soybeany.rpc.core.model.RpcProviderInput;
 import com.soybeany.rpc.core.model.RpcProviderOutput;
-
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 客户端管理插件(P端)
@@ -12,11 +11,10 @@ import java.util.Map;
  * @author Soybeany
  * @date 2022/1/17
  */
+@RequiredArgsConstructor
 class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProviderInput> {
 
-    protected RpcRegistryPluginP(Map<String, IStorageManager> storageManagerMap) {
-        super(storageManagerMap);
-    }
+    private final IStorageManager storageManager;
 
     @Override
     public String onSetupSyncTagToHandle() {
@@ -34,7 +32,7 @@ class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProvide
     }
 
     @Override
-    protected void onHandleSync(IStorageManager manager, RpcProviderOutput in, RpcProviderInput out) {
-        manager.save(in.getServerInfo(), in.getServiceIds());
+    public void onHandleSync(RpcProviderOutput in, RpcProviderInput out) {
+        storageManager.save(in.getSystem(), in.getServerInfo(), in.getServiceIds());
     }
 }

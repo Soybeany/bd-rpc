@@ -1,7 +1,7 @@
 package com.soybeany.mq.broker;
 
-import com.soybeany.mq.core.model.MqConsumerMsgB;
-import com.soybeany.mq.core.model.MqProducerMsgB;
+import com.soybeany.mq.core.model.broker.MqConsumerMsg;
+import com.soybeany.mq.core.model.broker.MqProducerMsg;
 
 import java.util.List;
 import java.util.Map;
@@ -12,8 +12,8 @@ import java.util.Map;
  */
 public interface IStorageManager {
 
-    void save(Map<String, List<MqProducerMsgB>> messages) throws Exception;
+    void save(Map<String, List<MqProducerMsg>> messages) throws Exception;
 
-    Map<String, MqConsumerMsgB> load(Map<String, Long> topics) throws Exception;
+    Map<String, MqConsumerMsg> load(Map<String, Long> topics) throws Exception;
 
 }

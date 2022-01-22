@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.broker;
 
 import lombok.Data;
 
@@ -12,17 +12,17 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2022/1/20
  */
 @Data
-public class MqProducerMsgB {
+public class MqProducerMsg {
 
     private final long startTime;
     private final long endTime;
     private final String msg;
 
-    public static MqProducerMsgB createWithJsonMsg(LocalDateTime startTime, LocalDateTime endTime, Object msg) {
-        return new MqProducerMsgB(startTime, endTime, GSON.toJson(msg));
+    public static MqProducerMsg createWithJsonMsg(LocalDateTime startTime, LocalDateTime endTime, Object msg) {
+        return new MqProducerMsg(startTime, endTime, GSON.toJson(msg));
     }
 
-    public MqProducerMsgB(LocalDateTime startTime, LocalDateTime endTime, String msg) {
+    public MqProducerMsg(LocalDateTime startTime, LocalDateTime endTime, String msg) {
         if (null == startTime || null == endTime) {
             throw new RuntimeException("MqProducerMsg的startTime或endTime不能为null");
         }

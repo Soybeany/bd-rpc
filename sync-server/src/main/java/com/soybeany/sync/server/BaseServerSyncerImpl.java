@@ -1,7 +1,7 @@
 package com.soybeany.sync.server;
 
 import com.soybeany.sync.core.api.IServerPlugin;
-import com.soybeany.sync.core.api.IServiceSyncer;
+import com.soybeany.sync.core.api.IServerSyncer;
 import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.model.BaseServiceImpl;
 import com.soybeany.sync.core.model.SyncDTO;
@@ -15,7 +15,7 @@ import java.util.Map;
  * @author Soybeany
  * @date 2021/12/17
  */
-public abstract class BaseServiceSyncerImpl extends BaseServiceImpl<IServerPlugin<?, ?>> implements IServiceSyncer {
+public abstract class BaseServerSyncerImpl extends BaseServiceImpl<IServerPlugin<?, ?>> implements IServerSyncer {
 
     private SyncServerService service;
 

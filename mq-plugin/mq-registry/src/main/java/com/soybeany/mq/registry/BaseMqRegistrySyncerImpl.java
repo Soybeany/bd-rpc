@@ -1,7 +1,7 @@
 package com.soybeany.mq.registry;
 
 import com.soybeany.sync.core.api.IServerPlugin;
-import com.soybeany.sync.server.BaseServiceSyncerImpl;
+import com.soybeany.sync.server.BaseServerSyncerImpl;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseMqRegistrySyncerImpl extends BaseServiceSyncerImpl {
+public abstract class BaseMqRegistrySyncerImpl extends BaseServerSyncerImpl {
 
     @Override
     protected void onSetupPlugins(List<IServerPlugin<?, ?>> plugins) {

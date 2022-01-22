@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.broker;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 2022/1/19
  */
 @Data
-public class BaseMqClientOutputB {
+public class BaseMqClientOutput {
 
     private String topic;
 

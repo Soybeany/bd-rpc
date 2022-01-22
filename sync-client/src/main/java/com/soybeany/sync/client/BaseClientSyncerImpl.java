@@ -11,7 +11,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseClientServiceImpl extends BaseServiceImpl<IClientPlugin<?, ?>> implements ISyncClientConfig {
+public abstract class BaseClientSyncerImpl extends BaseServiceImpl<IClientPlugin<?, ?>> implements ISyncClientConfig {
 
     protected SyncClientService service;
 

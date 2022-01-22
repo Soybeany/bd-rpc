@@ -1,8 +1,8 @@
 package com.soybeany.mq.broker;
 
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqProducerInputB;
-import com.soybeany.mq.core.model.MqProducerOutputB;
+import com.soybeany.mq.core.model.broker.MqProducerInput;
+import com.soybeany.mq.core.model.broker.MqProducerOutput;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
  * @date 2022/1/19
  */
 @RequiredArgsConstructor
-class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutputB, MqProducerInputB> {
+class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutput, MqProducerInput> {
 
     private final IStorageManager storageManager;
 
@@ -20,17 +20,17 @@ class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutputB, MqProducerInputB
     }
 
     @Override
-    public Class<MqProducerOutputB> onGetInputClass() {
-        return MqProducerOutputB.class;
+    public Class<MqProducerOutput> onGetInputClass() {
+        return MqProducerOutput.class;
     }
 
     @Override
-    public Class<MqProducerInputB> onGetOutputClass() {
-        return MqProducerInputB.class;
+    public Class<MqProducerInput> onGetOutputClass() {
+        return MqProducerInput.class;
     }
 
     @Override
-    public void onHandleSync(MqProducerOutputB in, MqProducerInputB out) {
+    public void onHandleSync(MqProducerOutput in, MqProducerInput out) {
         try {
             storageManager.save(in.getMessages());
             out.setSuccess(true);

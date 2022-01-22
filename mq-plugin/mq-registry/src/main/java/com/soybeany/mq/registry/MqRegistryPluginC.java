@@ -1,8 +1,8 @@
 package com.soybeany.mq.registry;
 
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqClientInputR;
-import com.soybeany.mq.core.model.MqClientOutputR;
+import com.soybeany.mq.core.model.registry.MqClientInput;
+import com.soybeany.mq.core.model.registry.MqClientOutput;
 import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
 
@@ -15,7 +15,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2022/1/19
  */
 @RequiredArgsConstructor
-class MqRegistryPluginC extends MqRegistryPlugin<MqClientOutputR, MqClientInputR> {
+class MqRegistryPluginC extends MqRegistryPlugin<MqClientOutput, MqClientInput> {
 
     private final IStorageManager storageManager;
 
@@ -25,17 +25,17 @@ class MqRegistryPluginC extends MqRegistryPlugin<MqClientOutputR, MqClientInputR
     }
 
     @Override
-    public Class<MqClientOutputR> onGetInputClass() {
-        return MqClientOutputR.class;
+    public Class<MqClientOutput> onGetInputClass() {
+        return MqClientOutput.class;
     }
 
     @Override
-    public Class<MqClientInputR> onGetOutputClass() {
-        return MqClientInputR.class;
+    public Class<MqClientInput> onGetOutputClass() {
+        return MqClientInput.class;
     }
 
     @Override
-    public void onHandleSync(MqClientOutputR in, MqClientInputR out) {
+    public void onHandleSync(MqClientOutput in, MqClientInput out) {
         Set<String> syncUrls = storageManager.load(in.getSystem());
         // 当md5不一致时，再返回数据
         String md5 = Md5Utils.strToMd5(GSON.toJson(syncUrls));

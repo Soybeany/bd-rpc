@@ -10,8 +10,8 @@ import java.util.Set;
  */
 public interface IStorageManager {
 
-    Set<ServerInfo> load(String id);
+    Set<ServerInfo> load(String system, String serviceId);
 
-    void save(ServerInfo info, Set<String> serviceIds);
+    void save(String system, ServerInfo info, Set<String> serviceIds);
 
 }

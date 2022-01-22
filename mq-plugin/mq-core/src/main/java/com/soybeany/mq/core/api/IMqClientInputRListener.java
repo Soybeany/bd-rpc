@@ -1,6 +1,6 @@
 package com.soybeany.mq.core.api;
 
-import com.soybeany.mq.core.model.MqClientInputR;
+import com.soybeany.mq.core.model.registry.MqClientInput;
 
 /**
  * @author Soybeany
@@ -8,6 +8,6 @@ import com.soybeany.mq.core.model.MqClientInputR;
  */
 public interface IMqClientInputRListener {
 
-    void onReceiveInputR(MqClientInputR input);
+    void onReceiveInputR(MqClientInput input);
 
 }

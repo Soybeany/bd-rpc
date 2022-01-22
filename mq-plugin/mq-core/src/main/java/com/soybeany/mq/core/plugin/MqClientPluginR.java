@@ -2,8 +2,8 @@ package com.soybeany.mq.core.plugin;
 
 import com.soybeany.mq.core.api.IMqClientInputRListener;
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqClientInputR;
-import com.soybeany.mq.core.model.MqClientOutputR;
+import com.soybeany.mq.core.model.registry.MqClientInput;
+import com.soybeany.mq.core.model.registry.MqClientOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
 
 import java.util.Arrays;
@@ -14,7 +14,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2022/1/21
  */
-public class MqClientPluginR implements IClientPlugin<MqClientInputR, MqClientOutputR> {
+public class MqClientPluginR implements IClientPlugin<MqClientInput, MqClientOutput> {
 
     private final String system;
     private final List<IMqClientInputRListener> listeners;
@@ -31,24 +31,24 @@ public class MqClientPluginR implements IClientPlugin<MqClientInputR, MqClientOu
     }
 
     @Override
-    public Class<MqClientInputR> onGetInputClass() {
-        return MqClientInputR.class;
+    public Class<MqClientInput> onGetInputClass() {
+        return MqClientInput.class;
     }
 
     @Override
-    public Class<MqClientOutputR> onGetOutputClass() {
-        return MqClientOutputR.class;
+    public Class<MqClientOutput> onGetOutputClass() {
+        return MqClientOutput.class;
     }
 
     @Override
-    public boolean onBeforeSync(String uid, MqClientOutputR output) throws Exception {
+    public boolean onBeforeSync(String uid, MqClientOutput output) throws Exception {
         output.setSystem(system);
         output.setMd5(md5);
         return IClientPlugin.super.onBeforeSync(uid, output);
     }
 
     @Override
-    public void onAfterSync(String uid, MqClientInputR input) throws Exception {
+    public void onAfterSync(String uid, MqClientInput input) throws Exception {
         IClientPlugin.super.onAfterSync(uid, input);
         if (!input.isUpdated()) {
             return;

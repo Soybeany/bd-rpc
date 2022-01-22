@@ -1,19 +1,36 @@
 package com.soybeany.demo;
 
-import com.soybeany.mq.producer.BaseMqProducerImplR;
+import com.soybeany.mq.consumer.BaseMqBrokerSyncerImpl;
+import com.soybeany.mq.consumer.IMqExceptionHandler;
+import com.soybeany.mq.core.api.IMqMsgHandler;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.List;
 
 /**
  * @author Soybeany
  * @date 2022/1/20
  */
 @Component
-public class MqMsgProducerImpl extends BaseMqProducerImplR {
+public class MqBrokerSyncerImpl extends BaseMqBrokerSyncerImpl {
+
+    @Autowired
+    private List<IMqMsgHandler> handlers;
+
+    @Override
+    protected List<IMqMsgHandler> onSetupMsgHandlers() {
+        return handlers;
+    }
+
+    @Override
+    protected IMqExceptionHandler onSetupExceptionHandler() {
+        return null;
+    }
 
     @Override
     public DataPicker<String> onGetSyncServerPicker() {

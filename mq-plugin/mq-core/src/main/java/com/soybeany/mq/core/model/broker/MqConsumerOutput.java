@@ -1,4 +1,4 @@
-package com.soybeany.mq.core.model;
+package com.soybeany.mq.core.model.broker;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,7 +12,7 @@ import java.util.Map;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MqConsumerOutputB extends BaseMqClientOutputB {
+public class MqConsumerOutput extends BaseMqClientOutput {
 
     /**
      * key为topic，value为stamp

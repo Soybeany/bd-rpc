@@ -3,9 +3,9 @@ package com.soybeany.mq.producer;
 import com.soybeany.mq.core.api.IMqClientInputRListener;
 import com.soybeany.mq.core.api.IMqMsgSendCallback;
 import com.soybeany.mq.core.api.IMqMsgSender;
-import com.soybeany.mq.core.model.MqClientInputR;
-import com.soybeany.mq.core.model.MqProducerMsgB;
-import com.soybeany.sync.client.BaseClientServiceImpl;
+import com.soybeany.mq.core.model.broker.MqProducerMsg;
+import com.soybeany.mq.core.model.registry.MqClientInput;
+import com.soybeany.sync.client.BaseClientSyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 
 import java.util.List;
@@ -14,22 +14,22 @@ import java.util.List;
  * @author Soybeany
  * @date 2022/1/22
  */
-public abstract class BaseMqMsgSenderImplB extends BaseClientServiceImpl implements IMqMsgSender, IMqClientInputRListener {
+public abstract class BaseMqBrokerSyncerImpl extends BaseClientSyncerImpl implements IMqMsgSender, IMqClientInputRListener {
 
-    private MqProducerPluginB plugin;
+    private MqProducerPlugin plugin;
 
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        plugins.add(plugin = new MqProducerPluginB());
+        plugins.add(plugin = new MqProducerPlugin());
     }
 
     @Override
-    public void asyncSend(String topic, MqProducerMsgB msg, IMqMsgSendCallback callback) {
+    public void asyncSend(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
         plugin.asyncSend(topic, msg, callback);
     }
 
     @Override
-    public void onReceiveInputR(MqClientInputR input) {
+    public void onReceiveInputR(MqClientInput input) {
         service.getUrlPicker().set(input.getBrokersSyncUrl());
     }
 

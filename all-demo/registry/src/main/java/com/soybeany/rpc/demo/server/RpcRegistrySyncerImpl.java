@@ -18,7 +18,7 @@ public class RpcRegistrySyncerImpl extends BaseRpcRegistrySyncerImpl {
     private StorageManagerMemImpl storageManager;
 
     @Override
-    protected IStorageManager onGetNewStorageManager(String system) {
+    protected IStorageManager onSetupStorageManager() {
         return storageManager = new StorageManagerMemImpl();
     }
 

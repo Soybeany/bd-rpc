@@ -2,8 +2,8 @@ package com.soybeany.mq.core.api;
 
 import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.exception.MqPluginInterruptException;
-import com.soybeany.mq.core.model.MqProducerInputB;
-import com.soybeany.mq.core.model.MqProducerMsgB;
+import com.soybeany.mq.core.model.broker.MqProducerInput;
+import com.soybeany.mq.core.model.broker.MqProducerMsg;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -13,12 +13,12 @@ import java.util.concurrent.CountDownLatch;
  */
 public interface IMqMsgSender {
 
-    void asyncSend(String topic, MqProducerMsgB msg, IMqMsgSendCallback callback);
+    void asyncSend(String topic, MqProducerMsg msg, IMqMsgSendCallback callback);
 
-    default void syncSend(String topic, MqProducerMsgB msg) throws MqPluginException {
+    default void syncSend(String topic, MqProducerMsg msg) throws MqPluginException {
         // 异步请求
         CountDownLatch latch = new CountDownLatch(1);
-        MqProducerInputB[] input = new MqProducerInputB[1];
+        MqProducerInput[] input = new MqProducerInput[1];
         asyncSend(topic, msg, in -> {
             input[0] = in;
             latch.countDown();

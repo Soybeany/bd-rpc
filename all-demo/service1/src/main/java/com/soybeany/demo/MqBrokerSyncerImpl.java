@@ -1,6 +1,6 @@
 package com.soybeany.demo;
 
-import com.soybeany.mq.producer.BaseMqMsgSenderImplB;
+import com.soybeany.mq.producer.BaseMqBrokerSyncerImpl;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import javax.annotation.PreDestroy;
  * @date 2022/1/22
  */
 @Component
-public class MqMsgSenderImpl extends BaseMqMsgSenderImplB {
+public class MqBrokerSyncerImpl extends BaseMqBrokerSyncerImpl {
     @Override
     public DataPicker<String> onGetSyncServerPicker() {
         return new DataPickerSimpleImpl<>();
