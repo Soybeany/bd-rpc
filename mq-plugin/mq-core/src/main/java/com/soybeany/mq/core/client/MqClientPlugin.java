@@ -41,14 +41,14 @@ public class MqClientPlugin implements IClientPlugin<MqClientInput, MqClientOutp
     }
 
     @Override
-    public boolean onBeforeSync(String uid, MqClientOutput output) throws Exception {
+    public synchronized boolean onBeforeSync(String uid, MqClientOutput output) throws Exception {
         output.setSystem(system);
         output.setMd5(md5);
         return IClientPlugin.super.onBeforeSync(uid, output);
     }
 
     @Override
-    public void onAfterSync(String uid, MqClientInput input) throws Exception {
+    public synchronized void onAfterSync(String uid, MqClientInput input) throws Exception {
         IClientPlugin.super.onAfterSync(uid, input);
         if (!input.isUpdated()) {
             return;

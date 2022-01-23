@@ -41,7 +41,7 @@ public class RpcStorageManagerMemImpl implements IRpcStorageManager, IAutoCleane
     // ***********************内部方法****************************
 
     private String getId(String system, String serviceId) {
-        return system + "-" + serviceId;
+        return null == system ? serviceId : (system + "-" + serviceId);
     }
 
 }

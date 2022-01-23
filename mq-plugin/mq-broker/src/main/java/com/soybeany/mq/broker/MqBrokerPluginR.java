@@ -32,7 +32,7 @@ public class MqBrokerPluginR implements IClientPlugin<MqBrokerInput, MqBrokerOut
     }
 
     @Override
-    public boolean onBeforeSync(String uid, MqBrokerOutput output) throws Exception {
+    public synchronized boolean onBeforeSync(String uid, MqBrokerOutput output) throws Exception {
         output.setSystem(system);
         output.setSyncUrl(syncUrl);
         return IClientPlugin.super.onBeforeSync(uid, output);

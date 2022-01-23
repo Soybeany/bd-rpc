@@ -27,7 +27,7 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
     }
 
     /**
-     * 同步前的回调
+     * 同步前的回调(需使用synchronized)
      *
      * @param uid    用于关联输入/输出的唯一标识
      * @param output 待传输至服务器的数据
@@ -38,7 +38,7 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
     }
 
     /**
-     * 同步结束的回调(必须先配置{@link #onSetupSyncTagToHandle})
+     * 同步结束的回调(必须先配置{@link #onSetupSyncTagToHandle}, 需使用synchronized)
      *
      * @param uid   用于关联输入/输出的唯一标识
      * @param input 入参
@@ -47,7 +47,7 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
     }
 
     /**
-     * 同步过程中出现异常时的回调
+     * 同步过程中出现异常时的回调(需使用synchronized)
      *
      * @param uid 用于关联输入/输出的唯一标识
      * @param e   异常
