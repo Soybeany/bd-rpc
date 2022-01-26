@@ -1,5 +1,11 @@
 package com.soybeany.rpc.consumer;
 
+import com.soybeany.cache.v2.contract.IDatasource;
+import com.soybeany.cache.v2.core.DataManager;
+import com.soybeany.cache.v2.log.ILogWriter;
+import com.soybeany.cache.v2.log.StdLogger;
+import com.soybeany.cache.v2.storage.LruMemCacheStorage;
+import com.soybeany.rpc.core.anno.BdCache;
 import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
@@ -12,6 +18,7 @@ import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.util.RequestUtils;
+import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -54,7 +61,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
      * 服务器信息提供者的映射
      */
     private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
-
+    private final Map<Method, DataManager<Param, Object>> dataManagerMap = new HashMap<>();
     private final Set<String> serviceIdSet = new HashSet<>();
 
     private final String system;
@@ -177,9 +184,38 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     // ***********************内部方法****************************
 
+    @SuppressWarnings("unchecked")
     private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Throwable {
-        DataPicker<ServerInfo> picker;
         serviceId = getMergedServiceId(ProxySelector.getAndRemoveTag(), serviceId);
+        BdCache cache = method.getAnnotation(BdCache.class);
+        // 若不需缓存，则直接调用服务提供者
+        if (null == cache) {
+            return onInvoke(method, args, fallbackImpl, serviceId, timeoutInSec);
+        }
+        // 需要则使用缓存
+        return (T) dataManagerMap.computeIfAbsent(method, m -> getNewDataManager(cache))
+                .getData(new Param(method, args, fallbackImpl, serviceId, timeoutInSec));
+    }
+
+    private DataManager<Param, Object> getNewDataManager(BdCache cache) {
+        return DataManager.Builder
+                .get(cache.desc(), (IDatasource<Param, Object>) param -> onInvoke(param.method, param.args, param.fallbackImpl, param.serviceId, param.timeoutInSec),
+                        param -> {
+                            String json = GSON.toJson(param.args);
+                            return cache.useMd5Key() ? Md5Utils.strToMd5(json) : json;
+                        }
+                )
+                .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
+                .withCache(new LruMemCacheStorage<Param, Object>()
+                        .capacity(cache.capacity())
+                        .expiry(cache.expiry())
+                        .fastFailExpiry(cache.fastFailExpiry())
+                )
+                .build();
+    }
+
+    private <T> T onInvoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Exception {
+        DataPicker<ServerInfo> picker;
         if (null == (picker = pickers.get(serviceId))) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无serviceId(" + serviceId + ")的服务提供者信息");
         }
@@ -199,7 +235,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Throwable {
+    private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Exception {
         log.warn(errMsg);
         if (null == fallbackImpl) {
             throw new RpcPluginNoFallbackException(errMsg);
@@ -253,6 +289,30 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     private String getMergedServiceId(String tag, String serviceId) {
         return StringUtils.hasText(tag) ? (tag + TAG_SEPARATOR + serviceId) : serviceId;
+    }
+
+    // ***********************内部类****************************
+
+    @RequiredArgsConstructor
+    private static class Param {
+        final Method method;
+        final Object[] args;
+        final Object fallbackImpl;
+        final String serviceId;
+        final int timeoutInSec;
+    }
+
+    @Slf4j
+    private static class CacheLogWriter implements ILogWriter {
+        @Override
+        public void onWriteInfo(String s) {
+            log.info(s);
+        }
+
+        @Override
+        public void onWriteWarn(String s) {
+            log.warn(s);
+        }
     }
 
 }

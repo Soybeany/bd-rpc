@@ -55,15 +55,15 @@ public class SyncDTO {
         }
     }
 
-    public <T> T throwException() throws Throwable {
+    public <T> T throwException() throws Exception {
         if (null != exception) {
-            Throwable throwable;
+            Exception exception;
             try {
-                throwable = SerializeUtils.deserialize(HexUtils.hexToByteArray(exception));
+                exception = SerializeUtils.deserialize(HexUtils.hexToByteArray(this.exception));
             } catch (IOException | ClassNotFoundException e) {
                 throw new SyncRequestException("反序列化异常信息失败:" + e.getMessage());
             }
-            throw throwable;
+            throw exception;
         } else if (null != errMsg) {
             throw new SyncRequestException(errMsg);
         }
