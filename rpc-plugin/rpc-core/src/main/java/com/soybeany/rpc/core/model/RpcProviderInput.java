@@ -9,5 +9,6 @@ import lombok.Data;
 @Data
 public class RpcProviderInput {
 
+    private String md5;
 
 }

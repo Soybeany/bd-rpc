@@ -5,6 +5,9 @@ import com.soybeany.rpc.core.model.RpcProviderInput;
 import com.soybeany.rpc.core.model.RpcProviderOutput;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 /**
  * 客户端管理插件(P端)
  *
@@ -14,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProviderInput> {
 
+    private final Map<String, RpcProviderOutput> cacheMap = new WeakHashMap<>();
     private final IRpcStorageManager storageManager;
 
     @Override
@@ -33,6 +37,19 @@ class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProvide
 
     @Override
     public void onHandleSync(RpcProviderOutput in, RpcProviderInput out) {
-        storageManager.save(in.getSystem(), in.getServerInfo(), in.getServiceIds());
+        RpcProviderOutput cache = cacheMap.get(in.getProviderId());
+        // 数据更新了，更新缓存
+        if (in.isUpdated()) {
+            cacheMap.put(in.getProviderId(), cache = in);
+        }
+        // 缓存为空，则直接返回
+        if (null == cache) {
+            out.setMd5(null);
+            return;
+        }
+        // 更新存储管理器数据
+        storageManager.save(cache.getSystem(), cache.getServerInfo(), cache.getServiceIds());
+        out.setMd5(cache.getMd5());
     }
+
 }

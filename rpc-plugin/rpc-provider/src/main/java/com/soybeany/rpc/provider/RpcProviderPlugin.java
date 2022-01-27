@@ -11,8 +11,9 @@ import com.soybeany.rpc.core.model.ServerInfo;
 import com.soybeany.rpc.core.utl.ReflectUtils;
 import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.util.Md5Utils;
 import com.soybeany.util.file.BdFileUtils;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
@@ -30,7 +32,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2021/10/27
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, RpcProviderOutput> implements IRpcServiceInvoker {
 
     private final Map<String, Object> serviceMap = new HashMap<>();
@@ -43,6 +45,8 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     private final ApplicationContext appContext;
     private final String invokeUrl;
     private final String[] pkgToScan;
+
+    private String md5;
 
     @Override
     public String onSetupSyncTagToHandle() {
@@ -81,10 +85,23 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     @Override
     public synchronized boolean onBeforeSync(String uid, RpcProviderOutput output) throws Exception {
-        output.setSystem(system);
-        output.setServerInfo(serverInfo);
-        output.setServiceIds(serviceMap.keySet());
+        output.setProviderId(system + "-" + serverInfo.getInvokeUrl());
+        Set<String> serviceIds = serviceMap.keySet();
+        String md5 = Md5Utils.strToMd5(GSON.toJson(new Object[]{serverInfo, serviceIds}));
+        if (!md5.equals(this.md5)) {
+            output.setUpdated(true);
+            output.setSystem(system);
+            output.setMd5(md5);
+            output.setServerInfo(serverInfo);
+            output.setServiceIds(serviceIds);
+        }
         return super.onBeforeSync(uid, output);
+    }
+
+    @Override
+    public synchronized void onAfterSync(String uid, RpcProviderInput input) throws Exception {
+        super.onAfterSync(uid, input);
+        md5 = input.getMd5();
     }
 
     @Override

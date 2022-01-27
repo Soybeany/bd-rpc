@@ -14,6 +14,9 @@ import java.util.Set;
 @Data
 public class RpcProviderOutput extends BaseClientOutput {
 
+    private boolean updated;
+    private String providerId;
+    private String md5;
     private ServerInfo serverInfo;
     private Set<String> serviceIds;
 
