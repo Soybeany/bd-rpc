@@ -2,8 +2,8 @@ package com.soybeany.mq.consumer;
 
 import com.soybeany.mq.core.api.IMqMsgHandler;
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.broker.MqConsumerInput;
-import com.soybeany.mq.core.model.broker.MqConsumerOutput;
+import com.soybeany.mq.core.model.MqConsumerInput;
+import com.soybeany.mq.core.model.MqConsumerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsum
 
     @Override
     public String onSetupSyncTagToHandle() {
-        return BdMqConstants.TAG_C_B;
+        return BdMqConstants.TAG_C;
     }
 
     @Override

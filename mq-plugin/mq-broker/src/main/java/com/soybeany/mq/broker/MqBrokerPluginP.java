@@ -1,8 +1,8 @@
 package com.soybeany.mq.broker;
 
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.broker.MqProducerInput;
-import com.soybeany.mq.core.model.broker.MqProducerOutput;
+import com.soybeany.mq.core.model.MqProducerInput;
+import com.soybeany.mq.core.model.MqProducerOutput;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -16,7 +16,7 @@ class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutput, MqProducerInput> 
 
     @Override
     public String onSetupSyncTagToHandle() {
-        return BdMqConstants.TAG_P_B;
+        return BdMqConstants.TAG_P;
     }
 
     @Override

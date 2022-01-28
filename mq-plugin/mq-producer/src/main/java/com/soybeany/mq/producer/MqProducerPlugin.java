@@ -3,9 +3,9 @@ package com.soybeany.mq.producer;
 import com.soybeany.mq.core.api.IMqMsgSendCallback;
 import com.soybeany.mq.core.api.IMqMsgSender;
 import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.broker.MqProducerInput;
-import com.soybeany.mq.core.model.broker.MqProducerMsg;
-import com.soybeany.mq.core.model.broker.MqProducerOutput;
+import com.soybeany.mq.core.model.MqProducerInput;
+import com.soybeany.mq.core.model.MqProducerMsg;
+import com.soybeany.mq.core.model.MqProducerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,7 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
 
     @Override
     public String onSetupSyncTagToHandle() {
-        return BdMqConstants.TAG_P_B;
+        return BdMqConstants.TAG_P;
     }
 
     @Override

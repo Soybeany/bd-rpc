@@ -44,7 +44,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     private final String tag;
     private final ApplicationContext appContext;
     private final String invokeUrl;
-    private final String[] pkgToScan;
+    private final Set<String> pkgToScan;
 
     private String md5;
 
@@ -75,7 +75,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         new Thread(() -> {
             for (String name : appContext.getBeanDefinitionNames()) {
                 Object bean = appContext.getBean(name);
-                for (String path : onSetupPkgPathToScan()) {
+                for (String path : getPostTreatPkgPathsToScan()) {
                     Optional.ofNullable(ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass()))
                             .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
                 }
@@ -105,7 +105,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     }
 
     @Override
-    protected String[] onSetupPkgPathToScan() {
+    protected Set<String> onSetupPkgPathToScan() {
         return pkgToScan;
     }
 

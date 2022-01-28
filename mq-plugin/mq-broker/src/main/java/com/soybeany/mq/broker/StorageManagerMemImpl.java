@@ -1,7 +1,7 @@
 package com.soybeany.mq.broker;
 
-import com.soybeany.mq.core.model.broker.MqConsumerMsg;
-import com.soybeany.mq.core.model.broker.MqProducerMsg;
+import com.soybeany.mq.core.model.MqConsumerMsg;
+import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.sync.server.IAutoCleaner;
 
 import java.util.*;

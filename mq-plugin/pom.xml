@@ -16,7 +16,6 @@
         <module>mq-broker</module>
         <module>mq-producer</module>
         <module>mq-consumer</module>
-        <module>mq-registry</module>
     </modules>
 
 </project>

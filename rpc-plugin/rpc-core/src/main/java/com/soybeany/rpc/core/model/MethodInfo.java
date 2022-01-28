@@ -56,8 +56,8 @@ public class MethodInfo {
     }
 
     private String[] toJsons(Object... objs) {
-        String[] jsons = new String[objs.length];
-        for (int i = 0; i < objs.length; i++) {
+        String[] jsons = new String[null != objs ? objs.length : 0];
+        for (int i = 0; i < jsons.length; i++) {
             jsons[i] = GSON.toJson(objs[i]);
         }
         return jsons;

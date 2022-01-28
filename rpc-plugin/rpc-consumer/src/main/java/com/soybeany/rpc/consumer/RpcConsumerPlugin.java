@@ -70,7 +70,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final ApplicationContext appContext;
     private final Function<String, DataPicker<ServerInfo>> dataPickerProvider;
     private final Function<String, Integer> timeoutInSecProvider;
-    private final String[] pkgToScan;
+    private final Set<String> pkgToScan;
 
     private String md5;
 
@@ -96,7 +96,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
             List<Resource> resources = new ArrayList<>();
-            for (String path : onSetupPkgPathToScan()) {
+            for (String path : getPostTreatPkgPathsToScan()) {
                 String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(path) + RESOURCE_PATTERN;
                 Resource[] partResources = resourcePatternResolver.getResources(pattern);
                 Collections.addAll(resources, partResources);
@@ -179,7 +179,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
-    protected String[] onSetupPkgPathToScan() {
+    protected Set<String> onSetupPkgPathToScan() {
         return pkgToScan;
     }
 

@@ -2,8 +2,8 @@ package com.soybeany.mq.core.api;
 
 import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.exception.MqPluginInterruptException;
-import com.soybeany.mq.core.model.broker.MqProducerInput;
-import com.soybeany.mq.core.model.broker.MqProducerMsg;
+import com.soybeany.mq.core.model.MqProducerInput;
+import com.soybeany.mq.core.model.MqProducerMsg;
 
 import java.util.concurrent.CountDownLatch;
 
