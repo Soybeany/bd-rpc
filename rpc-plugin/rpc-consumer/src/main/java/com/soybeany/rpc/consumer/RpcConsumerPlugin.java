@@ -8,6 +8,7 @@ import com.soybeany.cache.v2.storage.LruMemCacheStorage;
 import com.soybeany.rpc.core.anno.BdCache;
 import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.api.IBdCacheExpiryProvider;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.client.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -199,12 +200,10 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     private DataManager<Param, Object> getNewDataManager(BdCache cache) {
         return DataManager.Builder
-                .get(cache.desc(), (IDatasource<Param, Object>) param -> onInvoke(param.method, param.args, param.fallbackImpl, param.serviceId, param.timeoutInSec),
-                        param -> {
-                            String json = GSON.toJson(param.args);
-                            return cache.useMd5Key() ? Md5Utils.strToMd5(json) : json;
-                        }
-                )
+                .get(cache.desc(), getNewDatasource(), param -> {
+                    String json = GSON.toJson(param.args);
+                    return cache.useMd5Key() ? Md5Utils.strToMd5(json) : json;
+                })
                 .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
                 .withCache(new LruMemCacheStorage<Param, Object>()
                         .capacity(cache.capacity())
@@ -212,6 +211,23 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                         .fastFailExpiry(cache.fastFailExpiry())
                 )
                 .build();
+    }
+
+    private IDatasource<Param, Object> getNewDatasource() {
+        return new IDatasource<Param, Object>() {
+            @Override
+            public Object onGetData(Param param) throws Exception {
+                return onInvoke(param.method, param.args, param.fallbackImpl, param.serviceId, param.timeoutInSec);
+            }
+
+            @Override
+            public int onSetupExpiry(Object data) throws Exception {
+                if (data instanceof IBdCacheExpiryProvider) {
+                    return ((IBdCacheExpiryProvider) data).onSetupCacheExpiry();
+                }
+                return IDatasource.super.onSetupExpiry(data);
+            }
+        };
     }
 
     private <T> T onInvoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Exception {
