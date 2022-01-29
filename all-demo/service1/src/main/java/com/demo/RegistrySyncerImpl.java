@@ -1,7 +1,9 @@
 package com.demo;
 
+import com.soybeany.mq.core.plugin.MqRegistryPlugin;
 import com.soybeany.rpc.consumer.BaseRpcRegistrySyncerImpl;
 import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,9 +28,14 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl {
     }
 
     @Override
+    protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
+        super.onSetupPlugins(plugins);
+        plugins.add(new MqRegistryPlugin());
+    }
+
+    @Override
     public void onSetupPkgPathToScan(Set<String> paths) {
         paths.add("com.demo");
-        paths.add("com.soybeany.a");
     }
 
     @Override

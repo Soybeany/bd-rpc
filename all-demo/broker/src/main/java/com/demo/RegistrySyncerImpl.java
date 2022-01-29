@@ -4,8 +4,6 @@ import com.soybeany.rpc.provider.BaseRpcRegistrySyncerImpl;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -20,9 +18,6 @@ import java.util.Set;
 @Slf4j
 @Component
 public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl {
-
-    @Autowired
-    private ApplicationContext appContext;
 
     @Override
     protected String onSetupTag() {

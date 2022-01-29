@@ -4,6 +4,8 @@ import com.soybeany.sync.core.model.SyncClientInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * @author Soybeany
  * @date 2021/10/27
@@ -11,6 +13,14 @@ import org.slf4j.LoggerFactory;
 public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output> {
 
     Logger LOGGER = LoggerFactory.getLogger(IClientPlugin.class);
+
+    /**
+     * 允许插件预处理
+     *
+     * @param appliedPlugins 同一service下应用的全部插件
+     */
+    default void onPreTreat(List<IClientPlugin<Object, Object>> appliedPlugins) {
+    }
 
     /**
      * 应用启动时的回调

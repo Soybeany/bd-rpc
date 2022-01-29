@@ -2,12 +2,12 @@ package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.api.IRpcServiceInvoker;
-import com.soybeany.rpc.core.client.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.MethodInfo;
 import com.soybeany.rpc.core.model.RpcProviderInput;
 import com.soybeany.rpc.core.model.RpcProviderOutput;
 import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.plugin.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.utl.ReflectUtils;
 import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
@@ -20,10 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
@@ -73,9 +70,10 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         serverInfo.setAuthorization(authorizationToken);
         // 扫描
         new Thread(() -> {
+            List<String> paths = getPostTreatPkgPathsToScan();
             for (String name : appContext.getBeanDefinitionNames()) {
                 Object bean = appContext.getBean(name);
-                for (String path : getPostTreatPkgPathsToScan()) {
+                for (String path : paths) {
                     Optional.ofNullable(ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass()))
                             .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
                 }

@@ -70,6 +70,8 @@ public class SyncClientService {
     private void onStart() {
         int interval = config.onSetupSyncIntervalInSec();
         SyncClientInfo info = new SyncClientInfo(interval, config.onSetupSyncTimeoutInSec());
+        // 插件预处理
+        allPlugins.forEach(plugin -> plugin.onPreTreat(allPlugins));
         // 启动回调
         allPlugins.forEach(plugin -> plugin.onStartup(info));
         // 执行定时任务

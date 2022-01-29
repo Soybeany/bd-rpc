@@ -1,5 +1,6 @@
 package com.demo;
 
+import com.soybeany.mq.core.plugin.MqRegistryPlugin;
 import com.soybeany.rpc.consumer.RpcConsumerPlugin;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -74,6 +75,7 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
                 Collections.emptySet()
         );
         plugins.add(plugin);
+        plugins.add(new MqRegistryPlugin());
     }
 
     @PostConstruct

@@ -10,10 +10,10 @@ import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.api.IBdCacheExpiryProvider;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
-import com.soybeany.rpc.core.client.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.core.model.*;
+import com.soybeany.rpc.core.plugin.BaseRpcClientPlugin;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
@@ -95,7 +95,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
-            List<Resource> resources = new ArrayList<>();
+            Set<Resource> resources = new HashSet<>();
             for (String path : getPostTreatPkgPathsToScan()) {
                 String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(path) + RESOURCE_PATTERN;
                 Resource[] partResources = resourcePatternResolver.getResources(pattern);
