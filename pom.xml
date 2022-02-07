@@ -12,7 +12,6 @@
     <modules>
         <module>rpc-plugin</module>
         <module>mq-plugin</module>
-        <module>config-plugin</module>
         <module>all-demo</module>
         <module>sync-frame</module>
     </modules>
