@@ -2,12 +2,8 @@ package com.soybeany.rpc.core.plugin;
 
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.sync.core.api.IClientPlugin;
-import org.springframework.lang.NonNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Soybeany
@@ -24,7 +20,10 @@ public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugi
 
     protected List<String> getPostTreatPkgPathsToScan() {
         if (null == postTreatPkgPathsToScan) {
-            List<String> paths = new ArrayList<>(onSetupPkgPathToScan());
+            List<String> paths = Optional
+                    .ofNullable(onSetupPkgPathToScan())
+                    .map(ArrayList::new)
+                    .orElseGet(ArrayList::new);
             paths.addAll(exPkgPathsToScan);
             paths.sort(Comparator.comparingInt(String::length));
             postTreatPkgPathsToScan = new ArrayList<>();
@@ -52,7 +51,6 @@ public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugi
      *
      * @return 路径值(以该值开始)
      */
-    @NonNull
     protected abstract Set<String> onSetupPkgPathToScan();
 
 }

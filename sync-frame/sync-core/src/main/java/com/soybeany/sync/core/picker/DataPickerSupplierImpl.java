@@ -2,7 +2,8 @@ package com.soybeany.sync.core.picker;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -15,39 +16,18 @@ public class DataPickerSupplierImpl<T> implements DataPicker<T> {
     private final Supplier<T> supplier;
 
     @Override
-    public void set(T[] arr) {
+    public void set(List<T> list) {
         throw new RuntimeException("不支持set方法");
     }
 
     @Override
     public T getNext() {
-        T t = supplier.get();
-        return t;
+        return supplier.get();
     }
 
     @Override
-    public Iterator<T> iterator() {
-        return new IteratorImpl();
-    }
-
-    // ***********************内部类****************************
-
-    private class IteratorImpl implements Iterator<T> {
-        private boolean hasNext = true;
-
-        @Override
-        public boolean hasNext() {
-            if (!hasNext) {
-                return false;
-            }
-            hasNext = false;
-            return true;
-        }
-
-        @Override
-        public T next() {
-            return getNext();
-        }
+    public List<T> getAllUsable() {
+        return Collections.singletonList(getNext());
     }
 
 }

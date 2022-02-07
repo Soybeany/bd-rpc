@@ -1,6 +1,8 @@
 package com.soybeany.sync.core.picker;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 使用遍历算法
@@ -10,7 +12,7 @@ import java.util.*;
  */
 public class DataPickerSimpleImpl<T> implements DataPicker<T> {
 
-    private List<T> infoArr;
+    private List<T> dataList;
     private int curIndex;
 
     public DataPickerSimpleImpl() {
@@ -19,65 +21,40 @@ public class DataPickerSimpleImpl<T> implements DataPicker<T> {
 
     @SafeVarargs
     public DataPickerSimpleImpl(T... arr) {
-        set(arr);
-    }
-
-    @Override
-    public synchronized void set(T[] arr) {
         set(Arrays.asList(arr));
     }
 
     @Override
-    public synchronized T getNext() {
-        if (null == infoArr || infoArr.size() <= 0) {
-            return null;
-        }
-        return infoArr.get(getNextIndex());
+    public synchronized void set(List<T> list) {
+        this.dataList = list;
+        curIndex = -1;
     }
 
     @Override
-    public synchronized Iterator<T> iterator() {
-        return new IteratorImpl(getNextIndex());
+    public synchronized T getNext() throws NoNextDataException {
+        if (hasNoDataList()) {
+            throw new NoNextDataException();
+        }
+        switchToNextIndex();
+        return dataList.get(curIndex);
+    }
+
+    @Override
+    public synchronized List<T> getAllUsable() {
+        if (hasNoDataList()) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(dataList);
     }
 
     // ***********************内部方法****************************
 
-    private void set(List<T> list) {
-        this.infoArr = list;
-        curIndex = -1;
+    private boolean hasNoDataList() {
+        return null == dataList || dataList.isEmpty();
     }
 
-    private int getNextIndex() {
-        if (infoArr.isEmpty()) {
-            return -1;
-        }
-        curIndex = curIndex % infoArr.size();
-        return ++curIndex % infoArr.size();
-    }
-
-    // ***********************内部类****************************
-
-    private class IteratorImpl implements Iterator<T> {
-
-        private final DataPickerSimpleImpl<T> picker = new DataPickerSimpleImpl<>();
-        private int usedCount;
-
-        private IteratorImpl(int startIndex) {
-            picker.set(new ArrayList<>(infoArr));
-            picker.curIndex = startIndex;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return usedCount < picker.infoArr.size();
-        }
-
-        @Override
-        public T next() {
-            usedCount++;
-            return picker.getNext();
-        }
-
+    private void switchToNextIndex() {
+        curIndex = (curIndex + 1) % dataList.size();
     }
 
 }

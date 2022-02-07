@@ -1,7 +1,12 @@
 package com.soybeany.rpc.core.api;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.model.RpcBatchConfig;
+import com.soybeany.rpc.core.model.RpcBatchResult;
 import com.soybeany.rpc.core.model.RpcProxySelector;
+import com.soybeany.rpc.core.model.RpcServerInfo;
+
+import java.util.Map;
 
 /**
  * @author Soybeany
@@ -22,5 +27,17 @@ public interface IRpcServiceProxy {
      * 所以{@link RpcProxySelector#get}的返回值只能作为局部变量，否则可能会出现不可预知的问题
      */
     <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException;
+
+    /**
+     * 批量执行
+     */
+    default <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, Object... args) {
+        return batchInvoke(interfaceClass, methodId, null, args);
+    }
+
+    /**
+     * 批量执行(指定标签)
+     */
+    <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, RpcBatchConfig config, Object... args);
 
 }

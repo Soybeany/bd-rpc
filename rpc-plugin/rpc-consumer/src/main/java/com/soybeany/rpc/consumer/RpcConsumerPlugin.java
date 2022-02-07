@@ -6,6 +6,7 @@ import com.soybeany.cache.v2.log.ILogWriter;
 import com.soybeany.cache.v2.log.StdLogger;
 import com.soybeany.cache.v2.storage.LruMemCacheStorage;
 import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.anno.BdRpcBatch;
 import com.soybeany.rpc.core.anno.BdRpcCache;
 import com.soybeany.rpc.core.anno.BdRpcFallback;
 import com.soybeany.rpc.core.api.IRpcCacheExpiryProvider;
@@ -37,6 +38,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import static com.soybeany.rpc.core.model.BdRpcConstants.*;
@@ -62,7 +67,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
      * 服务器信息提供者的映射
      */
     private final Map<String, DataPicker<RpcServerInfo>> pickers = new HashMap<>();
-    private final Map<Method, DataManager<Param, Object>> dataManagerMap = new HashMap<>();
+    private final Map<Method, DataManager<InvokeInfo, Object>> dataManagerMap = new HashMap<>();
+    private final Map<Class<?>, Map<String, InfoPart2>> infoPart2Map = new HashMap<>();
     private final Set<String> serviceIdSet = new HashSet<>();
 
     private final String system;
@@ -72,6 +78,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Function<String, Integer> timeoutInSecProvider;
     private final Set<String> pkgToScan;
 
+    private ExecutorService batchExecutor;
     private String md5;
 
     @Override
@@ -117,6 +124,18 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
         }
+        // 按需启动线程池
+        if (!infoPart2Map.isEmpty()) {
+            batchExecutor = Executors.newCachedThreadPool();
+        }
+    }
+
+    @Override
+    public void onShutdown() {
+        if (null != batchExecutor) {
+            batchExecutor.shutdown();
+        }
+        super.onShutdown();
     }
 
     @Override
@@ -149,7 +168,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             map.forEach((id, v) -> {
                 keys.remove(id);
                 DataPicker<RpcServerInfo> picker = pickers.computeIfAbsent(id, dataPickerProvider);
-                picker.set(v.toArray(new RpcServerInfo[0]));
+                picker.set(new ArrayList<>(v));
             });
         });
         // 移除已失效条目
@@ -170,12 +189,45 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             return impl;
         }
         // 没有找到实现类
-        throw new RpcPluginException("没有找到指定类(" + interfaceClass + ")的实现");
+        throw getNotFoundClassImplException(interfaceClass);
     }
 
     @Override
     public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
         return new RpcProxySelector<>(get(interfaceClass));
+    }
+
+    @Override
+    public <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, RpcBatchConfig config, Object... args) {
+        // 入参校验
+        Map<String, InfoPart2> map = infoPart2Map.get(interfaceClass);
+        if (null == map) {
+            throw getNotFoundClassImplException(interfaceClass);
+        }
+        InfoPart2 infoPart = map.get(methodId);
+        if (null == infoPart) {
+            throw new RpcPluginException("没有找到指定methodId(" + methodId + ")的方法");
+        }
+        // 并发请求
+        Map<RpcServerInfo, Future<T>> futureMap = new HashMap<>();
+        InvokeInfo info = infoPart.toNewInfo(args);
+        DataPicker<RpcServerInfo> picker = pickers.get(infoPart.serviceId);
+        for (RpcServerInfo serverInfo : picker.getAllUsable()) {
+            Future<T> future = batchExecutor.submit(() -> onInvoke(new PickerWrapper(picker, serverInfo), info));
+            futureMap.put(serverInfo, future);
+        }
+        // 结果整合
+        Map<RpcServerInfo, RpcBatchResult<T>> result = new HashMap<>();
+        futureMap.forEach((serverInfo, future) -> {
+            try {
+                result.put(serverInfo, RpcBatchResult.norm(future.get()));
+            } catch (InterruptedException e) {
+                result.put(serverInfo, RpcBatchResult.error(e));
+            } catch (ExecutionException e) {
+                result.put(serverInfo, RpcBatchResult.error(e.getCause()));
+            }
+        });
+        return result;
     }
 
     @Override
@@ -186,26 +238,24 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     // ***********************内部方法****************************
 
     @SuppressWarnings("unchecked")
-    private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Throwable {
-        serviceId = getMergedServiceId(RpcProxySelector.getAndRemoveTag(), serviceId);
-        BdRpcCache cache = method.getAnnotation(BdRpcCache.class);
-        // 若不需缓存，则直接调用服务提供者
-        if (null == cache) {
-            return onInvoke(method, args, fallbackImpl, serviceId, timeoutInSec);
+    private <T> T invoke(InvokeInfo invokeInfo) throws Throwable {
+        DataManager<InvokeInfo, Object> manager = dataManagerMap.get(invokeInfo.method);
+        // 若没有对应的manager，即不需缓存，直接调用服务提供者
+        if (null == manager) {
+            return onInvoke(invokeInfo);
         }
         // 需要则使用缓存
-        return (T) dataManagerMap.computeIfAbsent(method, m -> getNewDataManager(cache))
-                .getData(new Param(method, args, fallbackImpl, serviceId, timeoutInSec));
+        return (T) manager.getData(invokeInfo);
     }
 
-    private DataManager<Param, Object> getNewDataManager(BdRpcCache cache) {
+    private DataManager<InvokeInfo, Object> getNewDataManager(BdRpcCache cache) {
         return DataManager.Builder
-                .get(cache.desc(), getNewDatasource(), param -> {
-                    String json = GSON.toJson(param.args);
+                .get(cache.desc(), getNewDatasource(), invokeInfo -> {
+                    String json = GSON.toJson(invokeInfo.args);
                     return cache.useMd5Key() ? Md5Utils.strToMd5(json) : json;
                 })
                 .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
-                .withCache(new LruMemCacheStorage<Param, Object>()
+                .withCache(new LruMemCacheStorage<InvokeInfo, Object>()
                         .capacity(cache.capacity())
                         .expiry(cache.expiry())
                         .fastFailExpiry(cache.fastFailExpiry())
@@ -213,11 +263,11 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 .build();
     }
 
-    private IDatasource<Param, Object> getNewDatasource() {
-        return new IDatasource<Param, Object>() {
+    private IDatasource<InvokeInfo, Object> getNewDatasource() {
+        return new IDatasource<InvokeInfo, Object>() {
             @Override
-            public Object onGetData(Param param) throws Exception {
-                return onInvoke(param.method, param.args, param.fallbackImpl, param.serviceId, param.timeoutInSec);
+            public Object onGetData(InvokeInfo invokeInfo) throws Exception {
+                return onInvoke(invokeInfo);
             }
 
             @Override
@@ -230,24 +280,27 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         };
     }
 
-    private <T> T onInvoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Exception {
-        DataPicker<RpcServerInfo> picker;
-        if (null == (picker = pickers.get(serviceId))) {
-            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无serviceId(" + serviceId + ")的服务提供者信息");
+    private <T> T onInvoke(InvokeInfo invokeInfo) throws Exception {
+        return onInvoke(pickers.get(invokeInfo.serviceId), invokeInfo);
+    }
+
+    private <T> T onInvoke(DataPicker<RpcServerInfo> picker, InvokeInfo invokeInfo) throws Exception {
+        if (null == picker) {
+            return invokeMethodOfFallbackImpl(invokeInfo.method, invokeInfo.args, invokeInfo.fallbackImpl, "暂无serviceId(" + invokeInfo.serviceId + ")的服务提供者信息");
         }
         RequestUtils.Config config = new RequestUtils.Config();
-        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(getSplitServiceId(serviceId), method, args)));
-        config.setTimeoutInSec(timeoutInSec);
+        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(getSplitServiceId(invokeInfo.serviceId), invokeInfo.method, invokeInfo.args)));
+        config.setTimeoutInSec(invokeInfo.timeoutInSec);
         SyncDTO dto;
         try {
             dto = RequestUtils.request(picker, serverInfo -> {
                 config.getHeaders().put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
                 return serverInfo.getInvokeUrl();
-            }, config, SyncDTO.class, "暂无serviceId(" + serviceId + ")可用的服务提供者");
+            }, config, SyncDTO.class, "暂无serviceId(" + invokeInfo.serviceId + ")可用的服务提供者");
         } catch (SyncRequestException e) {
-            return invokeMethodOfFallbackImpl(method, args, fallbackImpl, e.getMessage());
+            return invokeMethodOfFallbackImpl(invokeInfo.method, invokeInfo.args, invokeInfo.fallbackImpl, e.getMessage());
         }
-        return dto.getIsNorm() ? dto.getData(method.getGenericReturnType()) : dto.throwException();
+        return dto.getIsNorm() ? dto.getData(invokeInfo.method.getGenericReturnType()) : dto.throwException();
     }
 
     @SuppressWarnings("unchecked")
@@ -266,23 +319,48 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         if (!success) {
             throw new RpcPluginException("@BdRpc的serviceId(" + serviceId + ")需唯一");
         }
-        // 本地服务
-        Object[] fallbackImpl = new Object[1];
-        Optional.ofNullable(getBeanFromContext(interfaceClass)).ifPresent(impl -> {
+        Object fallbackImpl = null;
+        // 处理接口的本地实现
+        Object impl = getBeanFromContext(interfaceClass);
+        if (null != impl) {
+            // 配置熔断实现
             if (isFallbackImpl(impl)) {
-                fallbackImpl[0] = impl;
-            } else {
-                proxies.put(interfaceClass, impl);
+                fallbackImpl = impl;
             }
-        });
-        // 远端服务
+            // 不需配置为代理
+            else {
+                return;
+            }
+        }
+        // 分区信息生成
+        serviceId = getMergedServiceId(RpcProxySelector.getAndRemoveTag(), serviceId);
         int timeoutInSec = (referTimeoutInSec >= 0 ? referTimeoutInSec : timeoutInSecProvider.apply(serviceId));
+        InfoPart1 infoPart = new InfoPart1(fallbackImpl, serviceId, timeoutInSec);
+        // 方法信息预处理
+        for (Method method : interfaceClass.getMethods()) {
+            handleMethod(interfaceClass, method, infoPart);
+        }
+        // 远端服务
         Object instance = Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class[]{interfaceClass},
-                (proxy, method, args) -> invoke(method, args, fallbackImpl[0], serviceId, timeoutInSec)
+                (proxy, method, args) -> invoke(infoPart.toNewInfo(method, args))
         );
         proxies.put(interfaceClass, instance);
+    }
+
+    private void handleMethod(Class<?> interfaceClass, Method method, InfoPart1 part1) {
+        // 处理缓存注解
+        BdRpcCache cache = method.getAnnotation(BdRpcCache.class);
+        if (null != cache) {
+            dataManagerMap.put(method, getNewDataManager(cache));
+        }
+        // 处理批量注解
+        BdRpcBatch batch = method.getAnnotation(BdRpcBatch.class);
+        if (null != batch) {
+            infoPart2Map.computeIfAbsent(interfaceClass, clazz -> new HashMap<>())
+                    .put(batch.methodId(), new InfoPart2(method, part1));
+        }
     }
 
     private boolean isFallbackImpl(Object obj) {
@@ -307,10 +385,43 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         return StringUtils.hasText(tag) ? (tag + TAG_SEPARATOR + serviceId) : serviceId;
     }
 
+    private RpcPluginException getNotFoundClassImplException(Class<?> interfaceClass) {
+        return new RpcPluginException("没有找到指定类(" + interfaceClass + ")的实现");
+    }
+
     // ***********************内部类****************************
 
     @RequiredArgsConstructor
-    private static class Param {
+    private static class InfoPart1 {
+        final Object fallbackImpl;
+        final String serviceId;
+        final int timeoutInSec;
+
+        InvokeInfo toNewInfo(Method method, Object[] args) {
+            return new InvokeInfo(method, args, fallbackImpl, serviceId, timeoutInSec);
+        }
+    }
+
+    private static class InfoPart2 {
+        final Method method;
+        final Object fallbackImpl;
+        final String serviceId;
+        final int timeoutInSec;
+
+        InfoPart2(Method method, InfoPart1 part1) {
+            this.method = method;
+            this.fallbackImpl = part1.fallbackImpl;
+            this.serviceId = part1.serviceId;
+            this.timeoutInSec = part1.timeoutInSec;
+        }
+
+        InvokeInfo toNewInfo(Object[] args) {
+            return new InvokeInfo(method, args, fallbackImpl, serviceId, timeoutInSec);
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class InvokeInfo {
         final Method method;
         final Object[] args;
         final Object fallbackImpl;
@@ -328,6 +439,34 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         @Override
         public void onWriteWarn(String s) {
             log.warn(s);
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class PickerWrapper implements DataPicker<RpcServerInfo> {
+
+        private final DataPicker<RpcServerInfo> target;
+        private final RpcServerInfo info;
+
+        @Override
+        public void set(List<RpcServerInfo> list) {
+            throw new RpcPluginException("不支持set方法");
+        }
+
+        @Override
+        public RpcServerInfo getNext() {
+            return info;
+        }
+
+        @Override
+        public List<RpcServerInfo> getAllUsable() {
+            return Collections.singletonList(info);
+        }
+
+        @Override
+        public void onUnusable(RpcServerInfo data) {
+            DataPicker.super.onUnusable(data);
+            target.onUnusable(data);
         }
     }
 

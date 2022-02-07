@@ -3,7 +3,6 @@ package com.demo;
 import com.demo.model.TestParam;
 import com.demo.model.TestVO;
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.anno.BdRpcBatch;
 
 import java.util.List;
 
@@ -12,11 +11,10 @@ import java.util.List;
  * @date 2021/10/29
  */
 @BdRpc(serviceId = "test")
-public interface ITestService {
+public interface ITestService2 {
 
     List<TestVO> getValue(List<TestParam> param) throws Exception;
 
-    @BdRpcBatch(methodId = "batch")
     String getBatchValue(String input);
 
 }

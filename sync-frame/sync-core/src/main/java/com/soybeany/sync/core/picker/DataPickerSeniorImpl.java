@@ -17,7 +17,6 @@ public class DataPickerSeniorImpl<T> extends DataPickerSimpleImpl<T> {
     private final int valve;
     private final int intervalInMillis;
     private int itemIndex;
-    private int modCount;
 
     /**
      * @param windowSize    检测的窗口大小，将使用该大小的一半作为概率检测的阈值
@@ -30,12 +29,11 @@ public class DataPickerSeniorImpl<T> extends DataPickerSimpleImpl<T> {
     }
 
     @Override
-    public synchronized void set(T[] arr) {
-        super.set(arr);
-        modCount++;
+    public synchronized void set(List<T> list) {
+        super.set(list);
         Set<T> previous = new HashSet<>(failCountMap.keySet());
         // 添加新记录
-        for (T data : arr) {
+        for (T data : list) {
             if (!failCountMap.containsKey(data)) {
                 failCountMap.put(data, 0);
             }
@@ -46,20 +44,34 @@ public class DataPickerSeniorImpl<T> extends DataPickerSimpleImpl<T> {
     }
 
     @Override
-    public synchronized T getNext() {
+    public synchronized T getNext() throws NoNextDataException {
         rebase();
-        return getData(super.getNext());
+        for (T data : super.getAllUsable()) {
+            try {
+                return getData(data);
+            } catch (DataUnusableException ignored) {
+            }
+        }
+        throw new NoNextDataException();
+    }
+
+    @Override
+    public synchronized List<T> getAllUsable() {
+        rebase();
+        List<T> result = new ArrayList<>();
+        for (T data : super.getAllUsable()) {
+            try {
+                result.add(getData(data));
+            } catch (DataUnusableException ignored) {
+            }
+        }
+        return result;
     }
 
     @Override
     public synchronized void onUnusable(T data) {
         rebase();
         itemList.get(itemIndex).failArr.add(data);
-    }
-
-    @Override
-    public synchronized Iterator<T> iterator() {
-        return new IteratorImpl(super.iterator());
     }
 
     // ***********************内部方法****************************
@@ -88,15 +100,19 @@ public class DataPickerSeniorImpl<T> extends DataPickerSimpleImpl<T> {
         }
     }
 
-    private T getData(T data) {
+    private T getData(T data) throws DataUnusableException {
         // 没有或低于阈值，则不作处理
+        Integer failCount = failCountMap.get(data);
         int deltaFailCount;
-        if (null == data || (deltaFailCount = failCountMap.get(data) - valve) <= 0) {
+        if (null == failCount || (deltaFailCount = failCount - valve) <= 0) {
             return data;
         }
         // 概率返回，失败次数越多则返回值的概率越低
         boolean shouldReturnValue = new Random().nextInt(itemList.size() - valve) >= deltaFailCount;
-        return shouldReturnValue ? data : null;
+        if (shouldReturnValue) {
+            return data;
+        }
+        throw new DataUnusableException();
     }
 
     // ***********************内部类****************************
@@ -107,28 +123,7 @@ public class DataPickerSeniorImpl<T> extends DataPickerSimpleImpl<T> {
         final Set<T> failArr = new HashSet<>();
     }
 
-    private class IteratorImpl implements Iterator<T> {
-
-        private final Iterator<T> iterator;
-        private final int expectedModCount;
-
-        private IteratorImpl(Iterator<T> iterator) {
-            this.iterator = iterator;
-            expectedModCount = modCount;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public T next() {
-            if (expectedModCount != modCount) {
-                throw new ConcurrentModificationException();
-            }
-            return getData(iterator.next());
-        }
+    private static class DataUnusableException extends Exception {
     }
 
 }

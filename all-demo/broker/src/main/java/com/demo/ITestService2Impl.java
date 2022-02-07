@@ -2,7 +2,7 @@ package com.demo;
 
 import com.demo.model.TestParam;
 import com.demo.model.TestVO;
-import com.soybeany.rpc.core.anno.BdRpcFallback;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -10,20 +10,22 @@ import java.util.List;
 
 /**
  * @author Soybeany
- * @date 2021/11/1
+ * @date 2021/10/29
  */
-@BdRpcFallback
+@Slf4j
 @Component
-public class TestFuseImpl implements ITestService {
+public class ITestService2Impl implements ITestService2 {
+
     @Override
     public List<TestVO> getValue(List<TestParam> param) {
         TestVO vo = new TestVO();
-        vo.setValue("熔断");
+        vo.setValue("broker");
         return Collections.singletonList(vo);
     }
 
     @Override
     public String getBatchValue(String input) {
-        return "熔断b";
+        return "来自broker:" + input;
     }
+
 }

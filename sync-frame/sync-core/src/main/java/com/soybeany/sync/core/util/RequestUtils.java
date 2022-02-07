@@ -27,11 +27,7 @@ public class RequestUtils {
     private static final Map<Integer, OkHttpClient> CLIENT_MAP = new WeakHashMap<>();
 
     public static <D, T> T request(DataPicker<D> picker, Function<D, String> urlMapper, Config config, Type resultType, String errMsg) throws SyncRequestException {
-        for (D data : picker) {
-            //
-            if (null == data) {
-                continue;
-            }
+        for (D data : picker.getAllUsable()) {
             String url = urlMapper.apply(data);
             try {
                 String bodyString = getBodyString(url, config);

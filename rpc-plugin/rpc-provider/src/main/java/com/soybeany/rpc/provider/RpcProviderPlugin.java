@@ -26,6 +26,8 @@ import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
 /**
+ * todo 加入方法执行情况统计信息，加入到{@link RpcServerInfo}中，可用于作调用情况的负载均衡
+ *
  * @author Soybeany
  * @date 2021/10/27
  */

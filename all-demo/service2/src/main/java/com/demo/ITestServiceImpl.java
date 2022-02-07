@@ -24,4 +24,9 @@ public class ITestServiceImpl implements ITestService {
         log.info("调用了数据提供者");
         return result;
     }
+
+    @Override
+    public String getBatchValue(String input) {
+        return "来自Service2:" + input;
+    }
 }

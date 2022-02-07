@@ -4,7 +4,10 @@ import com.soybeany.mq.core.plugin.MqRegistryPlugin;
 import com.soybeany.rpc.consumer.RpcConsumerPlugin;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.model.RpcBatchConfig;
+import com.soybeany.rpc.core.model.RpcBatchResult;
 import com.soybeany.rpc.core.model.RpcProxySelector;
+import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.provider.BaseRpcRegistrySyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
@@ -18,6 +21,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.demo.model.Constants.PATH_RPC;
@@ -72,10 +76,25 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
                 appContext,
                 serviceId -> new DataPickerSimpleImpl<>(),
                 serviceId -> 5,
-                Collections.emptySet()
+                null
         );
         plugins.add(plugin);
         plugins.add(new MqRegistryPlugin());
+    }
+
+    @Override
+    public <T> T get(Class<T> interfaceClass) throws RpcPluginException {
+        return plugin.get(interfaceClass);
+    }
+
+    @Override
+    public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
+        return plugin.getSelector(interfaceClass);
+    }
+
+    @Override
+    public <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, RpcBatchConfig config, Object... args) {
+        return plugin.batchInvoke(interfaceClass, methodId, config, args);
     }
 
     @PostConstruct
@@ -88,13 +107,4 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
         stop();
     }
 
-    @Override
-    public <T> T get(Class<T> interfaceClass) throws RpcPluginException {
-        return plugin.get(interfaceClass);
-    }
-
-    @Override
-    public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
-        return plugin.getSelector(interfaceClass);
-    }
 }
