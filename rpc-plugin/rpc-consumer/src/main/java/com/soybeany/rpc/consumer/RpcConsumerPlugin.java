@@ -5,10 +5,10 @@ import com.soybeany.cache.v2.core.DataManager;
 import com.soybeany.cache.v2.log.ILogWriter;
 import com.soybeany.cache.v2.log.StdLogger;
 import com.soybeany.cache.v2.storage.LruMemCacheStorage;
-import com.soybeany.rpc.core.anno.BdCache;
-import com.soybeany.rpc.core.anno.BdFallback;
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.api.IBdCacheExpiryProvider;
+import com.soybeany.rpc.core.anno.BdRpcCache;
+import com.soybeany.rpc.core.anno.BdRpcFallback;
+import com.soybeany.rpc.core.api.IRpcCacheExpiryProvider;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
@@ -61,14 +61,14 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     /**
      * 服务器信息提供者的映射
      */
-    private final Map<String, DataPicker<ServerInfo>> pickers = new HashMap<>();
+    private final Map<String, DataPicker<RpcServerInfo>> pickers = new HashMap<>();
     private final Map<Method, DataManager<Param, Object>> dataManagerMap = new HashMap<>();
     private final Set<String> serviceIdSet = new HashSet<>();
 
     private final String system;
     private final String version;
     private final ApplicationContext appContext;
-    private final Function<String, DataPicker<ServerInfo>> dataPickerProvider;
+    private final Function<String, DataPicker<RpcServerInfo>> dataPickerProvider;
     private final Function<String, Integer> timeoutInSecProvider;
     private final Set<String> pkgToScan;
 
@@ -137,7 +137,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         Set<String> keys = new HashSet<>(pickers.keySet());
         Optional.ofNullable(input.getProviderMap()).ifPresent(map -> {
             // 数据预处理，添加带标签的记录
-            Map<String, Set<ServerInfo>> tmpMap = new HashMap<>();
+            Map<String, Set<RpcServerInfo>> tmpMap = new HashMap<>();
             map.forEach((id, v) -> v.forEach(info -> {
                 String newId = getMergedServiceId(info.getTag(), id);
                 if (!newId.equals(id)) {
@@ -148,8 +148,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             // 更新数据
             map.forEach((id, v) -> {
                 keys.remove(id);
-                DataPicker<ServerInfo> picker = pickers.computeIfAbsent(id, dataPickerProvider);
-                picker.set(v.toArray(new ServerInfo[0]));
+                DataPicker<RpcServerInfo> picker = pickers.computeIfAbsent(id, dataPickerProvider);
+                picker.set(v.toArray(new RpcServerInfo[0]));
             });
         });
         // 移除已失效条目
@@ -174,8 +174,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
-    public <T> ProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
-        return new ProxySelector<>(get(interfaceClass));
+    public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
+        return new RpcProxySelector<>(get(interfaceClass));
     }
 
     @Override
@@ -187,8 +187,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     @SuppressWarnings("unchecked")
     private <T> T invoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Throwable {
-        serviceId = getMergedServiceId(ProxySelector.getAndRemoveTag(), serviceId);
-        BdCache cache = method.getAnnotation(BdCache.class);
+        serviceId = getMergedServiceId(RpcProxySelector.getAndRemoveTag(), serviceId);
+        BdRpcCache cache = method.getAnnotation(BdRpcCache.class);
         // 若不需缓存，则直接调用服务提供者
         if (null == cache) {
             return onInvoke(method, args, fallbackImpl, serviceId, timeoutInSec);
@@ -198,7 +198,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 .getData(new Param(method, args, fallbackImpl, serviceId, timeoutInSec));
     }
 
-    private DataManager<Param, Object> getNewDataManager(BdCache cache) {
+    private DataManager<Param, Object> getNewDataManager(BdRpcCache cache) {
         return DataManager.Builder
                 .get(cache.desc(), getNewDatasource(), param -> {
                     String json = GSON.toJson(param.args);
@@ -222,8 +222,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
             @Override
             public int onSetupExpiry(Object data) throws Exception {
-                if (data instanceof IBdCacheExpiryProvider) {
-                    return ((IBdCacheExpiryProvider) data).onSetupCacheExpiry();
+                if (data instanceof IRpcCacheExpiryProvider) {
+                    return ((IRpcCacheExpiryProvider) data).onSetupCacheExpiry();
                 }
                 return IDatasource.super.onSetupExpiry(data);
             }
@@ -231,12 +231,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     private <T> T onInvoke(Method method, Object[] args, Object fallbackImpl, String serviceId, int timeoutInSec) throws Exception {
-        DataPicker<ServerInfo> picker;
+        DataPicker<RpcServerInfo> picker;
         if (null == (picker = pickers.get(serviceId))) {
             return invokeMethodOfFallbackImpl(method, args, fallbackImpl, "暂无serviceId(" + serviceId + ")的服务提供者信息");
         }
         RequestUtils.Config config = new RequestUtils.Config();
-        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new MethodInfo(getSplitServiceId(serviceId), method, args)));
+        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(getSplitServiceId(serviceId), method, args)));
         config.setTimeoutInSec(timeoutInSec);
         SyncDTO dto;
         try {
@@ -286,7 +286,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     private boolean isFallbackImpl(Object obj) {
-        return null != obj.getClass().getAnnotation(BdFallback.class);
+        return null != obj.getClass().getAnnotation(BdRpcFallback.class);
     }
 
     @SuppressWarnings("unchecked")

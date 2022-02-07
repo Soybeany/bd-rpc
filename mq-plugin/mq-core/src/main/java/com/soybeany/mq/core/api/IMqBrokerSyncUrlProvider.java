@@ -1,7 +1,7 @@
 package com.soybeany.mq.core.api;
 
-import com.soybeany.rpc.core.anno.BdCache;
 import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.anno.BdRpcCache;
 
 /**
  * @author Soybeany
@@ -10,7 +10,7 @@ import com.soybeany.rpc.core.anno.BdRpc;
 @BdRpc(serviceId = "bd-mq")
 public interface IMqBrokerSyncUrlProvider {
 
-    @BdCache(desc = "同步", needLog = false, fastFailExpiry = 10 * 1000)
+    @BdRpcCache(desc = "同步", needLog = false, fastFailExpiry = 10 * 1000)
     String onGetSyncUrl();
 
 }

@@ -14,6 +14,6 @@ public class RpcConsumerInput {
 
     private boolean updated;
     private String md5;
-    private Map<String, Set<ServerInfo>> providerMap;
+    private Map<String, Set<RpcServerInfo>> providerMap;
 
 }

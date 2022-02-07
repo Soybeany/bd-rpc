@@ -2,7 +2,7 @@ package com.demo;
 
 import com.soybeany.mq.core.plugin.MqRegistryPlugin;
 import com.soybeany.rpc.consumer.BaseRpcRegistrySyncerImpl;
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
@@ -23,7 +23,7 @@ import java.util.Set;
 public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl {
 
     @Override
-    protected DataPicker<ServerInfo> onGetNewServerPicker(String serviceId) {
+    protected DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId) {
         return new DataPickerSimpleImpl<>();
     }
 

@@ -13,14 +13,14 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/29
  */
 @Data
-public class MethodInfo {
+public class RpcMethodInfo {
 
     private String serviceId;
     private String methodName;
     private String[] paramClazzNames;
     private String[] argJsons;
 
-    public MethodInfo(String serviceId, Method method, Object... args) {
+    public RpcMethodInfo(String serviceId, Method method, Object... args) {
         this.serviceId = serviceId;
         this.methodName = method.getName();
         this.paramClazzNames = toClassNames(method.getParameterTypes());

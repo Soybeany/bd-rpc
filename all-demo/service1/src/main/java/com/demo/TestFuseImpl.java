@@ -2,7 +2,7 @@ package com.demo;
 
 import com.demo.model.TestParam;
 import com.demo.model.TestVO;
-import com.soybeany.rpc.core.anno.BdFallback;
+import com.soybeany.rpc.core.anno.BdRpcFallback;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -12,7 +12,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/11/1
  */
-@BdFallback
+@BdRpcFallback
 @Component
 public class TestFuseImpl implements ITestService {
     @Override

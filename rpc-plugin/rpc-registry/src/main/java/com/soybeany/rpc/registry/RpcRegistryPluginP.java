@@ -48,7 +48,7 @@ class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProvide
             return;
         }
         // 更新存储管理器数据
-        storageManager.save(cache.getSystem(), cache.getServerInfo(), cache.getServiceIds());
+        storageManager.save(cache.getSystem(), cache.getRpcServerInfo(), cache.getServiceIds());
         out.setMd5(cache.getMd5());
     }
 

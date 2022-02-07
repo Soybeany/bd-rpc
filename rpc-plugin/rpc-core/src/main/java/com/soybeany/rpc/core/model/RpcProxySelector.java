@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
  * @date 2022/1/18
  */
 @AllArgsConstructor
-public class ProxySelector<T> {
+public class RpcProxySelector<T> {
 
     private static final ThreadLocal<String> SERVICE_TAG = new ThreadLocal<>();
     private final T target;

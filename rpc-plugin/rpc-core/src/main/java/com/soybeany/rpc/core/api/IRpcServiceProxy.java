@@ -1,7 +1,7 @@
 package com.soybeany.rpc.core.api;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.ProxySelector;
+import com.soybeany.rpc.core.model.RpcProxySelector;
 
 /**
  * @author Soybeany
@@ -19,8 +19,8 @@ public interface IRpcServiceProxy {
 
     /**
      * 创建一个能动态指定标签的选择器，因为是基于{@link ThreadLocal}的实现，
-     * 所以{@link ProxySelector#get}的返回值只能作为局部变量，否则可能会出现不可预知的问题
+     * 所以{@link RpcProxySelector#get}的返回值只能作为局部变量，否则可能会出现不可预知的问题
      */
-    <T> ProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException;
+    <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException;
 
 }

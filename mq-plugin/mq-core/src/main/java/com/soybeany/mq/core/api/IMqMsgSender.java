@@ -13,8 +13,14 @@ import java.util.concurrent.CountDownLatch;
  */
 public interface IMqMsgSender {
 
+    /**
+     * 异步发送，将消息发至缓冲区即完成
+     */
     void asyncSend(String topic, MqProducerMsg msg, IMqMsgSendCallback callback);
 
+    /**
+     * 同步发送，将消息发至broker才完成
+     */
     default void syncSend(String topic, MqProducerMsg msg) throws MqPluginException {
         // 异步请求
         CountDownLatch latch = new CountDownLatch(1);

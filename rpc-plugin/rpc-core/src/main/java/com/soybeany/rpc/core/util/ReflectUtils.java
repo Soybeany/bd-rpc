@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.utl;
+package com.soybeany.rpc.core.util;
 
 import java.lang.annotation.Annotation;
 

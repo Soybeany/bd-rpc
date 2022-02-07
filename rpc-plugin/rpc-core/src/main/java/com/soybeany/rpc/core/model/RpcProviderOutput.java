@@ -17,7 +17,7 @@ public class RpcProviderOutput extends BaseClientOutput {
     private boolean updated;
     private String providerId;
     private String md5;
-    private ServerInfo serverInfo;
+    private RpcServerInfo rpcServerInfo;
     private Set<String> serviceIds;
 
 }

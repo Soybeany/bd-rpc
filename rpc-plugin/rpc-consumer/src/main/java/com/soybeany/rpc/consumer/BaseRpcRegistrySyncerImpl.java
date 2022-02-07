@@ -3,8 +3,8 @@ package com.soybeany.rpc.consumer;
 import com.soybeany.rpc.core.api.IRpcClientService;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.ProxySelector;
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.RpcProxySelector;
+import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.sync.client.BaseClientSyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
@@ -32,7 +32,7 @@ public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl imp
     }
 
     @Override
-    public <T> ProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
+    public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
         return plugin.getSelector(interfaceClass);
     }
 
@@ -58,6 +58,6 @@ public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl imp
         return 5;
     }
 
-    protected abstract DataPicker<ServerInfo> onGetNewServerPicker(String serviceId);
+    protected abstract DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId);
 
 }

@@ -4,7 +4,7 @@ import com.soybeany.mq.core.plugin.MqRegistryPlugin;
 import com.soybeany.rpc.consumer.RpcConsumerPlugin;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.ProxySelector;
+import com.soybeany.rpc.core.model.RpcProxySelector;
 import com.soybeany.rpc.provider.BaseRpcRegistrySyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
@@ -94,7 +94,7 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
     }
 
     @Override
-    public <T> ProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
+    public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
         return plugin.getSelector(interfaceClass);
     }
 }

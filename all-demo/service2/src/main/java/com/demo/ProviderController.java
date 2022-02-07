@@ -1,7 +1,7 @@
 package com.demo;
 
 import com.demo.model.Constants;
-import com.soybeany.rpc.core.api.IRpcServiceInvoker;
+import com.soybeany.rpc.core.api.IRpcServiceExecutor;
 import com.soybeany.sync.core.model.SyncDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,11 +18,11 @@ import javax.servlet.http.HttpServletResponse;
 class ProviderController {
 
     @Autowired
-    private IRpcServiceInvoker invoker;
+    private IRpcServiceExecutor invoker;
 
     @PostMapping(Constants.PATH_RPC)
     SyncDTO bdRpc(HttpServletRequest request, HttpServletResponse response) {
-        return invoker.invoke(request, response);
+        return invoker.execute(request, response);
     }
 
 }

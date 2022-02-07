@@ -1,6 +1,6 @@
 package com.demo;
 
-import com.soybeany.rpc.core.api.IRpcServiceInvoker;
+import com.soybeany.rpc.core.api.IRpcServiceExecutor;
 import com.soybeany.sync.core.api.IServerSyncer;
 import com.soybeany.sync.core.model.SyncDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +18,14 @@ import javax.servlet.http.HttpServletResponse;
 public class ApiController {
 
     @Autowired
-    private IRpcServiceInvoker invoker;
+    private IRpcServiceExecutor invoker;
 
     @Autowired
     private IServerSyncer serverSyncer;
 
     @PostMapping(Constants.PATH_RPC)
     SyncDTO bdRpc(HttpServletRequest request, HttpServletResponse response) {
-        return invoker.invoke(request, response);
+        return invoker.execute(request, response);
     }
 
     @PostMapping("/bd-api/bSync")

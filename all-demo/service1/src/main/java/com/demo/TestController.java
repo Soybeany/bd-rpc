@@ -6,7 +6,7 @@ import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.ProxySelector;
+import com.soybeany.rpc.core.model.RpcProxySelector;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +29,7 @@ public class TestController {
     @Autowired
     private IMqMsgSender mqMsgSender;
 
-    private ProxySelector<ITestService> service;
+    private RpcProxySelector<ITestService> service;
 
     @GetMapping("/test")
     public String test(String tag, String topic) {

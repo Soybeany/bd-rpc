@@ -7,11 +7,11 @@
 
 ## rpc-plugin
 
-rpc插件，基于http协议
+rpc插件，基于http协议，即时通讯
 
 ## mq-plugin
 
-mq插件，采用consumer自行到broker获取指定数目消息的方式(削峰/限流)
+mq插件，采用consumer自行到broker获取指定数目消息的方式(削峰/限流)，延时通讯
 
 ## config-plugin
 

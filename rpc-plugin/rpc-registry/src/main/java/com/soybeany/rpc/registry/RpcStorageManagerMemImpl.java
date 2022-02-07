@@ -1,6 +1,6 @@
 package com.soybeany.rpc.registry;
 
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.sync.server.IAutoCleaner;
 import com.soybeany.sync.server.StdMemStorage;
 
@@ -14,15 +14,15 @@ import java.util.Set;
  */
 public class RpcStorageManagerMemImpl implements IRpcStorageManager, IAutoCleaner {
 
-    private final StdMemStorage<ServerInfo> storage = new StdMemStorage<>();
+    private final StdMemStorage<RpcServerInfo> storage = new StdMemStorage<>();
 
     @Override
-    public synchronized Set<ServerInfo> load(String system, String serviceId) {
+    public synchronized Set<RpcServerInfo> load(String system, String serviceId) {
         return storage.load(getId(system, serviceId));
     }
 
     @Override
-    public synchronized void save(String system, ServerInfo info, Set<String> serviceIds) {
+    public synchronized void save(String system, RpcServerInfo info, Set<String> serviceIds) {
         for (String serviceId : serviceIds) {
             storage.save(getId(system, serviceId), info);
         }

@@ -1,7 +1,7 @@
 package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.api.IRpcClientService;
-import com.soybeany.rpc.core.api.IRpcServiceInvoker;
+import com.soybeany.rpc.core.api.IRpcServiceExecutor;
 import com.soybeany.sync.client.BaseClientSyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.model.SyncDTO;
@@ -20,7 +20,7 @@ import java.util.Set;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcClientService, IRpcServiceInvoker {
+public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcClientService, IRpcServiceExecutor {
 
     @Autowired
     private ApplicationContext appContext;
@@ -28,8 +28,8 @@ public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl imp
     private RpcProviderPlugin plugin;
 
     @Override
-    public SyncDTO invoke(HttpServletRequest request, HttpServletResponse response) {
-        return plugin.invoke(request, response);
+    public SyncDTO execute(HttpServletRequest request, HttpServletResponse response) {
+        return plugin.execute(request, response);
     }
 
     @Override

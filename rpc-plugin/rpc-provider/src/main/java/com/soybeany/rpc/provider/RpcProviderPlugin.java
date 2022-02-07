@@ -1,14 +1,14 @@
 package com.soybeany.rpc.provider;
 
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.api.IRpcServiceInvoker;
+import com.soybeany.rpc.core.api.IRpcServiceExecutor;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.MethodInfo;
+import com.soybeany.rpc.core.model.RpcMethodInfo;
 import com.soybeany.rpc.core.model.RpcProviderInput;
 import com.soybeany.rpc.core.model.RpcProviderOutput;
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.core.plugin.BaseRpcClientPlugin;
-import com.soybeany.rpc.core.utl.ReflectUtils;
+import com.soybeany.rpc.core.util.ReflectUtils;
 import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.util.Md5Utils;
@@ -30,11 +30,11 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @date 2021/10/27
  */
 @RequiredArgsConstructor
-public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, RpcProviderOutput> implements IRpcServiceInvoker {
+public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, RpcProviderOutput> implements IRpcServiceExecutor {
 
     private final Map<String, Object> serviceMap = new HashMap<>();
     private final String authorizationToken = BdFileUtils.getUuid();
-    private final ServerInfo serverInfo = new ServerInfo();
+    private final RpcServerInfo rpcServerInfo = new RpcServerInfo();
 
     private final String system;
     private final String version;
@@ -65,9 +65,9 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     public void onStartup(SyncClientInfo info) {
         super.onStartup(info);
         // 配置服务器信息
-        serverInfo.setTag(tag);
-        serverInfo.setInvokeUrl(invokeUrl);
-        serverInfo.setAuthorization(authorizationToken);
+        rpcServerInfo.setTag(tag);
+        rpcServerInfo.setInvokeUrl(invokeUrl);
+        rpcServerInfo.setAuthorization(authorizationToken);
         // 扫描
         new Thread(() -> {
             List<String> paths = getPostTreatPkgPathsToScan();
@@ -83,14 +83,14 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     @Override
     public synchronized boolean onBeforeSync(String uid, RpcProviderOutput output) throws Exception {
-        output.setProviderId(system + "-" + serverInfo.getInvokeUrl());
+        output.setProviderId(system + "-" + rpcServerInfo.getInvokeUrl());
         Set<String> serviceIds = serviceMap.keySet();
-        String md5 = Md5Utils.strToMd5(GSON.toJson(new Object[]{serverInfo, serviceIds}));
+        String md5 = Md5Utils.strToMd5(GSON.toJson(new Object[]{rpcServerInfo, serviceIds}));
         if (!md5.equals(this.md5)) {
             output.setUpdated(true);
             output.setSystem(system);
             output.setMd5(md5);
-            output.setServerInfo(serverInfo);
+            output.setRpcServerInfo(rpcServerInfo);
             output.setServiceIds(serviceIds);
         }
         return super.onBeforeSync(uid, output);
@@ -108,7 +108,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     }
 
     @Override
-    public SyncDTO invoke(HttpServletRequest request, HttpServletResponse response) {
+    public SyncDTO execute(HttpServletRequest request, HttpServletResponse response) {
         // 凭证校验
         if (!authorizationToken.equals(request.getHeader(HEADER_AUTHORIZATION))) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -117,7 +117,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         // 处理rpc调用
         try {
             String param = request.getParameter(KEY_METHOD_INFO);
-            return SyncDTO.norm(invoke(GSON.fromJson(param, MethodInfo.class)));
+            return SyncDTO.norm(onExecuteSingle(GSON.fromJson(param, RpcMethodInfo.class)));
         } catch (Throwable throwable) {
             return SyncDTO.error(throwable);
         }
@@ -125,7 +125,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     // ***********************内部方法****************************
 
-    private Object invoke(MethodInfo info) throws Throwable {
+    private Object onExecuteSingle(RpcMethodInfo info) throws Throwable {
         Object obj = serviceMap.get(info.getServiceId());
         if (null == obj) {
             throw new RpcPluginException("没有找到指定的服务(" + info.getServiceId() + ")");

@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BdCache {
+public @interface BdRpcCache {
 
     /**
      * 描述该缓存

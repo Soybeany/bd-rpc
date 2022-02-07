@@ -1,6 +1,6 @@
 package com.soybeany.rpc.registry;
 
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.RpcServerInfo;
 
 import java.util.Set;
 
@@ -10,8 +10,8 @@ import java.util.Set;
  */
 public interface IRpcStorageManager {
 
-    Set<ServerInfo> load(String system, String serviceId);
+    Set<RpcServerInfo> load(String system, String serviceId);
 
-    void save(String system, ServerInfo info, Set<String> serviceIds);
+    void save(String system, RpcServerInfo info, Set<String> serviceIds);
 
 }

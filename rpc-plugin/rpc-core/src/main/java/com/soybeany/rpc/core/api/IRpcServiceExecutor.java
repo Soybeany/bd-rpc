@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author Soybeany
  * @date 2021/11/1
  */
-public interface IRpcServiceInvoker {
+public interface IRpcServiceExecutor {
 
-    SyncDTO invoke(HttpServletRequest request, HttpServletResponse response);
+    SyncDTO execute(HttpServletRequest request, HttpServletResponse response);
 
 }

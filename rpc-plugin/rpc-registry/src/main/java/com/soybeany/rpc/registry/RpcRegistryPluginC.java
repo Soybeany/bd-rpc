@@ -3,7 +3,7 @@ package com.soybeany.rpc.registry;
 import com.soybeany.rpc.core.model.BdRpcConstants;
 import com.soybeany.rpc.core.model.RpcConsumerInput;
 import com.soybeany.rpc.core.model.RpcConsumerOutput;
-import com.soybeany.rpc.core.model.ServerInfo;
+import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +41,7 @@ class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsume
 
     @Override
     public void onHandleSync(RpcConsumerOutput in, RpcConsumerInput out) {
-        Map<String, Set<ServerInfo>> map = new LinkedHashMap<>();
+        Map<String, Set<RpcServerInfo>> map = new LinkedHashMap<>();
         String system = in.getSystem();
         in.getServiceIds().forEach(serviceId -> map.put(serviceId, storageManager.load(system, serviceId)));
         // 当md5不一致时，再返回数据
