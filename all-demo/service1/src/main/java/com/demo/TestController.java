@@ -43,12 +43,11 @@ public class TestController {
             Map<RpcServerInfo, RpcBatchResult<ITestService>> resultMap = serviceProxy.batchInvoke(ITestService.class, "batch", "b输入");
             mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
             return value + "\n" + resultMap.values();
-        } catch (RpcRequestException e) {
-            String message = e.getMessage() + "(" + e.getServerInfo().getInvokeUrl() + ")";
-            log.warn(message);
-            return "exception:" + message;
         } catch (RpcPluginException | MqPluginException e) {
             String message = e.getMessage();
+            if (e instanceof RpcRequestException) {
+                message = message + "(" + ((RpcRequestException) e).getServerInfo().getInvokeUrl() + ")";
+            }
             log.warn(message);
             return "exception:" + message;
         } catch (Exception e) {
