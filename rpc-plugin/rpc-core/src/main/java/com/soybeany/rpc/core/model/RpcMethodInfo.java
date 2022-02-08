@@ -1,5 +1,6 @@
 package com.soybeany.rpc.core.model;
 
+import com.soybeany.rpc.core.exception.RpcPluginException;
 import lombok.Data;
 
 import java.lang.reflect.Method;
@@ -32,8 +33,12 @@ public class RpcMethodInfo {
      *
      * @param obj 含有此方法的对象
      */
-    public Method getMethod(Object obj) throws ClassNotFoundException, NoSuchMethodException {
-        return obj.getClass().getMethod(methodName, toClass(paramClazzNames));
+    public Method getMethod(Object obj) {
+        try {
+            return obj.getClass().getMethod(methodName, toClass(paramClazzNames));
+        } catch (Exception e) {
+            throw new RpcPluginException("没有找到对应的方法:" + e.getMessage());
+        }
     }
 
     public Object[] getArgs(Method method) {

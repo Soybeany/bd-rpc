@@ -26,15 +26,15 @@ public class RequestUtils {
     public static final Gson GSON = new Gson();
     private static final Map<Integer, OkHttpClient> CLIENT_MAP = new WeakHashMap<>();
 
-    public static <D, T> T request(DataPicker<D> picker, Function<D, String> urlMapper, Config config, Type resultType, String errMsg) throws SyncRequestException {
-        for (D data : picker.getAllUsable()) {
-            String url = urlMapper.apply(data);
+    public static <D, T> Result<D, T> request(DataPicker<D> urlPicker, Function<D, String> urlMapper, Config config, Type resultType, String errMsg) throws SyncRequestException {
+        for (D url : urlPicker.getAllUsable()) {
+            String urlStr = urlMapper.apply(url);
             try {
-                String bodyString = getBodyString(url, config);
-                return GSON.fromJson(bodyString, resultType);
+                String bodyString = getBodyString(urlStr, config);
+                return new Result<>(url, GSON.fromJson(bodyString, resultType));
             } catch (Exception e) {
-                log.warn("请求“" + url + "”异常(" + e.getMessage() + ")");
-                picker.onUnusable(data);
+                log.warn("请求“" + urlStr + "”异常(" + e.getMessage() + ")");
+                urlPicker.onUnusable(url);
             }
         }
         throw new SyncRequestException(errMsg);
@@ -83,6 +83,12 @@ public class RequestUtils {
         private final Map<String, String> headers = new HashMap<>();
         private final Map<String, String> params = new HashMap<>();
         private int timeoutInSec = 10;
+    }
+
+    @Data
+    public static class Result<D, T> {
+        private final D url;
+        private final T data;
     }
 
 }

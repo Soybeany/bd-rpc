@@ -108,9 +108,10 @@ public class SyncClientService {
         // 执行同步
         SyncDTO dto;
         try {
-            dto = RequestUtils.request(urlPicker, url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
+            RequestUtils.Result<String, SyncDTO> result = RequestUtils.request(urlPicker, url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
+            dto = result.getData();
             if (!dto.getIsNorm()) {
-                throw new SyncRequestException(dto.getParsedErrMsg());
+                throw new SyncRequestException(dto.getParsedErrMsg() + "(" + result.getUrl() + ")");
             }
         } catch (Exception e) {
             syncPlugins.forEach(plugin -> handleException(plugin, uid, e));

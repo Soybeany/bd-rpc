@@ -47,27 +47,22 @@ public class SyncDTO {
     }
 
     public String getParsedErrMsg() {
-        try {
-            throwException();
-            return null;
-        } catch (Throwable t) {
-            return t.getMessage();
-        }
+        return getParsedErr().getMessage();
     }
 
-    public <T> T throwException() throws Exception {
+    public Exception getParsedErr() {
         if (null != exception) {
             Exception exception;
             try {
                 exception = SerializeUtils.deserialize(HexUtils.hexToByteArray(this.exception));
             } catch (IOException | ClassNotFoundException e) {
-                throw new SyncRequestException("反序列化异常信息失败:" + e.getMessage());
+                return new SyncRequestException("反序列化异常信息失败:" + e.getMessage());
             }
-            throw exception;
+            return exception;
         } else if (null != errMsg) {
-            throw new SyncRequestException(errMsg);
+            return new SyncRequestException(errMsg);
         }
-        throw new SyncRequestException("没有具体的异常信息");
+        return new SyncRequestException("没有具体的异常信息");
     }
 
 }

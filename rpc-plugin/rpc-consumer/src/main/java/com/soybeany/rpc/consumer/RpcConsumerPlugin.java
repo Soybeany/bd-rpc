@@ -13,6 +13,7 @@ import com.soybeany.rpc.core.api.IRpcCacheExpiryProvider;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
+import com.soybeany.rpc.core.exception.RpcRequestException;
 import com.soybeany.rpc.core.model.*;
 import com.soybeany.rpc.core.plugin.BaseRpcClientPlugin;
 import com.soybeany.sync.core.exception.SyncRequestException;
@@ -297,16 +298,20 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         RequestUtils.Config config = new RequestUtils.Config();
         config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(invokeInfo.serviceId, invokeInfo.method, invokeInfo.args)));
         config.setTimeoutInSec(invokeInfo.timeoutInSec);
-        SyncDTO dto;
+        RequestUtils.Result<RpcServerInfo, SyncDTO> result;
         try {
-            dto = RequestUtils.request(picker, serverInfo -> {
+            result = RequestUtils.request(picker, serverInfo -> {
                 config.getHeaders().put(HEADER_AUTHORIZATION, serverInfo.getAuthorization());
                 return serverInfo.getInvokeUrl();
             }, config, SyncDTO.class, "暂无serviceId(" + invokeInfo.serviceId + ")可用的服务提供者");
         } catch (SyncRequestException e) {
             return invokeMethodOfFallbackImpl(invokeInfo.method, invokeInfo.args, invokeInfo.fallbackImpl, e.getMessage());
         }
-        return dto.getIsNorm() ? dto.getData(invokeInfo.method.getGenericReturnType()) : dto.throwException();
+        SyncDTO dto = result.getData();
+        if (dto.getIsNorm()) {
+            return dto.getData(invokeInfo.method.getGenericReturnType());
+        }
+        throw new RpcRequestException(result.getUrl(), dto.getParsedErr());
     }
 
     @SuppressWarnings("unchecked")

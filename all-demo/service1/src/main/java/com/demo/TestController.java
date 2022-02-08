@@ -6,6 +6,7 @@ import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.rpc.core.exception.RpcRequestException;
 import com.soybeany.rpc.core.model.RpcBatchResult;
 import com.soybeany.rpc.core.model.RpcProxySelector;
 import com.soybeany.rpc.core.model.RpcServerInfo;
@@ -42,6 +43,10 @@ public class TestController {
             Map<RpcServerInfo, RpcBatchResult<ITestService>> resultMap = serviceProxy.batchInvoke(ITestService.class, "batch", "b输入");
             mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
             return value + "\n" + resultMap.values();
+        } catch (RpcRequestException e) {
+            String message = e.getMessage() + "(" + e.getServerInfo().getInvokeUrl() + ")";
+            log.warn(message);
+            return "exception:" + message;
         } catch (RpcPluginException | MqPluginException e) {
             String message = e.getMessage();
             log.warn(message);
