@@ -40,7 +40,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     private final String system;
     private final String version;
-    private final String tag;
+    private final String group;
     private final ApplicationContext appContext;
     private final String invokeUrl;
     private final Set<String> pkgToScan;
@@ -67,7 +67,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     public void onStartup(SyncClientInfo info) {
         super.onStartup(info);
         // 配置服务器信息
-        rpcServerInfo.setTag(tag);
+        rpcServerInfo.setGroup(group);
         rpcServerInfo.setInvokeUrl(invokeUrl);
         rpcServerInfo.setAuthorization(authorizationToken);
         // 扫描

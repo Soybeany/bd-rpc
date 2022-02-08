@@ -38,11 +38,11 @@ public class TestController {
     private RpcProxySelector<IRpcBatchInvoker<String>> invoker;
 
     @GetMapping("/test")
-    public String test(String tag, String topic) {
+    public String test(String group, String topic) {
         try {
             TestParam param = new TestParam(3, "success");
-            String value = service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
-            Map<RpcServerInfo, RpcBatchResult<String>> resultMap = invoker.get(tag).invoke("b输入");
+            String value = service.get(group).getValue(Collections.singletonList(param)).get(0).getValue();
+            Map<RpcServerInfo, RpcBatchResult<String>> resultMap = invoker.get(group).invoke("b输入");
             mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
             return value + "\n" + resultMap.values();
         } catch (RpcPluginException | MqPluginException e) {

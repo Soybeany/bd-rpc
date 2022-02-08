@@ -20,7 +20,7 @@ import java.util.Set;
 public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl {
 
     @Override
-    protected String onSetupTag() {
+    protected String onSetupGroup() {
         return "oq";
     }
 

@@ -58,7 +58,7 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
 public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, RpcConsumerOutput> implements IRpcServiceProxy {
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
-    private static final String TAG_SEPARATOR = ":";
+    private static final String GROUP_SEPARATOR = ":";
 
     /**
      * 已加载的代理（本地/远程）
@@ -161,7 +161,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             // 数据预处理，添加带标签的记录
             Map<String, Set<RpcServerInfo>> tmpMap = new HashMap<>();
             map.forEach((id, v) -> v.forEach(info -> {
-                String newId = getMergedServiceId(info.getTag(), id);
+                String newId = getMergedServiceId(info.getGroup(), id);
                 if (!newId.equals(id)) {
                     tmpMap.computeIfAbsent(newId, s -> new HashSet<>()).add(info);
                 }
@@ -281,7 +281,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     private DataPicker<RpcServerInfo> getMergedPicker(String serviceId) {
-        String mergedServiceId = getMergedServiceId(RpcProxySelector.getAndRemoveTag(), serviceId);
+        String mergedServiceId = getMergedServiceId(RpcProxySelector.getAndRemoveGroup(), serviceId);
         return Optional.ofNullable(pickers.get(mergedServiceId)).orElseThrow(() -> new RpcPluginException("暂无serviceId(" + mergedServiceId + ")可用的服务提供者"));
     }
 
@@ -384,8 +384,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         }
     }
 
-    private String getMergedServiceId(String tag, String serviceId) {
-        return StringUtils.hasText(tag) ? (tag + TAG_SEPARATOR + serviceId) : serviceId;
+    private String getMergedServiceId(String group, String serviceId) {
+        return StringUtils.hasText(group) ? (group + GROUP_SEPARATOR + serviceId) : serviceId;
     }
 
     private RpcPluginException getNotFoundClassImplException(Class<?> interfaceClass) {

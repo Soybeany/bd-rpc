@@ -10,9 +10,9 @@ import lombok.Data;
 public class RpcServerInfo {
 
     /**
-     * 服务器标签
+     * 服务器分组
      */
-    String tag;
+    String group;
 
     /**
      * 调用的url

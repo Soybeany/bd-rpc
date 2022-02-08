@@ -18,8 +18,7 @@ public interface IRpcServiceProxy {
     <T> T get(Class<T> interfaceClass) throws RpcPluginException;
 
     /**
-     * 创建一个能动态指定标签的选择器，因为是基于{@link ThreadLocal}的实现，
-     * 所以{@link RpcProxySelector#get}的返回值只能作为局部变量，否则可能会出现不可预知的问题
+     * 创建一个能动态指定标签的选择器
      */
     default <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
         return new RpcProxySelector<>(get(interfaceClass));

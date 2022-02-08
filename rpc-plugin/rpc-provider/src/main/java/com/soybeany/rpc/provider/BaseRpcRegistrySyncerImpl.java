@@ -37,7 +37,7 @@ public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl imp
         String invokeUrl = onSetupInvokeUrl(NetUtils.getLocalIpAddress());
         Set<String> paths = new HashSet<>();
         onSetupPkgPathToScan(paths);
-        plugin = new RpcProviderPlugin(onSetupSystem(), onSetupVersion(), onSetupTag(), appContext, invokeUrl, paths);
+        plugin = new RpcProviderPlugin(onSetupSystem(), onSetupVersion(), onSetupGroup(), appContext, invokeUrl, paths);
         plugins.add(plugin);
     }
 
@@ -47,7 +47,7 @@ public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl imp
         return "0";
     }
 
-    protected String onSetupTag() {
+    protected String onSetupGroup() {
         return null;
     }
 

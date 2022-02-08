@@ -39,7 +39,7 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
     private RpcConsumerPlugin plugin;
 
     @Override
-    protected String onSetupTag() {
+    protected String onSetupGroup() {
         return "cz";
     }
 
