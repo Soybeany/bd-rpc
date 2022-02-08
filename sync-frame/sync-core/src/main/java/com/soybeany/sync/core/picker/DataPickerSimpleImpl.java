@@ -1,5 +1,6 @@
 package com.soybeany.sync.core.picker;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +45,14 @@ public class DataPickerSimpleImpl<T> implements DataPicker<T> {
         if (hasNoDataList()) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList(dataList);
+        switchToNextIndex();
+        int index = curIndex;
+        List<T> result = new ArrayList<>();
+        while (result.size() < dataList.size()) {
+            result.add(dataList.get(index));
+            index = getNextIndex(index);
+        }
+        return result;
     }
 
     // ***********************内部方法****************************
@@ -54,7 +62,11 @@ public class DataPickerSimpleImpl<T> implements DataPicker<T> {
     }
 
     private void switchToNextIndex() {
-        curIndex = (curIndex + 1) % dataList.size();
+        curIndex = getNextIndex(curIndex);
+    }
+
+    private int getNextIndex(int index) {
+        return (index + 1) % dataList.size();
     }
 
 }

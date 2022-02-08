@@ -18,6 +18,9 @@ public class RpcProxySelector<T> {
         return tag;
     }
 
+    /**
+     * 若涉及多线程操作，则需要在目标线程再执行此调用
+     */
     public T get(String tag) {
         SERVICE_TAG.set(tag);
         return target;

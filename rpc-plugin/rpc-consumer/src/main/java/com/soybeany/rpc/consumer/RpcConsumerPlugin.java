@@ -96,6 +96,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         return RpcConsumerOutput.class;
     }
 
+    @SuppressWarnings("AlibabaThreadPoolCreation")
     @Override
     public void onStartup(SyncClientInfo info) {
         super.onStartup(info);
@@ -211,7 +212,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         // 并发请求
         Map<RpcServerInfo, Future<T>> futureMap = new HashMap<>();
         InvokeInfo info = infoPart.toNewInfo(args);
-        DataPicker<RpcServerInfo> picker = pickers.get(infoPart.serviceId);
+        DataPicker<RpcServerInfo> picker = getMergedPicker(infoPart.serviceId);
         for (RpcServerInfo serverInfo : picker.getAllUsable()) {
             Future<T> future = batchExecutor.submit(() -> onInvoke(new PickerWrapper(picker, serverInfo), info));
             futureMap.put(serverInfo, future);
@@ -280,8 +281,13 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         };
     }
 
+    private DataPicker<RpcServerInfo> getMergedPicker(String serviceId) {
+        String mergedServiceId = getMergedServiceId(RpcProxySelector.getAndRemoveTag(), serviceId);
+        return pickers.get(mergedServiceId);
+    }
+
     private <T> T onInvoke(InvokeInfo invokeInfo) throws Exception {
-        return onInvoke(pickers.get(invokeInfo.serviceId), invokeInfo);
+        return onInvoke(getMergedPicker(invokeInfo.serviceId), invokeInfo);
     }
 
     private <T> T onInvoke(DataPicker<RpcServerInfo> picker, InvokeInfo invokeInfo) throws Exception {
@@ -289,7 +295,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             return invokeMethodOfFallbackImpl(invokeInfo.method, invokeInfo.args, invokeInfo.fallbackImpl, "暂无serviceId(" + invokeInfo.serviceId + ")的服务提供者信息");
         }
         RequestUtils.Config config = new RequestUtils.Config();
-        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(getSplitServiceId(invokeInfo.serviceId), invokeInfo.method, invokeInfo.args)));
+        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(invokeInfo.serviceId, invokeInfo.method, invokeInfo.args)));
         config.setTimeoutInSec(invokeInfo.timeoutInSec);
         SyncDTO dto;
         try {
@@ -333,7 +339,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             }
         }
         // 分区信息生成
-        serviceId = getMergedServiceId(RpcProxySelector.getAndRemoveTag(), serviceId);
         int timeoutInSec = (referTimeoutInSec >= 0 ? referTimeoutInSec : timeoutInSecProvider.apply(serviceId));
         InfoPart1 infoPart = new InfoPart1(fallbackImpl, serviceId, timeoutInSec);
         // 方法信息预处理
@@ -374,11 +379,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         } catch (NoSuchBeanDefinitionException ignore) {
             return null;
         }
-    }
-
-    private String getSplitServiceId(String serviceId) {
-        String[] parts = serviceId.split(TAG_SEPARATOR);
-        return parts.length > 1 ? parts[1] : serviceId;
     }
 
     private String getMergedServiceId(String tag, String serviceId) {
