@@ -4,6 +4,7 @@ import com.demo.model.TestParam;
 import com.soybeany.mq.core.api.IMqMsgSender;
 import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
+import com.soybeany.rpc.core.api.IRpcBatchInvoker;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcRequestException;
@@ -34,13 +35,14 @@ public class TestController {
     private IMqMsgSender mqMsgSender;
 
     private RpcProxySelector<ITestService> service;
+    private RpcProxySelector<IRpcBatchInvoker<String>> invoker;
 
     @GetMapping("/test")
     public String test(String tag, String topic) {
         try {
             TestParam param = new TestParam(3, "success");
             String value = service.get(tag).getValue(Collections.singletonList(param)).get(0).getValue();
-            Map<RpcServerInfo, RpcBatchResult<ITestService>> resultMap = serviceProxy.batchInvoke(ITestService.class, "batch", "b输入");
+            Map<RpcServerInfo, RpcBatchResult<String>> resultMap = invoker.get(tag).invoke("b输入");
             mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
             return value + "\n" + resultMap.values();
         } catch (RpcPluginException | MqPluginException e) {
@@ -59,6 +61,7 @@ public class TestController {
     @PostConstruct
     private void onInit() {
         service = serviceProxy.getSelector(ITestService.class);
+        invoker = serviceProxy.getBatchSelector(ITestService.class, "batch");
     }
 
 }

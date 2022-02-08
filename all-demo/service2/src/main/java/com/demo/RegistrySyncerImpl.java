@@ -2,12 +2,9 @@ package com.demo;
 
 import com.soybeany.mq.core.plugin.MqRegistryPlugin;
 import com.soybeany.rpc.consumer.RpcConsumerPlugin;
+import com.soybeany.rpc.core.api.IRpcBatchInvoker;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.RpcBatchConfig;
-import com.soybeany.rpc.core.model.RpcBatchResult;
-import com.soybeany.rpc.core.model.RpcProxySelector;
-import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.provider.BaseRpcRegistrySyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.picker.DataPicker;
@@ -21,7 +18,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.demo.model.Constants.PATH_RPC;
@@ -88,13 +84,8 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
     }
 
     @Override
-    public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
-        return plugin.getSelector(interfaceClass);
-    }
-
-    @Override
-    public <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, RpcBatchConfig config, Object... args) {
-        return plugin.batchInvoke(interfaceClass, methodId, config, args);
+    public <T> IRpcBatchInvoker<T> getBatch(Class<?> interfaceClass, String methodId) {
+        return plugin.getBatch(interfaceClass, methodId);
     }
 
     @PostConstruct

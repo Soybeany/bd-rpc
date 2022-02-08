@@ -1,12 +1,7 @@
 package com.soybeany.rpc.core.api;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.RpcBatchConfig;
-import com.soybeany.rpc.core.model.RpcBatchResult;
 import com.soybeany.rpc.core.model.RpcProxySelector;
-import com.soybeany.rpc.core.model.RpcServerInfo;
-
-import java.util.Map;
 
 /**
  * @author Soybeany
@@ -26,18 +21,20 @@ public interface IRpcServiceProxy {
      * 创建一个能动态指定标签的选择器，因为是基于{@link ThreadLocal}的实现，
      * 所以{@link RpcProxySelector#get}的返回值只能作为局部变量，否则可能会出现不可预知的问题
      */
-    <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException;
+    default <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
+        return new RpcProxySelector<>(get(interfaceClass));
+    }
 
     /**
      * 批量执行
      */
-    default <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, Object... args) {
-        return batchInvoke(interfaceClass, methodId, null, args);
-    }
+    <T> IRpcBatchInvoker<T> getBatch(Class<?> interfaceClass, String methodId);
 
     /**
      * 批量执行(指定标签)
      */
-    <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, RpcBatchConfig config, Object... args);
+    default <T> RpcProxySelector<IRpcBatchInvoker<T>> getBatchSelector(Class<?> interfaceClass, String methodId) {
+        return new RpcProxySelector<>(getBatch(interfaceClass, methodId));
+    }
 
 }

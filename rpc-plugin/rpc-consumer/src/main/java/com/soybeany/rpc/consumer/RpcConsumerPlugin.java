@@ -9,6 +9,7 @@ import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.anno.BdRpcBatch;
 import com.soybeany.rpc.core.anno.BdRpcCache;
 import com.soybeany.rpc.core.anno.BdRpcFallback;
+import com.soybeany.rpc.core.api.IRpcBatchInvoker;
 import com.soybeany.rpc.core.api.IRpcCacheExpiryProvider;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -195,12 +196,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     @Override
-    public <T> RpcProxySelector<T> getSelector(Class<T> interfaceClass) throws RpcPluginException {
-        return new RpcProxySelector<>(get(interfaceClass));
-    }
-
-    @Override
-    public <T> Map<RpcServerInfo, RpcBatchResult<T>> batchInvoke(Class<T> interfaceClass, String methodId, RpcBatchConfig config, Object... args) {
+    public <T> IRpcBatchInvoker<T> getBatch(Class<?> interfaceClass, String methodId) {
         // 入参校验
         Map<String, InfoPart2> map = infoPart2Map.get(interfaceClass);
         if (null == map) {
@@ -210,26 +206,28 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         if (null == infoPart) {
             throw new RpcPluginException("没有找到指定methodId(" + methodId + ")的方法");
         }
-        // 并发请求
-        Map<RpcServerInfo, Future<T>> futureMap = new HashMap<>();
-        InvokeInfo info = infoPart.toNewInfo(args);
-        DataPicker<RpcServerInfo> picker = getMergedPicker(infoPart.serviceId);
-        for (RpcServerInfo serverInfo : picker.getAllUsable()) {
-            Future<T> future = batchExecutor.submit(() -> onInvoke(new PickerWrapper(picker, serverInfo), info));
-            futureMap.put(serverInfo, future);
-        }
-        // 结果整合
-        Map<RpcServerInfo, RpcBatchResult<T>> result = new HashMap<>();
-        futureMap.forEach((serverInfo, future) -> {
-            try {
-                result.put(serverInfo, RpcBatchResult.norm(future.get()));
-            } catch (InterruptedException e) {
-                result.put(serverInfo, RpcBatchResult.error(e));
-            } catch (ExecutionException e) {
-                result.put(serverInfo, RpcBatchResult.error(e.getCause()));
+        return args -> {
+            // 并发请求
+            Map<RpcServerInfo, Future<T>> futureMap = new HashMap<>();
+            InvokeInfo info = infoPart.toNewInfo(args);
+            DataPicker<RpcServerInfo> picker = getMergedPicker(infoPart.serviceId);
+            for (RpcServerInfo serverInfo : picker.getAllUsable()) {
+                Future<T> future = batchExecutor.submit(() -> onInvoke(new PickerWrapper(picker, serverInfo), info));
+                futureMap.put(serverInfo, future);
             }
-        });
-        return result;
+            // 结果整合
+            Map<RpcServerInfo, RpcBatchResult<T>> result = new HashMap<>();
+            futureMap.forEach((serverInfo, future) -> {
+                try {
+                    result.put(serverInfo, RpcBatchResult.norm(future.get()));
+                } catch (InterruptedException e) {
+                    result.put(serverInfo, RpcBatchResult.error(e));
+                } catch (ExecutionException e) {
+                    result.put(serverInfo, RpcBatchResult.error(e.getCause()));
+                }
+            });
+            return result;
+        };
     }
 
     @Override
@@ -284,7 +282,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     private DataPicker<RpcServerInfo> getMergedPicker(String serviceId) {
         String mergedServiceId = getMergedServiceId(RpcProxySelector.getAndRemoveTag(), serviceId);
-        return pickers.get(mergedServiceId);
+        return Optional.ofNullable(pickers.get(mergedServiceId)).orElseThrow(() -> new RpcPluginException("暂无serviceId(" + mergedServiceId + ")可用的服务提供者"));
     }
 
     private <T> T onInvoke(InvokeInfo invokeInfo) throws Exception {

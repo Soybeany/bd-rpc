@@ -21,7 +21,7 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl {
 
     @Override
     protected String onSetupTag() {
-        return "cz";
+        return "oq";
     }
 
     @Override
