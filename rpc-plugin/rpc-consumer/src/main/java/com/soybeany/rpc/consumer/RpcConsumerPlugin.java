@@ -160,7 +160,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             // 数据预处理，添加带标签的记录
             Map<String, Set<RpcServerInfo>> tmpMap = new HashMap<>();
             map.forEach((id, v) -> v.forEach(info -> {
-                String newId = getMergedServiceId(info.getGroup(), id);
+                String newId = getKeyWithGroup(info.getGroup(), id);
                 if (!newId.equals(id)) {
                     tmpMap.computeIfAbsent(newId, s -> new HashSet<>()).add(info);
                 }
@@ -209,7 +209,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             // 并发请求
             Map<RpcServerInfo, Future<T>> futureMap = new HashMap<>();
             InvokeInfo info = infoPart.toNewInfo(args);
-            DataPicker<RpcServerInfo> picker = getMergedPicker(info);
+            DataPicker<RpcServerInfo> picker = getGroupedPicker(info);
             for (RpcServerInfo serverInfo : picker.getAllUsable()) {
                 Future<T> future = batchExecutor.submit(() -> onInvoke(new PickerWrapper(picker, serverInfo), info));
                 futureMap.put(serverInfo, future);
@@ -250,8 +250,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private DataManager<InvokeInfo, Object> getNewDataManager(BdRpcCache cache) {
         return DataManager.Builder
                 .get(cache.desc(), getNewDatasource(), invokeInfo -> {
-                    String key = invokeInfo.group + GROUP_SEPARATOR + GSON.toJson(invokeInfo.args);
-                    return cache.useMd5Key() ? Md5Utils.strToMd5(key) : key;
+                    String keyWithGroup = getKeyWithGroup(invokeInfo.group, GSON.toJson(invokeInfo.args));
+                    return cache.useMd5Key() ? Md5Utils.strToMd5(keyWithGroup) : keyWithGroup;
                 })
                 .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
                 .withCache(new LruMemCacheStorage.Builder<InvokeInfo, Object>()
@@ -281,13 +281,13 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         };
     }
 
-    private DataPicker<RpcServerInfo> getMergedPicker(InvokeInfo invokeInfo) {
-        String mergedServiceId = getMergedServiceId(invokeInfo.group, invokeInfo.serviceId);
-        return Optional.ofNullable(pickers.get(mergedServiceId)).orElseThrow(() -> new RpcPluginException("暂无serviceId(" + mergedServiceId + ")可用的服务提供者"));
+    private DataPicker<RpcServerInfo> getGroupedPicker(InvokeInfo invokeInfo) {
+        String serviceIdWithGroup = getKeyWithGroup(invokeInfo.group, invokeInfo.serviceId);
+        return Optional.ofNullable(pickers.get(serviceIdWithGroup)).orElseThrow(() -> new RpcPluginException("暂无serviceId(" + serviceIdWithGroup + ")可用的服务提供者"));
     }
 
     private <T> T onInvoke(InvokeInfo invokeInfo) throws Exception {
-        return onInvoke(getMergedPicker(invokeInfo), invokeInfo);
+        return onInvoke(getGroupedPicker(invokeInfo), invokeInfo);
     }
 
     private <T> T onInvoke(DataPicker<RpcServerInfo> picker, InvokeInfo invokeInfo) throws Exception {
@@ -380,8 +380,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         }
     }
 
-    private String getMergedServiceId(String group, String serviceId) {
-        return StringUtils.hasText(group) ? (group + GROUP_SEPARATOR + serviceId) : serviceId;
+    private String getKeyWithGroup(String group, String key) {
+        return StringUtils.hasText(group) ? (group + GROUP_SEPARATOR + key) : key;
     }
 
     private RpcPluginException getNotFoundClassImplException(Class<?> interfaceClass) {
