@@ -10,7 +10,7 @@ import com.soybeany.rpc.core.anno.BdRpcCache;
 @BdRpc(serviceId = "bd-mq")
 public interface IMqBrokerSyncUrlProvider {
 
-    @BdRpcCache(desc = "同步", needLog = false, fastFailExpiry = 10 * 1000)
+    @BdRpcCache(desc = "同步", needLog = false, pTtl = 60 * 1000, pTtlErr = 10 * 1000)
     String onGetSyncUrl();
 
 }

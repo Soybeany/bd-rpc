@@ -15,7 +15,7 @@ import java.util.List;
 @BdRpc(serviceId = "test")
 public interface ITestService {
 
-    @BdRpcCache(desc = "测试", expiry = 10 * 1000, useMd5Key = false)
+    @BdRpcCache(desc = "测试", pTtl = 10 * 1000, useMd5Key = false)
     List<TestVO> getValue(List<TestParam> param) throws Exception;
 
     @BdRpcBatch(methodId = "batch")

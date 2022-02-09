@@ -40,7 +40,7 @@ public class TestController {
     @GetMapping("/test")
     public String test(String group, String topic) {
         try {
-            TestParam param = new TestParam(3, "success");
+            TestParam param = new TestParam(3, "含有中文与特殊字符“：\"'!@#");
             String value = service.get(group).getValue(Collections.singletonList(param)).get(0).getValue();
             Map<RpcServerInfo, RpcBatchResult<String>> resultMap = invoker.get(group).invoke("b输入");
             mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));

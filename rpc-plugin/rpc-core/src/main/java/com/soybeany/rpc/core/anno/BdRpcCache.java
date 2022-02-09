@@ -29,18 +29,23 @@ public @interface BdRpcCache {
     boolean useMd5Key() default true;
 
     /**
+     * 是否允许在数据源出现异常时，使用上一次已失效的缓存数据，使用异常的生存时间
+     */
+    boolean enableRenewExpiredCache() default false;
+
+    /**
      * 数据容量
      */
     int capacity() default 100;
 
     /**
-     * 缓存的超时，默认永不超时（单位：毫秒）
+     * 正常数据的生存时间，用于一般场景，默认永不超时（单位：毫秒）
      */
-    int expiry() default Integer.MAX_VALUE;
+    int pTtl() default Integer.MAX_VALUE;
 
     /**
-     * 异常时的超时，默认1分钟（单位：毫秒）
+     * 异常的生存时间，用于防缓存穿透等场景，默认1分钟（单位：毫秒）
      */
-    int fastFailExpiry() default 60 * 1000;
+    int pTtlErr() default 60 * 1000;
 
 }

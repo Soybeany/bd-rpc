@@ -255,11 +255,13 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                     return cache.useMd5Key() ? Md5Utils.strToMd5(json) : json;
                 })
                 .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
-                .withCache(new LruMemCacheStorage<InvokeInfo, Object>()
+                .withCache(new LruMemCacheStorage.Builder<InvokeInfo, Object>()
                         .capacity(cache.capacity())
-                        .expiry(cache.expiry())
-                        .fastFailExpiry(cache.fastFailExpiry())
+                        .pTtl(cache.pTtl())
+                        .pTtlErr(cache.pTtlErr())
+                        .build()
                 )
+                .enableRenewExpiredCache(cache.enableRenewExpiredCache())
                 .build();
     }
 
