@@ -7,7 +7,7 @@ import com.soybeany.rpc.core.anno.BdRpcCache;
  * @author Soybeany
  * @date 2022/1/28
  */
-@BdRpc(serviceId = "bd-mq")
+@BdRpc(serviceId = "bd-mq-broker-sync-url-provider")
 public interface IMqBrokerSyncUrlProvider {
 
     @BdRpcCache(desc = "同步", needLog = false, pTtl = 60 * 1000, pTtlErr = 10 * 1000)

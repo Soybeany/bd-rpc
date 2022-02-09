@@ -53,7 +53,6 @@ import static com.soybeany.sync.core.util.RequestUtils.GSON;
  * @author Soybeany
  * @date 2021/10/27
  */
-@Slf4j
 @RequiredArgsConstructor
 public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, RpcConsumerOutput> implements IRpcServiceProxy {
 
@@ -210,7 +209,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             // 并发请求
             Map<RpcServerInfo, Future<T>> futureMap = new HashMap<>();
             InvokeInfo info = infoPart.toNewInfo(args);
-            DataPicker<RpcServerInfo> picker = getMergedPicker(infoPart.serviceId);
+            DataPicker<RpcServerInfo> picker = getMergedPicker(info);
             for (RpcServerInfo serverInfo : picker.getAllUsable()) {
                 Future<T> future = batchExecutor.submit(() -> onInvoke(new PickerWrapper(picker, serverInfo), info));
                 futureMap.put(serverInfo, future);
@@ -251,8 +250,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private DataManager<InvokeInfo, Object> getNewDataManager(BdRpcCache cache) {
         return DataManager.Builder
                 .get(cache.desc(), getNewDatasource(), invokeInfo -> {
-                    String json = GSON.toJson(invokeInfo.args);
-                    return cache.useMd5Key() ? Md5Utils.strToMd5(json) : json;
+                    String key = invokeInfo.group + GROUP_SEPARATOR + GSON.toJson(invokeInfo.args);
+                    return cache.useMd5Key() ? Md5Utils.strToMd5(key) : key;
                 })
                 .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
                 .withCache(new LruMemCacheStorage.Builder<InvokeInfo, Object>()
@@ -282,13 +281,13 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         };
     }
 
-    private DataPicker<RpcServerInfo> getMergedPicker(String serviceId) {
-        String mergedServiceId = getMergedServiceId(RpcProxySelector.getAndRemoveGroup(), serviceId);
+    private DataPicker<RpcServerInfo> getMergedPicker(InvokeInfo invokeInfo) {
+        String mergedServiceId = getMergedServiceId(invokeInfo.group, invokeInfo.serviceId);
         return Optional.ofNullable(pickers.get(mergedServiceId)).orElseThrow(() -> new RpcPluginException("暂无serviceId(" + mergedServiceId + ")可用的服务提供者"));
     }
 
     private <T> T onInvoke(InvokeInfo invokeInfo) throws Exception {
-        return onInvoke(getMergedPicker(invokeInfo.serviceId), invokeInfo);
+        return onInvoke(getMergedPicker(invokeInfo), invokeInfo);
     }
 
     private <T> T onInvoke(DataPicker<RpcServerInfo> picker, InvokeInfo invokeInfo) throws Exception {
@@ -316,7 +315,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     @SuppressWarnings("unchecked")
     private <T> T invokeMethodOfFallbackImpl(Method method, Object[] args, Object fallbackImpl, String errMsg) throws Exception {
-        log.warn(errMsg);
         if (null == fallbackImpl) {
             throw new RpcPluginNoFallbackException(errMsg);
         } else {
@@ -331,17 +329,10 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             throw new RpcPluginException("@BdRpc的serviceId(" + serviceId + ")需唯一");
         }
         Object fallbackImpl = null;
-        // 处理接口的本地实现
+        // 配置本地熔断实现
         Object impl = getBeanFromContext(interfaceClass);
-        if (null != impl) {
-            // 配置熔断实现
-            if (isFallbackImpl(impl)) {
-                fallbackImpl = impl;
-            }
-            // 不需配置为代理
-            else {
-                return;
-            }
+        if (null != impl && isFallbackImpl(impl)) {
+            fallbackImpl = impl;
         }
         // 分区信息生成
         int timeoutInSec = (referTimeoutInSec >= 0 ? referTimeoutInSec : timeoutInSecProvider.apply(serviceId));
@@ -368,8 +359,11 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         // 处理批量注解
         BdRpcBatch batch = method.getAnnotation(BdRpcBatch.class);
         if (null != batch) {
-            infoPart2Map.computeIfAbsent(interfaceClass, clazz -> new HashMap<>())
+            InfoPart2 previous = infoPart2Map.computeIfAbsent(interfaceClass, clazz -> new HashMap<>())
                     .put(batch.methodId(), new InfoPart2(method, part1));
+            if (null != previous) {
+                throw new RpcPluginException("同一个类中，@BdRpcBatch的methodId(" + batch.methodId() + ")需唯一");
+            }
         }
     }
 
@@ -432,6 +426,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         final Object fallbackImpl;
         final String serviceId;
         final int timeoutInSec;
+        String group;
+
+        {
+            group = RpcProxySelector.getAndRemoveGroup();
+        }
+
     }
 
     @Slf4j

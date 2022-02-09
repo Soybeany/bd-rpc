@@ -19,6 +19,11 @@
         </dependency>
         <dependency>
             <groupId>com.soybeany</groupId>
+            <artifactId>rpc-provider</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.soybeany</groupId>
             <artifactId>mq-producer</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>

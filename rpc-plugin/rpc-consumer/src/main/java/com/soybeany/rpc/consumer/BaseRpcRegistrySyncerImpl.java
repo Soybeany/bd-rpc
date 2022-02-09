@@ -22,7 +22,7 @@ import java.util.Set;
 public abstract class BaseRpcRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcClientService, IRpcServiceProxy {
 
     @Autowired
-    private ApplicationContext appContext;
+    protected ApplicationContext appContext;
 
     private RpcConsumerPlugin plugin;
 
