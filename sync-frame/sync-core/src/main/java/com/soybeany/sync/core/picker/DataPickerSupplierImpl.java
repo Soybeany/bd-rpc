@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
+ * 使用提供者动态提供
+ *
  * @author Soybeany
  * @date 2022/1/28
  */

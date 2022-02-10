@@ -8,7 +8,9 @@ import com.soybeany.rpc.provider.RpcProviderPlugin;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.picker.DataPicker;
+import com.soybeany.sync.core.picker.DataPickerFiltersImpl;
 import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
+import com.soybeany.sync.core.picker.filter.DataPickerFuseFilter;
 import com.soybeany.sync.core.util.NetUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +36,9 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
 
     @Override
     protected DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId) {
-        return new DataPickerSimpleImpl<>();
+        return new DataPickerFiltersImpl<>(Collections.singletonList(
+                new DataPickerFuseFilter<>(10, 30)
+        ));
     }
 
     @Override

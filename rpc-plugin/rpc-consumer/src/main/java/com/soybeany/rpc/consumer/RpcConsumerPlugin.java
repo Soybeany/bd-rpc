@@ -155,7 +155,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         if (!input.isUpdated()) {
             return;
         }
-        md5 = input.getMd5();
         Set<String> keys = new HashSet<>(pickers.keySet());
         Optional.ofNullable(input.getProviderMap()).ifPresent(map -> {
             // 数据预处理，添加带标签的记录
@@ -176,6 +175,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         });
         // 移除已失效条目
         keys.forEach(pickers::remove);
+        // 信息处理成功，最后再更新md5
+        md5 = input.getMd5();
     }
 
     @SuppressWarnings("unchecked")
@@ -249,6 +250,8 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     private DataManager<InvokeInfo, Object> getNewDataManager(BdRpcCache cache) {
+        boolean hasStorageId = StringUtils.hasLength(cache.storageId());
+        String storageId = hasStorageId ? cache.storageId() : cache.desc();
         return DataManager.Builder
                 .get(cache.desc(), getNewDatasource(), invokeInfo -> {
                     String keyWithGroup = getKeyWithGroup(invokeInfo.group, GSON.toJson(invokeInfo.args));
@@ -257,12 +260,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
                 .withCache(new LruMemCacheStorage.Builder<InvokeInfo, Object>()
                         .capacity(cache.capacity())
-                        .enableShareStorage(StringUtils.hasLength(cache.storageId()))
+                        .enableShareStorage(hasStorageId)
                         .ttl(cache.ttl())
                         .ttlErr(cache.ttlErr())
                         .build()
                 )
-                .storageId(cache.storageId())
+                .storageId(storageId)
                 .enableRenewExpiredCache(cache.enableRenewExpiredCache())
                 .build();
     }

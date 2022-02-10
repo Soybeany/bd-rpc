@@ -17,7 +17,7 @@ public class DataPickerSimpleImpl<T> implements DataPicker<T> {
     private int curIndex;
 
     public DataPickerSimpleImpl() {
-        set(Collections.emptyList());
+        innerSet(Collections.emptyList());
     }
 
     @SafeVarargs
@@ -27,8 +27,7 @@ public class DataPickerSimpleImpl<T> implements DataPicker<T> {
 
     @Override
     public synchronized void set(List<T> list) {
-        this.dataList = list;
-        curIndex = -1;
+        innerSet(list);
     }
 
     @Override
@@ -56,6 +55,11 @@ public class DataPickerSimpleImpl<T> implements DataPicker<T> {
     }
 
     // ***********************内部方法****************************
+
+    private void innerSet(List<T> list) {
+        this.dataList = list;
+        curIndex = -1;
+    }
 
     private boolean hasNoDataList() {
         return null == dataList || dataList.isEmpty();
