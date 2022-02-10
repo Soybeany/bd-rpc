@@ -8,6 +8,7 @@ import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.sync.core.model.SyncState;
 import com.soybeany.sync.core.picker.DataPicker;
 import com.soybeany.sync.core.util.RequestUtils;
 import com.soybeany.util.file.BdFileUtils;
@@ -98,7 +99,7 @@ public class SyncClientService {
                     syncPlugins.add(plugin);
                 }
             } catch (Exception e) {
-                handleException(plugin, uid, e);
+                handleException(plugin, uid, SyncState.BEFORE, e);
             }
         }
         // 若没有需要同步的插件，则直接返回
@@ -114,7 +115,7 @@ public class SyncClientService {
                 throw new SyncRequestException(dto.getParsedErrMsg() + "(" + result.getUrl() + ")");
             }
         } catch (Exception e) {
-            syncPlugins.forEach(plugin -> handleException(plugin, uid, e));
+            syncPlugins.forEach(plugin -> handleException(plugin, uid, SyncState.SYNC, e));
             return;
         }
         // 同步后回调
@@ -123,20 +124,20 @@ public class SyncClientService {
             String tag = plugin.onSetupSyncTagToHandle();
             String tagInputJson = result.get(tag);
             if (null == tagInputJson) {
-                handleException(plugin, uid, new SyncException("缺失“" + tag + "”的同步数据"));
+                handleException(plugin, uid, SyncState.RECEIVE, new SyncException("缺失“" + tag + "”的同步数据"));
                 continue;
             }
             try {
                 plugin.onAfterSync(uid, GSON.fromJson(tagInputJson, plugin.onGetInputClass()));
             } catch (Exception e) {
-                handleException(plugin, uid, e);
+                handleException(plugin, uid, SyncState.AFTER, e);
             }
         }
     }
 
-    private void handleException(IClientPlugin<Object, Object> plugin, String uid, Exception e) {
+    private void handleException(IClientPlugin<Object, Object> plugin, String uid, SyncState state, Exception e) {
         try {
-            plugin.onSyncException(uid, e);
+            plugin.onSyncException(uid, state, e);
         } catch (Exception e2) {
             log.error(e2.getMessage());
         }

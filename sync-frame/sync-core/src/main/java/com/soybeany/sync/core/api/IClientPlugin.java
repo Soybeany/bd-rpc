@@ -1,6 +1,7 @@
 package com.soybeany.sync.core.api;
 
 import com.soybeany.sync.core.model.SyncClientInfo;
+import com.soybeany.sync.core.model.SyncState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,11 +60,14 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
     /**
      * 同步过程中出现异常时的回调(需使用synchronized)
      *
-     * @param uid 用于关联输入/输出的唯一标识
-     * @param e   异常
+     * @param uid   用于关联输入/输出的唯一标识
+     * @param state 所处的同步状态
+     * @param e     异常
      */
-    default void onSyncException(String uid, Exception e) throws Exception {
-        LOGGER.warn(e.getMessage());
+    default void onSyncException(String uid, SyncState state, Exception e) throws Exception {
+        if (!SyncState.SYNC.equals(state)) {
+            LOGGER.warn(getClass().getSimpleName() + "(" + state + "): " + e.getMessage());
+        }
     }
 
 }

@@ -8,7 +8,6 @@ import com.soybeany.cache.v2.storage.LruMemCacheStorage;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.anno.BdRpcBatch;
 import com.soybeany.rpc.core.anno.BdRpcCache;
-import com.soybeany.rpc.core.anno.BdRpcFallback;
 import com.soybeany.rpc.core.api.IRpcBatchInvoker;
 import com.soybeany.rpc.core.api.IRpcCacheExpiryProvider;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
@@ -50,6 +49,8 @@ import static com.soybeany.rpc.core.model.BdRpcConstants.*;
 import static com.soybeany.sync.core.util.RequestUtils.GSON;
 
 /**
+ * // todo 引入调用失败告警配置，方法级别注解(绑定alertId)，触发后自动找相应alertId的处理器（支持配置不同的阈值策略，达到才真正告警），并将产生告警的数据传入
+ *
  * @author Soybeany
  * @date 2021/10/27
  */
@@ -256,10 +257,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
                 .withCache(new LruMemCacheStorage.Builder<InvokeInfo, Object>()
                         .capacity(cache.capacity())
-                        .pTtl(cache.pTtl())
-                        .pTtlErr(cache.pTtlErr())
+                        .enableShareStorage(StringUtils.hasLength(cache.storageId()))
+                        .ttl(cache.ttl())
+                        .ttlErr(cache.ttlErr())
                         .build()
                 )
+                .storageId(cache.storageId())
                 .enableRenewExpiredCache(cache.enableRenewExpiredCache())
                 .build();
     }
@@ -365,10 +368,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 throw new RpcPluginException("同一个类中，@BdRpcBatch的methodId(" + batch.methodId() + ")需唯一");
             }
         }
-    }
-
-    private boolean isFallbackImpl(Object obj) {
-        return null != obj.getClass().getAnnotation(BdRpcFallback.class);
     }
 
     @SuppressWarnings("unchecked")

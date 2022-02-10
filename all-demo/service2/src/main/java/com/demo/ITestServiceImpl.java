@@ -26,6 +26,16 @@ public class ITestServiceImpl implements ITestService {
     }
 
     @Override
+    public String getValue2() {
+        return "数据2";
+    }
+
+    @Override
+    public String getValue3() {
+        return "数据3";
+    }
+
+    @Override
     public String getBatchValue(String input) {
         return "来自Service2:" + input;
     }

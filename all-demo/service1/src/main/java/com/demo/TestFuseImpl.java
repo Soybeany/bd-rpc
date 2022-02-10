@@ -15,6 +15,7 @@ import java.util.List;
 @BdRpcFallback
 @Component
 public class TestFuseImpl implements ITestService {
+
     @Override
     public List<TestVO> getValue(List<TestParam> param) {
         TestVO vo = new TestVO();
@@ -23,7 +24,18 @@ public class TestFuseImpl implements ITestService {
     }
 
     @Override
-    public String getBatchValue(String input) {
+    public String getValue2() {
         return "熔断b";
     }
+
+    @Override
+    public String getValue3() {
+        return "熔断c";
+    }
+
+    @Override
+    public String getBatchValue(String input) {
+        return "熔断d";
+    }
+
 }

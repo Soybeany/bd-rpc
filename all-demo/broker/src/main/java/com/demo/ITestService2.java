@@ -15,6 +15,10 @@ public interface ITestService2 {
 
     List<TestVO> getValue(List<TestParam> param) throws Exception;
 
+    String getValue2();
+
+    String getValue3();
+
     String getBatchValue(String input);
 
 }

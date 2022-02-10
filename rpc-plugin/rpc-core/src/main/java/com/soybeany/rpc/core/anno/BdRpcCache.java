@@ -34,18 +34,23 @@ public @interface BdRpcCache {
     boolean enableRenewExpiredCache() default false;
 
     /**
+     * 存储id，若有设置，相同的storageId将共用缓存存储
+     */
+    String storageId() default "";
+
+    /**
      * 数据容量
      */
     int capacity() default 100;
 
     /**
-     * 正常数据的生存时间，用于一般场景，默认永不超时（单位：毫秒）
+     * 正常数据的生存时间，用于一般场景，默认永不超时（单位：秒）
      */
-    int pTtl() default Integer.MAX_VALUE;
+    int ttl() default Integer.MAX_VALUE / 1000 - 1;
 
     /**
-     * 异常的生存时间，用于防缓存穿透等场景，默认1分钟（单位：毫秒）
+     * 异常的生存时间，用于防缓存穿透等场景，默认1分钟（单位：秒）
      */
-    int pTtlErr() default 60 * 1000;
+    int ttlErr() default 60;
 
 }

@@ -16,6 +16,10 @@ public interface ITestService {
 
     List<TestVO> getValue(List<TestParam> param) throws Exception;
 
+    String getValue2();
+
+    String getValue3();
+
     @BdRpcBatch(methodId = "batch")
     String getBatchValue(String input);
 

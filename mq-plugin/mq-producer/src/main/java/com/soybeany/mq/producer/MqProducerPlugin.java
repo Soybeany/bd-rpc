@@ -7,6 +7,7 @@ import com.soybeany.mq.core.model.MqProducerInput;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.core.model.MqProducerOutput;
 import com.soybeany.sync.core.api.IClientPlugin;
+import com.soybeany.sync.core.model.SyncState;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -62,8 +63,8 @@ public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProduc
     }
 
     @Override
-    public synchronized void onSyncException(String uid, Exception e) throws Exception {
-        IClientPlugin.super.onSyncException(uid, e);
+    public synchronized void onSyncException(String uid, SyncState state, Exception e) throws Exception {
+        IClientPlugin.super.onSyncException(uid, state, e);
         handleInput(uid, new MqProducerInput(false, e.getMessage()));
     }
 

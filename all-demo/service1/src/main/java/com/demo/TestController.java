@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * @author Soybeany
@@ -47,40 +48,28 @@ public class TestController {
 
     @GetMapping("/test")
     public String test(String group, String topic) {
-        try {
+        return wrap(() -> {
             TestParam param = new TestParam(3, "含有中文与特殊字符“：\"'!@#");
             String value = service.get(group).getValue(Collections.singletonList(param)).get(0).getValue();
             Map<RpcServerInfo, RpcBatchResult<String>> resultMap = invoker.get(group).invoke("b输入");
             mqMsgSender.syncSend(topic, new MqProducerMsg(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
             return value + "\n" + resultMap.values();
-        } catch (RpcPluginException | MqPluginException e) {
-            String message = e.getMessage();
-            if (e instanceof RpcRequestException) {
-                message = message + "(" + ((RpcRequestException) e).getServerInfo().getInvokeUrl() + ")";
-            }
-            log.warn(message);
-            return "exception:" + message;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "未预料异常:" + e.getMessage();
-        }
+        });
     }
 
     @GetMapping("/test2")
     public String test2(String group, String input) {
-        try {
-            return service2.get(group).getValue(input);
-        } catch (RpcPluginException | MqPluginException e) {
-            String message = e.getMessage();
-            if (e instanceof RpcRequestException) {
-                message = message + "(" + ((RpcRequestException) e).getServerInfo().getInvokeUrl() + ")";
-            }
-            log.warn(message);
-            return "exception:" + message;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "未预料异常:" + e.getMessage();
-        }
+        return wrap(() -> service2.get(group).getValue(input));
+    }
+
+    @GetMapping("/test3")
+    public String test3(String group) {
+        return wrap(() -> {
+            String value2 = service.get(group).getValue2();
+            Thread.sleep(500);
+            String value3 = service.get(group).getValue3();
+            return "v2:" + value2 + " v3:" + value3;
+        });
     }
 
     @PostMapping("/bd-rpc/invoke")
@@ -93,6 +82,22 @@ public class TestController {
         service = serviceProxy.getSelector(ITestService.class);
         service2 = serviceProxy.getSelector(ITestService2.class);
         invoker = serviceProxy.getBatchSelector(ITestService.class, "batch");
+    }
+
+    private String wrap(Callable<String> callable) {
+        try {
+            return callable.call();
+        } catch (RpcPluginException | MqPluginException e) {
+            String message = e.getMessage();
+            if (e instanceof RpcRequestException) {
+                message = message + "(" + ((RpcRequestException) e).getServerInfo().getInvokeUrl() + ")";
+            }
+            log.warn(message);
+            return "exception:" + message;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "未预料异常:" + e.getMessage();
+        }
     }
 
 }

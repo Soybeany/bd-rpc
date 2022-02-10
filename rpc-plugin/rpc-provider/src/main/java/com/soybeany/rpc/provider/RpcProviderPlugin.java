@@ -141,6 +141,11 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     }
 
     private void onHandleBean(BdRpc bdRpc, Object bean) {
+        // 熔断的实现不作为提供者
+        if (isFallbackImpl(bean)) {
+            return;
+        }
+        // 其余情况才作为提供者
         String id = getId(version, bdRpc);
         Object previous = serviceMap.put(id, bean);
         if (null != previous) {

@@ -1,6 +1,7 @@
 package com.soybeany.rpc.core.plugin;
 
 import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.anno.BdRpcFallback;
 import com.soybeany.sync.core.api.IClientPlugin;
 
 import java.util.*;
@@ -16,6 +17,10 @@ public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugi
 
     protected static String getId(String version, BdRpc annotation) {
         return annotation.serviceId() + "-" + version;
+    }
+
+    protected static boolean isFallbackImpl(Object obj) {
+        return null != obj.getClass().getAnnotation(BdRpcFallback.class);
     }
 
     protected List<String> getPostTreatPkgPathsToScan() {

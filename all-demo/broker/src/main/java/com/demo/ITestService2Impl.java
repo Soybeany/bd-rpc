@@ -24,6 +24,16 @@ public class ITestService2Impl implements ITestService2 {
     }
 
     @Override
+    public String getValue2() {
+        return "来自broker:b";
+    }
+
+    @Override
+    public String getValue3() {
+        return "来自broker:c";
+    }
+
+    @Override
     public String getBatchValue(String input) {
         return "来自broker:" + input;
     }

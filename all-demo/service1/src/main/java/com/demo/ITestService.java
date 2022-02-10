@@ -15,8 +15,14 @@ import java.util.List;
 @BdRpc(serviceId = "test")
 public interface ITestService {
 
-    @BdRpcCache(desc = "测试", pTtl = 10 * 1000, useMd5Key = false)
+    @BdRpcCache(desc = "测试", ttl = 10, useMd5Key = false)
     List<TestVO> getValue(List<TestParam> param) throws Exception;
+
+    @BdRpcCache(desc = "测试2", ttl = 5, useMd5Key = false, storageId = "t1")
+    String getValue2();
+
+    @BdRpcCache(desc = "测试3", ttl = 5, useMd5Key = false, storageId = "t1")
+    String getValue3();
 
     @BdRpcBatch(methodId = "batch")
     String getBatchValue(String input);
