@@ -9,7 +9,6 @@ import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.anno.BdRpcBatch;
 import com.soybeany.rpc.core.anno.BdRpcCache;
 import com.soybeany.rpc.core.api.IRpcBatchInvoker;
-import com.soybeany.rpc.core.api.IRpcCacheExpiryProvider;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
@@ -253,7 +252,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         boolean hasStorageId = StringUtils.hasLength(cache.storageId());
         String storageId = hasStorageId ? cache.storageId() : cache.desc();
         return DataManager.Builder
-                .get(cache.desc(), getNewDatasource(), invokeInfo -> {
+                .get(cache.desc(), (IDatasource<InvokeInfo, Object>) this::onInvoke, invokeInfo -> {
                     String keyWithGroup = getKeyWithGroup(invokeInfo.group, GSON.toJson(invokeInfo.args));
                     return cache.useMd5Key() ? Md5Utils.strToMd5(keyWithGroup) : keyWithGroup;
                 })
@@ -268,23 +267,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 .storageId(storageId)
                 .enableRenewExpiredCache(cache.enableRenewExpiredCache())
                 .build();
-    }
-
-    private IDatasource<InvokeInfo, Object> getNewDatasource() {
-        return new IDatasource<InvokeInfo, Object>() {
-            @Override
-            public Object onGetData(InvokeInfo invokeInfo) throws Exception {
-                return onInvoke(invokeInfo);
-            }
-
-            @Override
-            public int onSetupExpiry(Object data) throws Exception {
-                if (data instanceof IRpcCacheExpiryProvider) {
-                    return ((IRpcCacheExpiryProvider) data).onSetupCacheExpiry();
-                }
-                return IDatasource.super.onSetupExpiry(data);
-            }
-        };
     }
 
     private DataPicker<RpcServerInfo> getGroupedPicker(InvokeInfo invokeInfo) {
