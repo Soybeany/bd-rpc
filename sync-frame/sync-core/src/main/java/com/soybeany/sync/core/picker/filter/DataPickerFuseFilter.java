@@ -78,9 +78,7 @@ public class DataPickerFuseFilter<T> implements DataPickerFiltersImpl.Filter<T> 
             return false;
         }
         // 概率过滤，失败次数越多则拒绝范围越大，对应的过滤概率则越高
-        int bound = new Random().nextInt(testBound);
-        System.out.println("bound:" + bound + " denyRange:" + denyRange);
-        return bound < denyRange;
+        return new Random().nextInt(testBound) < denyRange;
     }
 
     // ***********************内部方法****************************
