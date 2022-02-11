@@ -1,6 +1,7 @@
 package com.soybeany.rpc.core.exception;
 
 import com.soybeany.rpc.core.model.RpcServerInfo;
+import com.soybeany.sync.core.exception.SyncRequestException;
 import lombok.Getter;
 
 /**
@@ -11,16 +12,15 @@ import lombok.Getter;
 public class RpcRequestException extends RpcPluginException {
 
     private final RpcServerInfo serverInfo;
-    private final Exception targetException;
 
-    public RpcRequestException(RpcServerInfo serverInfo, Exception target) {
+    public RpcRequestException(RpcServerInfo serverInfo, SyncRequestException target) {
         super(target.getMessage());
         this.serverInfo = serverInfo;
-        this.targetException = target;
     }
 
     @Override
     public String toString() {
-        return serverInfo + ":" + targetException.getMessage();
+        return serverInfo + ":" + getMessage();
     }
+
 }

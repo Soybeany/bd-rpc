@@ -1,5 +1,6 @@
 package com.demo;
 
+import com.demo.model.ExIoException;
 import com.demo.model.TestParam;
 import com.demo.model.TestVO;
 import lombok.extern.slf4j.Slf4j;
@@ -26,13 +27,23 @@ public class ITestServiceImpl implements ITestService {
     }
 
     @Override
-    public String getValue2() {
-        return "数据2";
+    public String getValue2() throws ExIoException {
+        throw new ExIoException("好");
     }
 
     @Override
     public String getValue3() {
         return "数据3";
+    }
+
+    @Override
+    public String getValue4() {
+        return "数据4";
+    }
+
+    @Override
+    public String getValue5() {
+        return "数据5";
     }
 
     @Override

@@ -34,8 +34,18 @@ public class TestFuseImpl implements ITestService {
     }
 
     @Override
-    public String getBatchValue(String input) {
+    public String getValue4() {
         return "熔断d";
+    }
+
+    @Override
+    public String getValue5() {
+        return "熔断e";
+    }
+
+    @Override
+    public String getBatchValue(String input) {
+        return "熔断z";
     }
 
 }

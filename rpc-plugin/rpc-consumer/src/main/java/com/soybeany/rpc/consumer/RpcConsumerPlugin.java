@@ -10,6 +10,7 @@ import com.soybeany.rpc.core.anno.BdRpcBatch;
 import com.soybeany.rpc.core.anno.BdRpcCache;
 import com.soybeany.rpc.core.api.IRpcBatchInvoker;
 import com.soybeany.rpc.core.api.IRpcServiceProxy;
+import com.soybeany.rpc.core.api.IServerInfoReceiver;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.core.exception.RpcRequestException;
@@ -295,10 +296,19 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             return invokeMethodOfFallbackImpl(invokeInfo.method, invokeInfo.args, invokeInfo.fallbackImpl, e.getMessage());
         }
         SyncDTO dto = result.getData();
+        // 正常则直接返回结果
         if (dto.getIsNorm()) {
             return dto.getData(invokeInfo.method.getGenericReturnType());
         }
-        throw new RpcRequestException(result.getUrl(), dto.getParsedErr());
+        // 非正常时按情况抛出异常
+        Exception exception = dto.getParsedErr();
+        if (exception instanceof SyncRequestException) {
+            exception = new RpcRequestException(result.getUrl(), (SyncRequestException) exception);
+        }
+        if (exception instanceof IServerInfoReceiver) {
+            ((IServerInfoReceiver) exception).onSetupServerInfo(result.getUrl());
+        }
+        throw exception;
     }
 
     @SuppressWarnings("unchecked")

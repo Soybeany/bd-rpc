@@ -1,5 +1,6 @@
 package com.demo;
 
+import com.demo.model.ExIoException;
 import com.demo.model.TestParam;
 import com.soybeany.mq.core.api.IMqMsgSender;
 import com.soybeany.mq.core.exception.MqPluginException;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
@@ -65,10 +67,29 @@ public class TestController {
     @GetMapping("/test3")
     public String test3(String group) {
         return wrap(() -> {
-            String value2 = service.get(group).getValue2();
-            Thread.sleep(500);
-            String value3 = service.get(group).getValue3();
-            return "v2:" + value2 + " v3:" + value3;
+            ITestService service = this.service.get(group);
+            String value2, value3;
+            try {
+                value2 = service.getValue2();
+            } catch (ExIoException e) {
+                value2 = e.getMessage() + "(" + e.getServerInfo().getInvokeUrl() + ")";
+            }
+            try {
+                value3 = service.getValue3();
+            } catch (IOException e) {
+                value3 = e.getMessage();
+            }
+            String value4 = service.getValue4();
+            String value5 = service.getValue5();
+            Thread.sleep(1000);
+            String value51 = service.getValue5();
+            String value41 = service.getValue4();
+            return "v2:" + value2
+                    + " v3:" + value3
+                    + " v4:" + value4
+                    + " v5:" + value5
+                    + " v51:" + value51
+                    + " v41:" + value41;
         });
     }
 
