@@ -37,7 +37,7 @@ public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl implements IRp
     @Override
     protected DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId) {
         return new DataPickerFiltersImpl<>(Collections.singletonList(
-                new DataPickerFuseFilter<>(10, 30)
+                new DataPickerFuseFilter<>(10, 0.5f, 5)
         ));
     }
 

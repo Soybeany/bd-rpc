@@ -1,7 +1,6 @@
 package com.soybeany.sync.core.picker.filter;
 
 import com.soybeany.sync.core.picker.DataPickerFiltersImpl;
-import lombok.AllArgsConstructor;
 
 import java.util.*;
 
@@ -11,34 +10,46 @@ import java.util.*;
  */
 public class DataPickerFuseFilter<T> implements DataPickerFiltersImpl.Filter<T> {
 
-    private final Map<Object, Integer> failCountMap = new HashMap<>();
-    private final Item[] itemArr;
+    private final Map<T, Integer> failCountMap = new HashMap<>();
+    private final List<Set<T>> failRecords = new ArrayList<>();
     private final int valve;
+    private final int testBound;
     private final int intervalInMillis;
-    private int itemIndex;
+    private int curIndex;
+    private long lastPeriod;
+
+    public DataPickerFuseFilter() {
+        this(10, 0.5f, 10);
+    }
 
     /**
-     * @param windowSize    检测的窗口大小，将使用该大小的一半作为概率检测的阈值
+     * @param windowSize    检测的窗口大小
+     * @param valveRate     阈值比例，当失败值高于此比例时，将开启熔断判断
      * @param intervalInSec 检测的间隔(秒)
      */
-    public DataPickerFuseFilter(int windowSize, int intervalInSec) {
-        this.itemArr = new Item[windowSize];
-        this.valve = windowSize / 2;
+    public DataPickerFuseFilter(int windowSize, float valveRate, int intervalInSec) {
+        if (windowSize <= 0) {
+            throw new RuntimeException("windowSize需大于0");
+        }
+        if (valveRate < 0 || valveRate >= 1) {
+            throw new RuntimeException("valveRate需大于等于0且小于1");
+        }
+        if (intervalInSec <= 0) {
+            throw new RuntimeException("intervalInSec需大于0");
+        }
+        for (int i = 0; i < windowSize; i++) {
+            this.failRecords.add(new HashSet<>());
+        }
+        this.valve = (int) (windowSize * valveRate);
+        this.testBound = windowSize - valve;
         this.intervalInMillis = intervalInSec * 1000;
     }
 
     @Override
     public void onSet(List<T> available) {
-        Set<Object> previous = new HashSet<>(failCountMap.keySet());
-        // 添加新记录
-        for (T data : available) {
-            if (!failCountMap.containsKey(data)) {
-                failCountMap.put(data, 0);
-            }
-            previous.remove(data);
-        }
+        Set<Object> newData = new HashSet<>(available);
         // 移除失效记录
-        previous.forEach(failCountMap::remove);
+        failCountMap.keySet().removeIf(o -> !newData.contains(o));
     }
 
     @Override
@@ -52,55 +63,59 @@ public class DataPickerFuseFilter<T> implements DataPickerFiltersImpl.Filter<T> 
     }
 
     @Override
-    public synchronized void onUnusable(T data) {
+    public void onUnusable(T data) {
         rebase();
-        itemArr[itemIndex].failArr.add(data);
+        failRecords.get(curIndex).add(data);
+        failCountMap.put(data, Optional.ofNullable(failCountMap.get(data)).orElse(0) + 1);
     }
 
     @Override
     public boolean shouldFilter(T data) {
         // 没有或低于阈值，则不作处理
         Integer failCount = failCountMap.get(data);
-        int deltaFailCount;
-        if (null == failCount || (deltaFailCount = failCount - valve) <= 0) {
+        int denyRange;
+        if (null == failCount || (denyRange = failCount - valve) <= 0) {
             return false;
         }
-        // 概率返回，失败次数越多则返回值的概率越低
-        return new Random().nextInt(itemArr.length - valve) < deltaFailCount;
+        // 概率过滤，失败次数越多则拒绝范围越大，对应的过滤概率则越高
+        int bound = new Random().nextInt(testBound);
+        System.out.println("bound:" + bound + " denyRange:" + denyRange);
+        return bound < denyRange;
     }
 
     // ***********************内部方法****************************
 
-    private synchronized void rebase() {
-        long curId = System.currentTimeMillis() / intervalInMillis;
-        Item item = itemArr[itemIndex];
-        boolean shouldCreateNewItem = false;
-        if (null == item) {
-            shouldCreateNewItem = true;
-        } else if (item.id != curId) {
-            itemIndex = ++itemIndex % itemArr.length;
-            shouldCreateNewItem = true;
+    private void rebase() {
+        long curPeriod = System.currentTimeMillis() / intervalInMillis;
+        // 若周期无变化，则不需作处理
+        if (lastPeriod == curPeriod) {
+            return;
         }
-        if (shouldCreateNewItem) {
-            Optional.ofNullable(itemArr[itemIndex])
-                    .ifPresent(nextItem -> nextItem.failArr.forEach(this::reduceFailCount));
-            itemArr[itemIndex] = new Item(curId);
+        // 计算周期差值
+        int deltaPeriod = (int) Math.min(curPeriod - lastPeriod, failRecords.size());
+        // 清空周期差间的记录，并减少相应的计数
+        for (int i = 0; i < deltaPeriod; i++) {
+            curIndex = ++curIndex % failRecords.size();
+            Set<T> set = failRecords.get(curIndex);
+            reduceFailCount(set);
+            set.clear();
         }
+        // 更新period
+        lastPeriod = curPeriod;
     }
 
-    private void reduceFailCount(Object data) {
-        Integer count = failCountMap.get(data);
-        if (null != count && count > 0) {
-            failCountMap.put(data, count - 1);
+    private void reduceFailCount(Set<T> set) {
+        for (T data : set) {
+            Integer failCount = failCountMap.get(data);
+            if (null == failCount) {
+                continue;
+            }
+            if (failCount > 1) {
+                failCountMap.put(data, failCount - 1);
+            } else {
+                failCountMap.remove(data);
+            }
         }
-    }
-
-    // ***********************内部类****************************
-
-    @AllArgsConstructor
-    private static class Item {
-        final long id;
-        final Set<Object> failArr = new HashSet<>();
     }
 
 }
