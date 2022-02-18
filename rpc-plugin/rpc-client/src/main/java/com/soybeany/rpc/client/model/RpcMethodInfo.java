@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.model;
+package com.soybeany.rpc.client.model;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import lombok.Data;

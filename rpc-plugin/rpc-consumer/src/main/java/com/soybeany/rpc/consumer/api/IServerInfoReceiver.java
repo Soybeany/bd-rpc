@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.api;
+package com.soybeany.rpc.consumer.api;
 
 import com.soybeany.rpc.core.model.RpcServerInfo;
 

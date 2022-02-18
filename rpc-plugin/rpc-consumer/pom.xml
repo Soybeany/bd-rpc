@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.soybeany</groupId>
-            <artifactId>rpc-core</artifactId>
+            <artifactId>rpc-client</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

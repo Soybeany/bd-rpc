@@ -1,4 +1,6 @@
-package com.soybeany.rpc.core.exception;
+package com.soybeany.rpc.consumer.exception;
+
+import com.soybeany.rpc.core.exception.RpcPluginException;
 
 /**
  * @author Soybeany

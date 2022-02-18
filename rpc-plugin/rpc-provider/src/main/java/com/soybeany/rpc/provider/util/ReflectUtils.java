@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.util;
+package com.soybeany.rpc.provider.util;
 
 import java.lang.annotation.Annotation;
 
@@ -7,10 +7,6 @@ import java.lang.annotation.Annotation;
  * @date 2021/10/28
  */
 public class ReflectUtils {
-
-    public static <T extends Annotation> T getAnnotation(Class<T> annotationClass, Class<?> clazz) {
-        return getAnnotation(null, annotationClass, clazz);
-    }
 
     /**
      * 从一个指定对象中获取指定的注解

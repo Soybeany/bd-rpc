@@ -1,6 +1,6 @@
 package com.demo.model;
 
-import com.soybeany.rpc.core.api.IServerInfoReceiver;
+import com.soybeany.rpc.consumer.api.IServerInfoReceiver;
 import com.soybeany.rpc.core.model.RpcServerInfo;
 import lombok.Getter;
 

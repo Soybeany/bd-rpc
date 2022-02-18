@@ -2,8 +2,8 @@ package com.demo;
 
 import com.soybeany.mq.core.plugin.MqRegistryPlugin;
 import com.soybeany.rpc.consumer.RpcConsumerPlugin;
-import com.soybeany.rpc.core.api.IRpcBatchInvoker;
-import com.soybeany.rpc.core.api.IRpcServiceProxy;
+import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
+import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.provider.BaseRpcRegistrySyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;

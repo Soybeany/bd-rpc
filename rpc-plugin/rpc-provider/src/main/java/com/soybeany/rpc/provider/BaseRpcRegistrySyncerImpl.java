@@ -1,7 +1,6 @@
 package com.soybeany.rpc.provider;
 
-import com.soybeany.rpc.core.api.IRpcClientService;
-import com.soybeany.rpc.core.api.IRpcServiceExecutor;
+import com.soybeany.rpc.client.api.IRpcClientService;
 import com.soybeany.sync.client.BaseClientSyncerImpl;
 import com.soybeany.sync.core.api.IClientPlugin;
 import com.soybeany.sync.core.model.SyncDTO;

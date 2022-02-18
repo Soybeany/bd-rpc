@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.plugin;
+package com.soybeany.rpc.client.plugin;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.sync.core.api.IClientPlugin;

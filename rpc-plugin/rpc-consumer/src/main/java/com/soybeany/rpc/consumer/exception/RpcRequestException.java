@@ -1,5 +1,6 @@
-package com.soybeany.rpc.core.exception;
+package com.soybeany.rpc.consumer.exception;
 
+import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import lombok.Getter;

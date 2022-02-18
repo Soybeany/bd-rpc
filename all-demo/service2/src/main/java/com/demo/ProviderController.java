@@ -1,7 +1,7 @@
 package com.demo;
 
 import com.demo.model.Constants;
-import com.soybeany.rpc.core.api.IRpcServiceExecutor;
+import com.soybeany.rpc.provider.IRpcServiceExecutor;
 import com.soybeany.sync.core.model.SyncDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

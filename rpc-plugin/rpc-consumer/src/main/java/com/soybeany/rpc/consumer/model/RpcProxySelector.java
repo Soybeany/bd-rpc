@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.model;
+package com.soybeany.rpc.consumer.model;
 
 import lombok.AllArgsConstructor;
 

@@ -6,7 +6,7 @@ import com.soybeany.mq.consumer.ITopicInfoRepository;
 import com.soybeany.mq.consumer.TopicInfoRepositoryMemImpl;
 import com.soybeany.mq.core.api.IMqBrokerSyncUrlProvider;
 import com.soybeany.mq.core.api.IMqMsgHandler;
-import com.soybeany.rpc.core.api.IRpcServiceProxy;
+import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

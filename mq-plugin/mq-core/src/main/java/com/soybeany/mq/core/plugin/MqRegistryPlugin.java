@@ -1,7 +1,7 @@
 package com.soybeany.mq.core.plugin;
 
+import com.soybeany.rpc.client.plugin.BaseRpcAddScanPathPlugin;
 import com.soybeany.rpc.consumer.RpcConsumerPlugin;
-import com.soybeany.rpc.core.plugin.BaseRpcAddScanPathPlugin;
 import com.soybeany.sync.core.api.IClientPlugin;
 
 import java.util.List;

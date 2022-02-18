@@ -1,7 +1,7 @@
-package com.soybeany.rpc.core.api;
+package com.soybeany.rpc.consumer.api;
 
+import com.soybeany.rpc.consumer.model.RpcProxySelector;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.RpcProxySelector;
 
 /**
  * @author Soybeany

@@ -1,6 +1,6 @@
-package com.soybeany.rpc.core.api;
+package com.soybeany.rpc.consumer.api;
 
-import com.soybeany.rpc.core.model.RpcBatchResult;
+import com.soybeany.rpc.consumer.model.RpcBatchResult;
 import com.soybeany.rpc.core.model.RpcServerInfo;
 
 import java.util.Map;

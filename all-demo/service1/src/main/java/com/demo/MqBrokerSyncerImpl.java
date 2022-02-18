@@ -2,7 +2,7 @@ package com.demo;
 
 import com.soybeany.mq.core.api.IMqBrokerSyncUrlProvider;
 import com.soybeany.mq.producer.BaseMqBrokerSyncerImpl;
-import com.soybeany.rpc.core.api.IRpcServiceProxy;
+import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

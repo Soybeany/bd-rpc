@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.api;
+package com.soybeany.rpc.client.api;
 
 import com.soybeany.sync.core.api.ISystemConfig;
 

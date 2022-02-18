@@ -1,4 +1,4 @@
-package com.soybeany.rpc.core.api;
+package com.soybeany.rpc.provider;
 
 import com.soybeany.sync.core.model.SyncDTO;
 

@@ -1,8 +1,8 @@
 package com.soybeany.rpc.consumer;
 
-import com.soybeany.rpc.core.api.IRpcBatchInvoker;
-import com.soybeany.rpc.core.api.IRpcClientService;
-import com.soybeany.rpc.core.api.IRpcServiceProxy;
+import com.soybeany.rpc.client.api.IRpcClientService;
+import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
+import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.sync.client.BaseClientSyncerImpl;

@@ -2,7 +2,7 @@ package com.demo;
 
 import com.demo.model.TestParam;
 import com.demo.model.TestVO;
-import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.client.anno.BdRpc;
 
 import java.util.List;
 
