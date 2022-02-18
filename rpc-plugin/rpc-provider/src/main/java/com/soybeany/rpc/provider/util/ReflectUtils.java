@@ -12,8 +12,11 @@ public class ReflectUtils {
      * 从一个指定对象中获取指定的注解
      */
     public static <T extends Annotation> T getAnnotation(String pkgStartWith, Class<T> annotationClass, Class<?> clazz) {
-        String pkgName = clazz.getPackage().getName();
-        if (null != pkgStartWith && !pkgName.startsWith(pkgStartWith)) {
+        Package pkg = clazz.getPackage();
+        if (null == pkg) {
+            return null;
+        }
+        if (null != pkgStartWith && !pkg.getName().startsWith(pkgStartWith)) {
             return null;
         }
         T annotation = null;
