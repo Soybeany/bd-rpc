@@ -1,7 +1,8 @@
 package com.soybeany.mq.core.api;
 
-import com.soybeany.rpc.client.anno.BdRpc;
-import com.soybeany.rpc.consumer.anno.BdRpcCache;
+
+import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.anno.BdRpcCache;
 
 /**
  * @author Soybeany

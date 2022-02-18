@@ -1,8 +1,8 @@
 package com.soybeany.rpc.provider.plugin;
 
-import com.soybeany.rpc.client.anno.BdRpc;
 import com.soybeany.rpc.client.model.RpcMethodInfo;
 import com.soybeany.rpc.client.plugin.BaseRpcClientPlugin;
+import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcProviderInput;
 import com.soybeany.rpc.core.model.RpcProviderOutput;

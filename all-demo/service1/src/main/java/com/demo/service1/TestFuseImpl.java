@@ -2,7 +2,7 @@ package com.demo.service1;
 
 import com.demo.service1.model.TestParam;
 import com.demo.service1.model.TestVO;
-import com.soybeany.rpc.client.anno.BdRpcFallback;
+import com.soybeany.rpc.core.anno.BdRpcFallback;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;

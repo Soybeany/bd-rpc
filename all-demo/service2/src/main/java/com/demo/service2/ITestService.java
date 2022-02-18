@@ -3,8 +3,8 @@ package com.demo.service2;
 import com.demo.service2.model.ExIoException;
 import com.demo.service2.model.TestParam;
 import com.demo.service2.model.TestVO;
-import com.soybeany.rpc.client.anno.BdRpc;
-import com.soybeany.rpc.consumer.anno.BdRpcBatch;
+import com.soybeany.rpc.core.anno.BdRpc;
+import com.soybeany.rpc.core.anno.BdRpcBatch;
 
 import java.io.IOException;
 import java.util.List;

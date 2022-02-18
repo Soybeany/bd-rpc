@@ -1,4 +1,4 @@
-package com.soybeany.rpc.consumer.anno;
+package com.soybeany.rpc.core.anno;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
