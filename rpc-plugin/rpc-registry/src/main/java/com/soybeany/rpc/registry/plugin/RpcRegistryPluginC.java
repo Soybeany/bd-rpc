@@ -5,6 +5,7 @@ import com.soybeany.rpc.core.model.RpcConsumerInput;
 import com.soybeany.rpc.core.model.RpcConsumerOutput;
 import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.registry.api.IRpcStorageManager;
+import com.soybeany.sync.server.api.IServerPlugin;
 import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +22,7 @@ import static com.soybeany.sync.core.util.NetUtils.GSON;
  * @date 2022/1/17
  */
 @RequiredArgsConstructor
-class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsumerInput> {
+public class RpcRegistryPluginC implements IServerPlugin<RpcConsumerOutput, RpcConsumerInput> {
 
     private final IRpcStorageManager storageManager;
 

@@ -4,6 +4,7 @@ import com.soybeany.mq.broker.api.IStorageManager;
 import com.soybeany.mq.core.model.BdMqConstants;
 import com.soybeany.mq.core.model.MqProducerInput;
 import com.soybeany.mq.core.model.MqProducerOutput;
+import com.soybeany.sync.server.api.IServerPlugin;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -11,7 +12,7 @@ import lombok.RequiredArgsConstructor;
  * @date 2022/1/19
  */
 @RequiredArgsConstructor
-class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutput, MqProducerInput> {
+public class MqBrokerPluginP implements IServerPlugin<MqProducerOutput, MqProducerInput> {
 
     private final IStorageManager storageManager;
 

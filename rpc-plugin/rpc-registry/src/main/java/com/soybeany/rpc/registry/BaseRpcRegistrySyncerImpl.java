@@ -1,7 +1,7 @@
 package com.soybeany.rpc.registry;
 
 import com.soybeany.rpc.registry.api.IRpcStorageManager;
-import com.soybeany.rpc.registry.plugin.RpcRegistryPlugin;
+import com.soybeany.rpc.registry.plugin.RpcRegistryPluginProvider;
 import com.soybeany.sync.server.api.IServerPlugin;
 import com.soybeany.sync.server.impl.BaseServerSyncerImpl;
 
@@ -15,7 +15,7 @@ public abstract class BaseRpcRegistrySyncerImpl extends BaseServerSyncerImpl {
 
     @Override
     protected void onSetupPlugins(List<IServerPlugin<?, ?>> plugins) {
-        plugins.addAll(RpcRegistryPlugin.get(onSetupStorageManager()));
+        plugins.addAll(RpcRegistryPluginProvider.get(onSetupStorageManager()));
     }
 
     // ***********************子类实现****************************

@@ -1,7 +1,7 @@
 package com.soybeany.mq.broker;
 
 import com.soybeany.mq.broker.api.IStorageManager;
-import com.soybeany.mq.broker.plugin.MqBrokerPlugin;
+import com.soybeany.mq.broker.plugin.MqBrokerPluginProvider;
 import com.soybeany.mq.core.api.IMqBrokerSyncUrlProvider;
 import com.soybeany.sync.core.util.NetUtils;
 import com.soybeany.sync.server.api.IServerPlugin;
@@ -17,7 +17,7 @@ public abstract class BaseMqBrokerSyncerImpl extends BaseServerSyncerImpl implem
 
     @Override
     protected void onSetupPlugins(List<IServerPlugin<?, ?>> plugins) {
-        plugins.addAll(MqBrokerPlugin.get(onSetupStorageManager()));
+        plugins.addAll(MqBrokerPluginProvider.get(onSetupStorageManager()));
     }
 
     @Override

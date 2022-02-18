@@ -5,6 +5,7 @@ import com.soybeany.mq.core.model.BdMqConstants;
 import com.soybeany.mq.core.model.MqConsumerInput;
 import com.soybeany.mq.core.model.MqConsumerOutput;
 import com.soybeany.sync.core.exception.SyncException;
+import com.soybeany.sync.server.api.IServerPlugin;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -12,7 +13,7 @@ import lombok.RequiredArgsConstructor;
  * @date 2022/1/19
  */
 @RequiredArgsConstructor
-class MqBrokerPluginC extends MqBrokerPlugin<MqConsumerOutput, MqConsumerInput> {
+public class MqBrokerPluginC implements IServerPlugin<MqConsumerOutput, MqConsumerInput> {
 
     private final IStorageManager storageManager;
 

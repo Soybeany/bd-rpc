@@ -4,6 +4,7 @@ import com.soybeany.rpc.core.model.BdRpcConstants;
 import com.soybeany.rpc.core.model.RpcProviderInput;
 import com.soybeany.rpc.core.model.RpcProviderOutput;
 import com.soybeany.rpc.registry.api.IRpcStorageManager;
+import com.soybeany.sync.server.api.IServerPlugin;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.WeakHashMap;
  * @date 2022/1/17
  */
 @RequiredArgsConstructor
-class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProviderInput> {
+public class RpcRegistryPluginP implements IServerPlugin<RpcProviderOutput, RpcProviderInput> {
 
     private final Map<String, RpcProviderOutput> cacheMap = new WeakHashMap<>();
     private final IRpcStorageManager storageManager;
