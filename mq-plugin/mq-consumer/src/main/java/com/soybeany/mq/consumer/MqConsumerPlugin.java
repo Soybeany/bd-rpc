@@ -4,6 +4,7 @@ import com.soybeany.mq.core.api.IMqMsgHandler;
 import com.soybeany.mq.core.model.BdMqConstants;
 import com.soybeany.mq.core.model.MqConsumerInput;
 import com.soybeany.mq.core.model.MqConsumerOutput;
+import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.sync.core.api.IClientPlugin;
 
 import java.util.ArrayList;
@@ -18,15 +19,13 @@ import java.util.Map;
 public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsumerOutput> {
 
     private final Map<String, List<IMqMsgHandler>> msgHandlerMap = new HashMap<>();
+    private final ITopicInfoRepository repository;
     private final IMqExceptionHandler exceptionHandler;
-    private final Map<String, Long> topics = new HashMap<>();
 
-    public MqConsumerPlugin(List<IMqMsgHandler> msgHandlers, IMqExceptionHandler exceptionHandler) {
-        msgHandlers.forEach(handler ->
-                msgHandlerMap.computeIfAbsent(handler.onSetupTopic(), topic -> new ArrayList<>()).add(handler)
-        );
-        this.exceptionHandler = (null != exceptionHandler ? exceptionHandler : new IMqExceptionHandler.LogImpl());
-        this.msgHandlerMap.keySet().forEach(topic -> topics.put(topic, 0L));
+    public MqConsumerPlugin(List<IMqMsgHandler> msgHandlers, ITopicInfoRepository repository, IMqExceptionHandler exceptionHandler) {
+        msgHandlers.forEach(handler -> msgHandlerMap.computeIfAbsent(handler.onSetupTopic(), topic -> new ArrayList<>()).add(handler));
+        this.repository = repository;
+        this.exceptionHandler = (null != exceptionHandler ? exceptionHandler : new MqExceptionHandlerLogImpl());
     }
 
     @Override
@@ -46,7 +45,7 @@ public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsum
 
     @Override
     public synchronized boolean onBeforeSync(String uid, MqConsumerOutput output) throws Exception {
-        output.getTopics().putAll(topics);
+        output.getTopics().addAll(repository.getAll(msgHandlerMap.keySet()));
         return IClientPlugin.super.onBeforeSync(uid, output);
     }
 
@@ -55,7 +54,7 @@ public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsum
         IClientPlugin.super.onAfterSync(uid, input);
         input.getMessages().forEach((topic, message) -> {
             // 更新topic的戳
-            topics.put(topic, message.getStamp());
+            repository.updateTopicInfo(new MqTopicInfo(topic, message.getStamp()));
             // 事件分发
             msgHandlerMap.get(topic).forEach(handler -> message.getMessages().forEach(msg -> {
                 try {

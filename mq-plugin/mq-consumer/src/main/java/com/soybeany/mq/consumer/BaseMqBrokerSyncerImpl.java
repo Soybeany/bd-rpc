@@ -22,7 +22,7 @@ public abstract class BaseMqBrokerSyncerImpl extends BaseClientSyncerImpl {
 
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        plugins.add(new MqConsumerPlugin(onSetupMsgHandlers(), onSetupExceptionHandler()));
+        plugins.add(new MqConsumerPlugin(onSetupMsgHandlers(), onSetupTopicInfoRepository(), onSetupExceptionHandler()));
     }
 
     // ***********************子类实现****************************
@@ -30,6 +30,8 @@ public abstract class BaseMqBrokerSyncerImpl extends BaseClientSyncerImpl {
     protected abstract IMqBrokerSyncUrlProvider onGetMqBrokerSyncUrlProvider();
 
     protected abstract List<IMqMsgHandler> onSetupMsgHandlers();
+
+    protected abstract ITopicInfoRepository onSetupTopicInfoRepository();
 
     protected abstract IMqExceptionHandler onSetupExceptionHandler();
 }

@@ -3,8 +3,8 @@ package com.soybeany.mq.core.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Soybeany
@@ -14,9 +14,6 @@ import java.util.Map;
 @Data
 public class MqConsumerOutput extends BaseMqClientOutput {
 
-    /**
-     * key为topic，value为stamp
-     */
-    private final Map<String, Long> topics = new HashMap<>();
+    private final List<MqTopicInfo> topics = new ArrayList<>();
 
 }

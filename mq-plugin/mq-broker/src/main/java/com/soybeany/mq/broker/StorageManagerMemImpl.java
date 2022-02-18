@@ -2,6 +2,7 @@ package com.soybeany.mq.broker;
 
 import com.soybeany.mq.core.model.MqConsumerMsg;
 import com.soybeany.mq.core.model.MqProducerMsg;
+import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.sync.server.IAutoCleaner;
 
 import java.util.*;
@@ -39,11 +40,11 @@ public class StorageManagerMemImpl implements IStorageManager, IAutoCleaner {
     }
 
     @Override
-    public synchronized Map<String, MqConsumerMsg> load(Map<String, Long> topics) {
+    public synchronized Map<String, MqConsumerMsg> load(List<MqTopicInfo> topics) {
         Map<String, MqConsumerMsg> result = new HashMap<>();
         long now = System.currentTimeMillis();
-        topics.forEach((topic, stamp) -> Optional.ofNullable(msgMap.get(topic)).ifPresent(treeMap -> treeMap.tailMap(stamp, false).forEach((s, pMsg) -> {
-            MqConsumerMsg cMsg = result.computeIfAbsent(topic, t -> new MqConsumerMsg());
+        topics.forEach(info -> Optional.ofNullable(msgMap.get(info.getTopic())).ifPresent(treeMap -> treeMap.tailMap(info.getStamp(), false).forEach((s, pMsg) -> {
+            MqConsumerMsg cMsg = result.computeIfAbsent(info.getTopic(), t -> new MqConsumerMsg());
             cMsg.setStamp(s);
             if (STATE_ACTIVE == getState(now, pMsg)) {
                 cMsg.getMessages().add(pMsg.getMsg());
