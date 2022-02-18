@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 import static com.soybeany.sync.core.util.NetUtils.GSON;
+import static com.soybeany.sync.core.util.NetUtils.getRemoteIpAddress;
 
 /**
  * @author Soybeany
@@ -26,6 +27,7 @@ public class SyncServerService {
     public Map<String, String> sync(HttpServletRequest request) throws SyncException {
         Map<String, String> output = new HashMap<>();
         Map<String, String> inputMap = getInput(request);
+        String remoteIpAddress = getRemoteIpAddress(request);
         for (IServerPlugin<Object, Object> plugin : allPlugins) {
             String tag = plugin.onSetupSyncTagToHandle();
             String tagInputJson = inputMap.get(tag);
@@ -34,7 +36,7 @@ public class SyncServerService {
             }
             try {
                 Object tmpOutput = plugin.onGetOutputClass().getConstructor().newInstance();
-                plugin.onHandleSync(GSON.fromJson(tagInputJson, plugin.onGetInputClass()), tmpOutput);
+                plugin.onHandleSync(remoteIpAddress, GSON.fromJson(tagInputJson, plugin.onGetInputClass()), tmpOutput);
                 output.put(tag, GSON.toJson(tmpOutput));
             } catch (SyncException e) {
                 throw e;

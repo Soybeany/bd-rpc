@@ -41,7 +41,7 @@ class RpcRegistryPluginC extends RpcRegistryPlugin<RpcConsumerOutput, RpcConsume
     }
 
     @Override
-    public void onHandleSync(RpcConsumerOutput in, RpcConsumerInput out) {
+    public void onHandleSync(String clientIp, RpcConsumerOutput in, RpcConsumerInput out) {
         Map<String, Set<RpcServerInfo>> map = new LinkedHashMap<>();
         String system = in.getSystem();
         in.getServiceIds().forEach(serviceId -> map.put(serviceId, storageManager.load(system, serviceId)));

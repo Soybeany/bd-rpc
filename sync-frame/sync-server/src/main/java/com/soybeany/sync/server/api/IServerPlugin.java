@@ -13,6 +13,6 @@ public interface IServerPlugin<Input, Output> extends IBasePlugin<Input, Output>
     /**
      * 处理同步的回调(必须先配置{@link #onSetupSyncTagToHandle})
      */
-    void onHandleSync(Input input, Output output) throws SyncException;
+    void onHandleSync(String clientIp, Input input, Output output) throws SyncException;
 
 }

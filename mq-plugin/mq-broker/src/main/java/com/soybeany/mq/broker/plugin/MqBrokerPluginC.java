@@ -32,7 +32,7 @@ class MqBrokerPluginC extends MqBrokerPlugin<MqConsumerOutput, MqConsumerInput> 
     }
 
     @Override
-    public void onHandleSync(MqConsumerOutput in, MqConsumerInput out) throws SyncException {
+    public void onHandleSync(String clientIp, MqConsumerOutput in, MqConsumerInput out) throws SyncException {
         try {
             out.getMessages().putAll(storageManager.load(in.getTopics()));
         } catch (Exception e) {

@@ -37,7 +37,7 @@ class RpcRegistryPluginP extends RpcRegistryPlugin<RpcProviderOutput, RpcProvide
     }
 
     @Override
-    public void onHandleSync(RpcProviderOutput in, RpcProviderInput out) {
+    public void onHandleSync(String clientIp, RpcProviderOutput in, RpcProviderInput out) {
         RpcProviderOutput cache = cacheMap.get(in.getProviderId());
         // 数据更新了，更新缓存
         if (in.isUpdated()) {

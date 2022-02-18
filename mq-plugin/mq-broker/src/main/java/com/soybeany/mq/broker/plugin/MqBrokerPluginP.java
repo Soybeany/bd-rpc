@@ -31,7 +31,7 @@ class MqBrokerPluginP extends MqBrokerPlugin<MqProducerOutput, MqProducerInput> 
     }
 
     @Override
-    public void onHandleSync(MqProducerOutput in, MqProducerInput out) {
+    public void onHandleSync(String clientIp, MqProducerOutput in, MqProducerInput out) {
         try {
             storageManager.save(in.getMessages());
             out.setSuccess(true);
