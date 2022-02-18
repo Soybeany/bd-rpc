@@ -3,9 +3,9 @@ package com.soybeany.mq.broker;
 import com.soybeany.mq.broker.api.IStorageManager;
 import com.soybeany.mq.broker.plugin.MqBrokerPlugin;
 import com.soybeany.mq.core.api.IMqBrokerSyncUrlProvider;
-import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.util.NetUtils;
-import com.soybeany.sync.server.BaseServerSyncerImpl;
+import com.soybeany.sync.server.api.IServerPlugin;
+import com.soybeany.sync.server.impl.BaseServerSyncerImpl;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package com.demo.broker;
 
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
-import com.soybeany.sync.core.api.IServerSyncer;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.sync.server.api.IServerSyncer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;

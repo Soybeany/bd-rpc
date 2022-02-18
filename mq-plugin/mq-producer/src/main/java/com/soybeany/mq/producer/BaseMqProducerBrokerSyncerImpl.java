@@ -5,10 +5,10 @@ import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.producer.api.IMqMsgSendCallback;
 import com.soybeany.mq.producer.api.IMqMsgSender;
 import com.soybeany.mq.producer.plugin.MqProducerPlugin;
-import com.soybeany.sync.client.BaseClientSyncerImpl;
-import com.soybeany.sync.core.api.IClientPlugin;
-import com.soybeany.sync.core.picker.DataPicker;
-import com.soybeany.sync.core.picker.DataPickerSupplierImpl;
+import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
+import com.soybeany.sync.client.picker.DataPicker;
+import com.soybeany.sync.client.picker.DataPickerSupplierImpl;
 
 import java.util.List;
 

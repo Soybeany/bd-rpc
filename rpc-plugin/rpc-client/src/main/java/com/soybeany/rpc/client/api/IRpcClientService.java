@@ -1,6 +1,6 @@
 package com.soybeany.rpc.client.api;
 
-import com.soybeany.sync.core.api.ISystemConfig;
+import com.soybeany.sync.client.api.ISystemConfig;
 
 import java.util.Set;
 

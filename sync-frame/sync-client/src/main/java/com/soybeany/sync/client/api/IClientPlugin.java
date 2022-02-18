@@ -1,7 +1,8 @@
-package com.soybeany.sync.core.api;
+package com.soybeany.sync.client.api;
 
-import com.soybeany.sync.core.model.SyncClientInfo;
-import com.soybeany.sync.core.model.SyncState;
+import com.soybeany.sync.client.model.SyncClientInfo;
+import com.soybeany.sync.client.model.SyncState;
+import com.soybeany.sync.core.api.IBasePlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package com.soybeany.sync.server;
+package com.soybeany.sync.server.api;
 
 /**
  * @author Soybeany

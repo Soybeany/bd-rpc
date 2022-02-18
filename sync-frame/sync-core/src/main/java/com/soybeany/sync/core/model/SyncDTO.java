@@ -9,7 +9,7 @@ import lombok.Data;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import static com.soybeany.sync.core.util.RequestUtils.GSON;
+import static com.soybeany.sync.core.util.NetUtils.GSON;
 
 /**
  * @author Soybeany

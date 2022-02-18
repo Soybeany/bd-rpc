@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static com.soybeany.sync.core.util.RequestUtils.GSON;
+import static com.soybeany.sync.core.util.NetUtils.GSON;
 
 /**
  * @author Soybeany

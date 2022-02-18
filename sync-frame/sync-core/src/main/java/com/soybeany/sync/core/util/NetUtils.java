@@ -1,5 +1,7 @@
 package com.soybeany.sync.core.util;
 
+import com.google.gson.Gson;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -8,6 +10,8 @@ import java.net.UnknownHostException;
  * @date 2021/11/1
  */
 public class NetUtils {
+
+    public static final Gson GSON = new Gson();
 
     public static String getLocalIpAddress() {
         try {

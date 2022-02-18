@@ -1,13 +1,13 @@
 package com.soybeany.sync.server;
 
 import com.soybeany.sync.core.api.IBasePlugin;
-import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.core.exception.SyncException;
+import com.soybeany.sync.server.api.IServerPlugin;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static com.soybeany.sync.core.util.RequestUtils.GSON;
+import static com.soybeany.sync.core.util.NetUtils.GSON;
 
 /**
  * @author Soybeany

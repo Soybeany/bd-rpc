@@ -1,8 +1,8 @@
 package com.demo.broker;
 
 import com.soybeany.rpc.provider.BaseRpcProviderRegistrySyncerImpl;
-import com.soybeany.sync.core.picker.DataPicker;
-import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
+import com.soybeany.sync.client.picker.DataPicker;
+import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

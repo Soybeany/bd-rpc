@@ -4,7 +4,7 @@ import com.soybeany.mq.broker.api.IStorageManager;
 import com.soybeany.mq.core.model.MqConsumerMsg;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.core.model.MqTopicInfo;
-import com.soybeany.sync.server.IAutoCleaner;
+import com.soybeany.sync.server.api.IAutoCleaner;
 
 import java.util.*;
 import java.util.concurrent.Executors;

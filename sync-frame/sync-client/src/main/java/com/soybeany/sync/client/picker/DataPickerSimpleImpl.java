@@ -1,4 +1,4 @@
-package com.soybeany.sync.core.picker;
+package com.soybeany.sync.client.picker;
 
 import java.util.ArrayList;
 import java.util.Arrays;

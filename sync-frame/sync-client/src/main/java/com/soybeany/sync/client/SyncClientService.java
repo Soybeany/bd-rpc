@@ -1,16 +1,16 @@
 package com.soybeany.sync.client;
 
 import com.google.gson.reflect.TypeToken;
+import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.api.ISyncClientConfig;
+import com.soybeany.sync.client.model.SyncClientInfo;
+import com.soybeany.sync.client.model.SyncState;
+import com.soybeany.sync.client.picker.DataPicker;
+import com.soybeany.sync.client.util.RequestUtils;
 import com.soybeany.sync.core.api.IBasePlugin;
-import com.soybeany.sync.core.api.IClientPlugin;
-import com.soybeany.sync.core.api.ISyncClientConfig;
 import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.exception.SyncRequestException;
-import com.soybeany.sync.core.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
-import com.soybeany.sync.core.model.SyncState;
-import com.soybeany.sync.core.picker.DataPicker;
-import com.soybeany.sync.core.util.RequestUtils;
 import com.soybeany.util.file.BdFileUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.soybeany.sync.core.util.RequestUtils.GSON;
+import static com.soybeany.sync.core.util.NetUtils.GSON;
 
 /**
  * @author Soybeany

@@ -1,7 +1,7 @@
 package com.soybeany.rpc.client.plugin;
 
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.sync.core.api.IClientPlugin;
+import com.soybeany.sync.client.api.IClientPlugin;
 
 import java.util.ArrayList;
 import java.util.List;

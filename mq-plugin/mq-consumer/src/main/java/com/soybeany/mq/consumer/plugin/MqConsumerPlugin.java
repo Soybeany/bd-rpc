@@ -8,7 +8,7 @@ import com.soybeany.mq.core.model.BdMqConstants;
 import com.soybeany.mq.core.model.MqConsumerInput;
 import com.soybeany.mq.core.model.MqConsumerOutput;
 import com.soybeany.mq.core.model.MqTopicInfo;
-import com.soybeany.sync.core.api.IClientPlugin;
+import com.soybeany.sync.client.api.IClientPlugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;

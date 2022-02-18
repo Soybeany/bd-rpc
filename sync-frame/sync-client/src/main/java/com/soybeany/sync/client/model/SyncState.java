@@ -1,4 +1,4 @@
-package com.soybeany.sync.core.model;
+package com.soybeany.sync.client.model;
 
 /**
  * @author Soybeany

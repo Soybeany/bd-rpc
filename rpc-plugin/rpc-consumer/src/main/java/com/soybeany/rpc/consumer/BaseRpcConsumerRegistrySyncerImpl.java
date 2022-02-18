@@ -6,9 +6,9 @@ import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcServerInfo;
-import com.soybeany.sync.client.BaseClientSyncerImpl;
-import com.soybeany.sync.core.api.IClientPlugin;
-import com.soybeany.sync.core.picker.DataPicker;
+import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
+import com.soybeany.sync.client.picker.DataPicker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 

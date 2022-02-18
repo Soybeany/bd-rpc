@@ -2,7 +2,7 @@ package com.soybeany.rpc.client.plugin;
 
 import com.soybeany.rpc.client.anno.BdRpc;
 import com.soybeany.rpc.client.anno.BdRpcFallback;
-import com.soybeany.sync.core.api.IClientPlugin;
+import com.soybeany.sync.client.api.IClientPlugin;
 
 import java.util.*;
 

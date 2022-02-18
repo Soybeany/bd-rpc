@@ -1,8 +1,8 @@
-package com.soybeany.sync.core.util;
+package com.soybeany.sync.client.util;
 
-import com.google.gson.Gson;
+import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.core.exception.SyncRequestException;
-import com.soybeany.sync.core.picker.DataPicker;
+import com.soybeany.sync.core.util.NetUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -23,7 +23,6 @@ import java.util.function.Function;
 @Slf4j
 public class RequestUtils {
 
-    public static final Gson GSON = new Gson();
     private static final Map<Integer, OkHttpClient> CLIENT_MAP = new WeakHashMap<>();
 
     public static <D, T> Result<D, T> request(DataPicker<D> urlPicker, Function<D, String> urlMapper, Config config, Type resultType, String errMsg) throws SyncRequestException {
@@ -31,7 +30,7 @@ public class RequestUtils {
             String urlStr = urlMapper.apply(url);
             try {
                 String bodyString = getBodyString(urlStr, config);
-                return new Result<>(url, GSON.fromJson(bodyString, resultType));
+                return new Result<>(url, NetUtils.GSON.fromJson(bodyString, resultType));
             } catch (Exception e) {
                 log.warn("请求“" + urlStr + "”异常(" + e.getMessage() + ")");
                 urlPicker.onUnusable(url);

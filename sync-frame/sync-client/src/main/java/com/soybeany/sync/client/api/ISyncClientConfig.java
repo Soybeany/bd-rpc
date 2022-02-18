@@ -1,7 +1,7 @@
-package com.soybeany.sync.core.api;
+package com.soybeany.sync.client.api;
 
-import com.soybeany.sync.core.picker.DataPicker;
-import com.soybeany.sync.core.picker.DataPickerSimpleImpl;
+import com.soybeany.sync.client.picker.DataPicker;
+import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import lombok.AllArgsConstructor;
 
 /**

@@ -1,7 +1,7 @@
 package com.demo.registry;
 
-import com.soybeany.sync.core.api.IServerSyncer;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.sync.server.api.IServerSyncer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

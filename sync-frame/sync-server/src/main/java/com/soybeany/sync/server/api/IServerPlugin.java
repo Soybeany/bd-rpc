@@ -1,6 +1,7 @@
-package com.soybeany.sync.core.api;
+package com.soybeany.sync.server.api;
 
 
+import com.soybeany.sync.core.api.IBasePlugin;
 import com.soybeany.sync.core.exception.SyncException;
 
 /**

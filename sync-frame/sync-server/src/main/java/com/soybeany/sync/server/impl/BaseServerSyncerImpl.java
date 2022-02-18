@@ -1,10 +1,11 @@
-package com.soybeany.sync.server;
+package com.soybeany.sync.server.impl;
 
-import com.soybeany.sync.core.api.IServerPlugin;
-import com.soybeany.sync.core.api.IServerSyncer;
 import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.model.BaseSyncerImpl;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.sync.server.SyncServerService;
+import com.soybeany.sync.server.api.IServerPlugin;
+import com.soybeany.sync.server.api.IServerSyncer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;

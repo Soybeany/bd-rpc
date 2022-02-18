@@ -6,7 +6,7 @@ import lombok.Data;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import static com.soybeany.sync.core.util.RequestUtils.GSON;
+import static com.soybeany.sync.core.util.NetUtils.GSON;
 
 
 /**

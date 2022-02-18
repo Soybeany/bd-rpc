@@ -1,7 +1,7 @@
 package com.soybeany.mq.broker.plugin;
 
 import com.soybeany.mq.broker.api.IStorageManager;
-import com.soybeany.sync.core.api.IServerPlugin;
+import com.soybeany.sync.server.api.IServerPlugin;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 

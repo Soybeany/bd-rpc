@@ -1,7 +1,8 @@
-package com.soybeany.sync.client;
+package com.soybeany.sync.client.impl;
 
-import com.soybeany.sync.core.api.IClientPlugin;
-import com.soybeany.sync.core.api.ISyncClientConfig;
+import com.soybeany.sync.client.SyncClientService;
+import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.api.ISyncClientConfig;
 import com.soybeany.sync.core.model.BaseSyncerImpl;
 
 import java.util.ArrayList;
@@ -28,6 +29,11 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
     protected void onStop() {
         super.onStop();
         service.stop();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected IClientPlugin<Object, Object>[] toPluginArr(List<IClientPlugin<?, ?>> list) {
+        return list.toArray(new IClientPlugin[0]);
     }
 
 }

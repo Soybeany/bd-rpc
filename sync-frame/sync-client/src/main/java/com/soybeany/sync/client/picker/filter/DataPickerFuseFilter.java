@@ -1,6 +1,6 @@
-package com.soybeany.sync.core.picker.filter;
+package com.soybeany.sync.client.picker.filter;
 
-import com.soybeany.sync.core.picker.DataPickerFiltersImpl;
+import com.soybeany.sync.client.picker.DataPickerFiltersImpl;
 
 import java.util.*;
 

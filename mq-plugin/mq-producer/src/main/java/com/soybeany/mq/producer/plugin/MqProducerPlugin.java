@@ -6,8 +6,8 @@ import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.core.model.MqProducerOutput;
 import com.soybeany.mq.producer.api.IMqMsgSendCallback;
 import com.soybeany.mq.producer.api.IMqMsgSender;
-import com.soybeany.sync.core.api.IClientPlugin;
-import com.soybeany.sync.core.model.SyncState;
+import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.model.SyncState;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
