@@ -1,0 +1,24 @@
+package com.demo.broker;
+
+import com.demo.broker.model.TestParam;
+import com.demo.broker.model.TestVO;
+import com.soybeany.rpc.client.anno.BdRpc;
+
+import java.util.List;
+
+/**
+ * @author Soybeany
+ * @date 2021/10/29
+ */
+@BdRpc(serviceId = "test")
+public interface ITestService2 {
+
+    List<TestVO> getValue(List<TestParam> param) throws Exception;
+
+    String getValue2();
+
+    String getValue3();
+
+    String getBatchValue(String input);
+
+}

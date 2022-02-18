@@ -1,5 +1,7 @@
 package com.soybeany.rpc.registry;
 
+import com.soybeany.rpc.registry.api.IRpcStorageManager;
+import com.soybeany.rpc.registry.plugin.RpcRegistryPlugin;
 import com.soybeany.sync.core.api.IServerPlugin;
 import com.soybeany.sync.server.BaseServerSyncerImpl;
 
