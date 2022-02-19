@@ -3,6 +3,7 @@ package com.soybeany.sync.client;
 import com.google.gson.reflect.TypeToken;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.api.ISyncClientConfig;
+import com.soybeany.sync.client.api.ISyncExceptionWatcher;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.model.SyncState;
 import com.soybeany.sync.client.picker.DataPicker;
@@ -39,13 +40,15 @@ public class SyncClientService {
     @Getter
     private final DataPicker<String> urlPicker;
     private final List<IClientPlugin<Object, Object>> allPlugins;
+    private final ISyncExceptionWatcher watcher;
 
     private Boolean started;
 
-    public SyncClientService(ISyncClientConfig config, IClientPlugin<Object, Object>[] plugins) {
+    public SyncClientService(ISyncClientConfig config, IClientPlugin<Object, Object>[] plugins, ISyncExceptionWatcher watcher) {
         this.config = config;
         urlPicker = config.onSetupSyncServerPicker();
         allPlugins = Arrays.asList(plugins);
+        this.watcher = watcher;
         IBasePlugin.checkPlugins(allPlugins);
         Collections.sort(allPlugins);
     }
@@ -99,7 +102,7 @@ public class SyncClientService {
                     syncPlugins.add(plugin);
                 }
             } catch (Exception e) {
-                handleException(plugin, uid, SyncState.BEFORE, e);
+                handleException(Collections.singletonList(plugin), uid, SyncState.BEFORE, e);
             }
         }
         // 若没有需要同步的插件，则直接返回
@@ -115,7 +118,7 @@ public class SyncClientService {
                 throw new SyncRequestException(dto.getParsedErrMsg() + "(" + result.getUrl() + ")");
             }
         } catch (Exception e) {
-            syncPlugins.forEach(plugin -> handleException(plugin, uid, SyncState.SYNC, e));
+            handleException(syncPlugins, uid, SyncState.SYNC, e);
             return;
         }
         // 同步后回调
@@ -124,20 +127,29 @@ public class SyncClientService {
             String tag = plugin.onSetupSyncTagToHandle();
             String tagInputJson = result.get(tag);
             if (null == tagInputJson) {
-                handleException(plugin, uid, SyncState.RECEIVE, new SyncException("缺失“" + tag + "”的同步数据"));
+                handleException(Collections.singletonList(plugin), uid, SyncState.RECEIVE, new SyncException("缺失“" + tag + "”的同步数据"));
                 continue;
             }
             try {
                 plugin.onAfterSync(uid, GSON.fromJson(tagInputJson, plugin.onGetInputClass()));
             } catch (Exception e) {
-                handleException(plugin, uid, SyncState.AFTER, e);
+                handleException(Collections.singletonList(plugin), uid, SyncState.AFTER, e);
             }
         }
     }
 
-    private void handleException(IClientPlugin<Object, Object> plugin, String uid, SyncState state, Exception e) {
+    private void handleException(List<IClientPlugin<Object, Object>> plugins, String uid, SyncState state, Exception e) {
+        // 插件回调
+        for (IClientPlugin<Object, Object> plugin : plugins) {
+            try {
+                plugin.onSyncException(uid, state, e);
+            } catch (Exception e2) {
+                log.error(e2.getMessage());
+            }
+        }
+        // 执行异常监控回调
         try {
-            plugin.onSyncException(uid, state, e);
+            watcher.onSyncException(plugins, uid, state, e);
         } catch (Exception e2) {
             log.error(e2.getMessage());
         }

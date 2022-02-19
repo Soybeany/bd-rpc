@@ -36,7 +36,6 @@ public class RequestUtils {
                 urlPicker.onUnusable(url);
             }
         }
-        log.warn(errMsg);
         throw new SyncRequestException(errMsg);
     }
 

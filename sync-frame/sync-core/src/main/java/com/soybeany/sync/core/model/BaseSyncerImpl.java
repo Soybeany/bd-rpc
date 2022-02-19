@@ -1,6 +1,7 @@
 package com.soybeany.sync.core.model;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 基础的服务实现，需要注册为spring bean，并手工调用{@link #start()}与{@link #stop()}
@@ -24,6 +25,12 @@ public abstract class BaseSyncerImpl<Plugin> {
             urls[i] = hosts[i] + path;
         }
         return urls;
+    }
+
+    protected List<String> getObjNames(List<?> objs) {
+        return objs.stream()
+                .map(obj -> obj.getClass().getSimpleName())
+                .collect(Collectors.toList());
     }
 
     // ***********************公共方法****************************

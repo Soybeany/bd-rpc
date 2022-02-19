@@ -6,6 +6,8 @@ import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.server.SyncServerService;
 import com.soybeany.sync.server.api.IServerPlugin;
 import com.soybeany.sync.server.api.IServerSyncer;
+import com.soybeany.sync.server.api.ISyncExceptionWatcher;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -16,7 +18,8 @@ import java.util.Map;
  * @author Soybeany
  * @date 2021/12/17
  */
-public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<?, ?>> implements IServerSyncer {
+@Slf4j
+public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<?, ?>> implements IServerSyncer, ISyncExceptionWatcher {
 
     private SyncServerService service;
 
@@ -36,7 +39,11 @@ public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<
         super.onStart();
         List<IServerPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
-        service = new SyncServerService(plugins.toArray(new IServerPlugin[0]));
+        service = new SyncServerService(plugins.toArray(new IServerPlugin[0]), this);
     }
 
+    @Override
+    public void onSyncException(List<IServerPlugin<Object, Object>> plugins, Exception e) {
+        log.warn("同步异常(" + getObjNames(plugins) + ")", e);
+    }
 }

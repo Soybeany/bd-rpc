@@ -3,8 +3,6 @@ package com.soybeany.sync.client.api;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.model.SyncState;
 import com.soybeany.sync.core.api.IBasePlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -13,8 +11,6 @@ import java.util.List;
  * @date 2021/10/27
  */
 public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output> {
-
-    Logger LOGGER = LoggerFactory.getLogger(IClientPlugin.class);
 
     /**
      * 允许插件预处理
@@ -66,9 +62,6 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
      * @param e     异常
      */
     default void onSyncException(String uid, SyncState state, Exception e) throws Exception {
-        if (!SyncState.SYNC.equals(state)) {
-            LOGGER.warn(getClass().getSimpleName() + "(" + state + "): " + e.getMessage());
-        }
     }
 
 }
