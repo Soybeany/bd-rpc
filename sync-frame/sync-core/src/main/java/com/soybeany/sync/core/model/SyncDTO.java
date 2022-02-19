@@ -42,15 +42,15 @@ public class SyncDTO {
         return new SyncDTO(false, null, null, errMsg);
     }
 
-    public <T> T getData(Type type) {
+    public <T> T toData(Type type) {
         return GSON.fromJson(dataJson, type);
     }
 
-    public String getParsedErrMsg() {
-        return getParsedErr().getMessage();
+    public String parseErrMsg() {
+        return parseErr().getMessage();
     }
 
-    public Exception getParsedErr() {
+    public Exception parseErr() {
         if (null != exception) {
             Exception exception;
             try {

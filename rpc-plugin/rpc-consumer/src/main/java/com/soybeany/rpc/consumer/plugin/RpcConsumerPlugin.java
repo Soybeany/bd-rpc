@@ -303,10 +303,10 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         SyncDTO dto = result.getData();
         // 正常则直接返回结果
         if (dto.getIsNorm()) {
-            return dto.getData(invokeInfo.method.getGenericReturnType());
+            return dto.toData(invokeInfo.method.getGenericReturnType());
         }
         // 非正常时按情况抛出异常
-        Exception exception = dto.getParsedErr();
+        Exception exception = dto.parseErr();
         if (exception instanceof SyncRequestException) {
             exception = new RpcRequestException(result.getUrl(), (SyncRequestException) exception);
         }

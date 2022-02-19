@@ -114,15 +114,18 @@ public class SyncClientService {
         try {
             RequestUtils.Result<String, SyncDTO> result = RequestUtils.request(urlPicker, url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
             dto = result.getData();
+            if (null == dto) {
+                throw new SyncRequestException("服务提供者的rpc接口未设置返回值");
+            }
             if (!dto.getIsNorm()) {
-                throw new SyncRequestException(dto.getParsedErrMsg() + "(" + result.getUrl() + ")");
+                throw new SyncRequestException(dto.parseErrMsg() + "(" + result.getUrl() + ")");
             }
         } catch (Exception e) {
             handleException(syncPlugins, uid, SyncState.SYNC, e);
             return;
         }
         // 同步后回调
-        Map<String, String> result = dto.getData(type);
+        Map<String, String> result = dto.toData(type);
         for (IClientPlugin<Object, Object> plugin : syncPlugins) {
             String tag = plugin.onSetupSyncTagToHandle();
             String tagInputJson = result.get(tag);
