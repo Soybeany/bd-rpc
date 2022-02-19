@@ -46,6 +46,7 @@ public class TestController {
 
     private RpcProxySelector<ITestService> service;
     private RpcProxySelector<ITestService2> service2;
+    private RpcProxySelector<ITestService3> service3;
     private RpcProxySelector<IRpcBatchInvoker<String>> invoker;
 
     @GetMapping("/test")
@@ -93,6 +94,11 @@ public class TestController {
         });
     }
 
+    @GetMapping("/test4")
+    public String test2(String group) {
+        return wrap(() -> service3.get(group).getValue().getValue());
+    }
+
     @PostMapping("/bd-rpc/invoke")
     SyncDTO bdRpc(HttpServletRequest request, HttpServletResponse response) {
         return executor.execute(request, response);
@@ -102,6 +108,7 @@ public class TestController {
     private void onInit() {
         service = serviceProxy.getSelector(ITestService.class);
         service2 = serviceProxy.getSelector(ITestService2.class);
+        service3 = serviceProxy.getSelector(ITestService3.class);
         invoker = serviceProxy.getBatchSelector(ITestService.class, "batch");
     }
 

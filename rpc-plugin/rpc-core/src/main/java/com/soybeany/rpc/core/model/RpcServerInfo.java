@@ -2,12 +2,14 @@ package com.soybeany.rpc.core.model;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author Soybeany
  * @date 2021/10/27
  */
 @Data
-public class RpcServerInfo {
+public class RpcServerInfo implements Serializable {
 
     /**
      * 服务器分组

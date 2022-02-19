@@ -1,6 +1,5 @@
 package com.soybeany.sync.server.impl;
 
-import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.model.BaseSyncerImpl;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.server.SyncServerService;
@@ -27,8 +26,8 @@ public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<
     public SyncDTO sync(HttpServletRequest request) {
         try {
             Map<String, String> result = service.sync(request);
-            return SyncDTO.norm(result);
-        } catch (SyncException e) {
+            return SyncDTO.norm(result, null);
+        } catch (Exception e) {
             return SyncDTO.error(e);
         }
     }

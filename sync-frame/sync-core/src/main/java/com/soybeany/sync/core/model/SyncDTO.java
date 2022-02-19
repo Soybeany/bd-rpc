@@ -3,47 +3,49 @@ package com.soybeany.sync.core.model;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.util.HexUtils;
 import com.soybeany.util.SerializeUtils;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
-
-import static com.soybeany.sync.core.util.NetUtils.GSON;
+import java.io.NotSerializableException;
 
 /**
  * @author Soybeany
  * @date 2021/11/3
  */
 @Data
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SyncDTO {
 
-    private Boolean isNorm;
-    private String dataJson;
-    private String exception;
-    private String errMsg;
+    private final Boolean isNorm;
+    private final String dataHex;
+    private final String exception;
+    private final String errMsg;
 
-    public static SyncDTO norm(Object obj) {
-        return new SyncDTO(true, GSON.toJson(obj), null, null);
+    public static SyncDTO norm(Object obj, IExceptionHandler handler) throws Exception {
+        try {
+            String data = null != obj ? HexUtils.bytesToHex(SerializeUtils.serialize(obj)) : null;
+            return new SyncDTO(true, data, null, null);
+        } catch (NotSerializableException e) {
+            throw handler.onNotSerializable(e);
+        }
     }
 
     public static SyncDTO error(Throwable e) {
-        byte[] bytes;
         try {
-            bytes = SerializeUtils.serialize(e);
+            String exception = HexUtils.bytesToHex(SerializeUtils.serialize(e));
+            return new SyncDTO(false, null, exception, null);
         } catch (IOException e2) {
-            return SyncDTO.error("序列化异常信息失败:" + e2.getMessage());
+            return SyncDTO.error("序列化异常信息失败:" + e2.getMessage() + "(" + e2.getClass() + ")");
         }
-        return new SyncDTO(false, null, HexUtils.bytesToHex(bytes), null);
     }
 
     public static SyncDTO error(String errMsg) {
         return new SyncDTO(false, null, null, errMsg);
     }
 
-    public <T> T toData(Type type) {
-        return GSON.fromJson(dataJson, type);
+    public <T> T toData() throws ClassNotFoundException, IOException {
+        return null != dataHex ? SerializeUtils.deserialize(HexUtils.hexToByteArray(dataHex)) : null;
     }
 
     public String parseErrMsg() {
@@ -52,17 +54,21 @@ public class SyncDTO {
 
     public Exception parseErr() {
         if (null != exception) {
-            Exception exception;
             try {
-                exception = SerializeUtils.deserialize(HexUtils.hexToByteArray(this.exception));
+                return SerializeUtils.deserialize(HexUtils.hexToByteArray(exception));
             } catch (IOException | ClassNotFoundException e) {
-                return new SyncRequestException("反序列化异常信息失败:" + e.getMessage());
+                return new SyncRequestException("反序列化异常信息失败:" + e.getMessage() + "(" + e.getClass() + ")");
             }
-            return exception;
         } else if (null != errMsg) {
             return new SyncRequestException(errMsg);
         }
         return new SyncRequestException("没有具体的异常信息");
+    }
+
+    // ***********************内部类****************************
+
+    public interface IExceptionHandler {
+        Exception onNotSerializable(NotSerializableException e);
     }
 
 }

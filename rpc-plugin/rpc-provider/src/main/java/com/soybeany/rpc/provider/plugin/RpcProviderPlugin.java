@@ -119,7 +119,11 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         // 处理rpc调用
         try {
             String param = request.getParameter(KEY_METHOD_INFO);
-            return SyncDTO.norm(onExecuteSingle(GSON.fromJson(param, RpcMethodInfo.class)));
+            RpcMethodInfo info = GSON.fromJson(param, RpcMethodInfo.class);
+            return SyncDTO.norm(onExecuteSingle(info), e -> {
+                Object obj = serviceMap.get(info.getServiceId());
+                return new RpcPluginException("类“" + obj.getClass() + "”中方法“" + info.getMethodDesc() + "”的返回值中含有不可序列化的对象“" + e.getMessage() + "”");
+            });
         } catch (Throwable throwable) {
             return SyncDTO.error(throwable);
         }

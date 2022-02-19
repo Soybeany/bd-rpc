@@ -1,4 +1,4 @@
-package com.demo.service2.model;
+package com.demo.service1.model;
 
 import com.soybeany.rpc.consumer.api.IServerInfoReceiver;
 import com.soybeany.rpc.core.model.RpcServerInfo;

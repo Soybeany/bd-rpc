@@ -315,7 +315,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         }
         // 正常则直接返回结果
         if (dto.getIsNorm()) {
-            return dto.toData(invokeInfo.method.getGenericReturnType());
+            return dto.toData();
         }
         // 非正常时按情况抛出异常
         Exception exception = dto.parseErr();

@@ -1,7 +1,7 @@
 package com.demo.broker;
 
 import com.demo.broker.model.TestParam;
-import com.demo.broker.model.TestVO;
+import com.demo.service1.model.TestVO;
 import com.soybeany.rpc.core.anno.BdRpc;
 
 import java.util.List;
@@ -18,6 +18,10 @@ public interface ITestService2 {
     String getValue2();
 
     String getValue3();
+
+    String getValue4();
+
+    String getValue5();
 
     String getBatchValue(String input);
 

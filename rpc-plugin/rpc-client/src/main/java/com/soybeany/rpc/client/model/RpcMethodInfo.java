@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 
 import static com.soybeany.sync.core.util.NetUtils.GSON;
 
@@ -39,6 +40,10 @@ public class RpcMethodInfo {
         } catch (Exception e) {
             throw new RpcPluginException("没有找到对应的方法:" + e.getMessage());
         }
+    }
+
+    public String getMethodDesc() {
+        return methodName + "(" + Arrays.asList(paramClazzNames) + ")";
     }
 
     public Object[] getArgs(Method method) {

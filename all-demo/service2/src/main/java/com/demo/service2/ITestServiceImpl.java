@@ -1,8 +1,8 @@
 package com.demo.service2;
 
-import com.demo.service2.model.ExIoException;
+import com.demo.service1.model.ExIoException;
+import com.demo.service1.model.TestVO;
 import com.demo.service2.model.TestParam;
-import com.demo.service2.model.TestVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,9 @@ public class ITestServiceImpl implements ITestService {
     public List<TestVO> getValue(List<TestParam> params) {
         List<TestVO> result = new LinkedList<>();
         for (TestParam param : params) {
-            result.add(new TestVO(param.getB() + param.getA()));
+            TestVO vo = new TestVO();
+            vo.setValue(param.getB() + param.getA());
+            result.add(vo);
         }
         log.info("调用了数据提供者");
         return result;

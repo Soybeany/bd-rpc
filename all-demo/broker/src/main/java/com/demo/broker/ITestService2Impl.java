@@ -1,7 +1,7 @@
 package com.demo.broker;
 
 import com.demo.broker.model.TestParam;
-import com.demo.broker.model.TestVO;
+import com.demo.service1.model.TestVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +31,16 @@ public class ITestService2Impl implements ITestService2 {
     @Override
     public String getValue3() {
         return "来自broker:c";
+    }
+
+    @Override
+    public String getValue4() {
+        return "来自broker:d";
+    }
+
+    @Override
+    public String getValue5() {
+        return "来自broker:e";
     }
 
     @Override

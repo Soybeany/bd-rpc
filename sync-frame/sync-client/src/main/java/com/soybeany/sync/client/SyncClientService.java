@@ -1,6 +1,5 @@
 package com.soybeany.sync.client;
 
-import com.google.gson.reflect.TypeToken;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.api.ISyncClientConfig;
 import com.soybeany.sync.client.api.ISyncExceptionWatcher;
@@ -16,7 +15,6 @@ import com.soybeany.util.file.BdFileUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,8 +31,6 @@ public class SyncClientService {
 
     @SuppressWarnings("AlibabaThreadPoolCreation")
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
-    private final Type type = new TypeToken<Map<String, String>>() {
-    }.getType();
 
     private final ISyncClientConfig config;
     @Getter
@@ -111,6 +107,7 @@ public class SyncClientService {
         }
         // 执行同步
         SyncDTO dto;
+        Map<String, String> data;
         try {
             RequestUtils.Result<String, SyncDTO> result = RequestUtils.request(urlPicker, url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
             dto = result.getData();
@@ -120,15 +117,15 @@ public class SyncClientService {
             if (!dto.getIsNorm()) {
                 throw new SyncRequestException(dto.parseErrMsg() + "(" + result.getUrl() + ")");
             }
+            data = dto.toData();
         } catch (Exception e) {
             handleException(syncPlugins, uid, SyncState.SYNC, e);
             return;
         }
         // 同步后回调
-        Map<String, String> result = dto.toData(type);
         for (IClientPlugin<Object, Object> plugin : syncPlugins) {
             String tag = plugin.onSetupSyncTagToHandle();
-            String tagInputJson = result.get(tag);
+            String tagInputJson = data.get(tag);
             if (null == tagInputJson) {
                 handleException(Collections.singletonList(plugin), uid, SyncState.RECEIVE, new SyncException("缺失“" + tag + "”的同步数据"));
                 continue;
