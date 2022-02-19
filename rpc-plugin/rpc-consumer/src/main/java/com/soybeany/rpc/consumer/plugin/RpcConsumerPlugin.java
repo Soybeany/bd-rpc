@@ -281,7 +281,16 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     private <T> T onInvoke(InvokeInfo invokeInfo) throws Exception {
-        return onInvoke(getGroupedPicker(invokeInfo), invokeInfo);
+        try {
+            return onInvoke(getGroupedPicker(invokeInfo), invokeInfo);
+        } catch (Exception e) {
+            for (Class<?> exceptionType : invokeInfo.method.getExceptionTypes()) {
+                if (exceptionType.isInstance(e)) {
+                    throw e;
+                }
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     private <T> T onInvoke(DataPicker<RpcServerInfo> picker, InvokeInfo invokeInfo) throws Exception {
