@@ -37,7 +37,7 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
 
     @Override
     public void onSyncException(List<IClientPlugin<Object, Object>> plugins, String uid, SyncState state, Exception e) {
-        log.warn("同步异常(" + getObjNames(plugins) + ")" + "[" + state + "]: " + e.getMessage());
+        log.warn("同步异常" + getObjNames(plugins) + "(" + state + "): " + e.getMessage());
     }
 
     @SuppressWarnings("unchecked")

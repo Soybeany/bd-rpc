@@ -44,6 +44,6 @@ public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<
 
     @Override
     public void onSyncException(List<IServerPlugin<Object, Object>> plugins, Exception e) {
-        log.warn("同步异常(" + getObjNames(plugins) + ")", e);
+        log.warn("同步异常" + getObjNames(plugins), e);
     }
 }
