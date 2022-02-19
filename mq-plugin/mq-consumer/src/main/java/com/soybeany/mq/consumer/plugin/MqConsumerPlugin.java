@@ -56,16 +56,23 @@ public class MqConsumerPlugin implements IClientPlugin<MqConsumerInput, MqConsum
     public synchronized void onAfterSync(String uid, MqConsumerInput input) throws Exception {
         IClientPlugin.super.onAfterSync(uid, input);
         input.getMessages().forEach((topic, message) -> {
-            // 更新topic的戳
-            repository.updateTopicInfo(new MqTopicInfo(topic, message.getStamp()));
             // 事件分发
-            msgHandlerMap.get(topic).forEach(handler -> message.getMessages().forEach(msg -> {
+            boolean enableUpdate = true;
+            for (IMqMsgHandler handler : msgHandlerMap.get(topic)) {
                 try {
-                    handler.onHandle(msg);
+                    handler.onHandle(message.getMessages());
                 } catch (Exception e) {
-                    exceptionHandler.onException(e, msg, handler);
+                    boolean canUpdate = exceptionHandler.onException(e, message.getMessages(), handler);
+                    if (!canUpdate) {
+                        enableUpdate = false;
+                        break;
+                    }
                 }
-            }));
+            }
+            // 更新topic的戳
+            if (enableUpdate) {
+                repository.updateTopicInfo(new MqTopicInfo(topic, message.getStamp()));
+            }
         });
     }
 }
