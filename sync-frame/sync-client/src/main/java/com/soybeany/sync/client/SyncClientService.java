@@ -115,7 +115,7 @@ public class SyncClientService {
             RequestUtils.Result<String, SyncDTO> result = RequestUtils.request(urlPicker, url -> url, rConfig, SyncDTO.class, "暂无可用的注册中心");
             dto = result.getData();
             if (null == dto) {
-                throw new SyncRequestException("服务提供者的rpc接口未设置返回值");
+                throw new SyncRequestException("注册中心的sync接口(" + result.getUrl() + ")未设置返回值");
             }
             if (!dto.getIsNorm()) {
                 throw new SyncRequestException(dto.parseErrMsg() + "(" + result.getUrl() + ")");

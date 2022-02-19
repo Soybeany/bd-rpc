@@ -301,6 +301,9 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             return invokeMethodOfFallbackImpl(invokeInfo.method, invokeInfo.args, invokeInfo.fallbackImpl, e.getMessage());
         }
         SyncDTO dto = result.getData();
+        if (null == dto) {
+            throw new SyncRequestException("服务提供者的rpc接口(" + result.getUrl().getInvokeUrl() + ")未设置返回值");
+        }
         // 正常则直接返回结果
         if (dto.getIsNorm()) {
             return dto.toData(invokeInfo.method.getGenericReturnType());
