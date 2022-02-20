@@ -14,6 +14,6 @@ public interface ITestService3 {
 
     @BdRpcSerialize
     @BdRpcCache(desc = "测试2", ttl = 5, useMd5Key = false)
-    IResult getValue() throws Exception;
+    IResult getValue(@BdRpcSerialize IResult r) throws Exception;
 
 }

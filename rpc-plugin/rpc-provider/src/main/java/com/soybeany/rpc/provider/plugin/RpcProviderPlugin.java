@@ -3,7 +3,6 @@ package com.soybeany.rpc.provider.plugin;
 import com.soybeany.rpc.client.model.RpcMethodInfo;
 import com.soybeany.rpc.client.plugin.BaseRpcClientPlugin;
 import com.soybeany.rpc.core.anno.BdRpc;
-import com.soybeany.rpc.core.anno.BdRpcSerialize;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcProviderInput;
 import com.soybeany.rpc.core.model.RpcProviderOutput;
@@ -121,7 +120,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         try {
             String param = request.getParameter(KEY_METHOD_INFO);
             RpcMethodInfo info = GSON.fromJson(param, RpcMethodInfo.class);
-            return SyncDTO.norm(BdRpcSerialize.Type.JAVA.equals(info.getSerializeType()), onExecuteSingle(info), e -> {
+            return SyncDTO.norm(info.getReturnType(), onExecuteSingle(info), e -> {
                 Object obj = serviceMap.get(info.getServiceId());
                 return new RpcPluginException("类“" + obj.getClass() + "”中方法“" + info.getMethodDesc() + "”的返回值中含有不可序列化的对象“" + e.getMessage() + "”");
             });

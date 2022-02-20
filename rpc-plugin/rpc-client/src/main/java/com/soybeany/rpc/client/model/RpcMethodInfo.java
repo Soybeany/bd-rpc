@@ -1,14 +1,14 @@
 package com.soybeany.rpc.client.model;
 
-import com.soybeany.rpc.core.anno.BdRpcSerialize;
 import com.soybeany.rpc.core.exception.RpcPluginException;
+import com.soybeany.sync.core.model.SerializeType;
+import com.soybeany.sync.core.util.SyncSerializeUtils;
 import lombok.Data;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-
-import static com.soybeany.sync.core.util.NetUtils.GSON;
+import java.util.Optional;
 
 
 /**
@@ -18,18 +18,20 @@ import static com.soybeany.sync.core.util.NetUtils.GSON;
 @Data
 public class RpcMethodInfo {
 
-    private String serviceId;
-    private String methodName;
-    private String[] paramClazzNames;
-    private BdRpcSerialize.Type serializeType;
-    private String[] argJsons;
+    private final String serviceId;
+    private final String methodName;
+    private final String[] paramClazzNames;
+    private final String[] argStrings;
+    private final SerializeType returnType;
+    private final SerializeType[] paramTypes;
 
-    public RpcMethodInfo(String serviceId, Method method, BdRpcSerialize.Type serializeType, Object... args) {
+    public RpcMethodInfo(String serviceId, Method method, TypeInfo typeInfo, Object... args) throws Exception {
         this.serviceId = serviceId;
         this.methodName = method.getName();
         this.paramClazzNames = toClassNames(method.getParameterTypes());
-        this.serializeType = serializeType;
-        this.argJsons = toJsons(args);
+        this.returnType = Optional.ofNullable(typeInfo).map(info -> info.returnType).orElse(null);
+        this.paramTypes = Optional.ofNullable(typeInfo).map(info -> info.paramTypes).orElse(null);
+        this.argStrings = argsToString(method, args);
     }
 
     /**
@@ -49,11 +51,11 @@ public class RpcMethodInfo {
         return methodName + "(" + Arrays.asList(paramClazzNames) + ")";
     }
 
-    public Object[] getArgs(Method method) {
+    public Object[] getArgs(Method method) throws Exception {
         Type[] types = method.getGenericParameterTypes();
-        Object[] args = new Object[argJsons.length];
-        for (int i = 0; i < argJsons.length; i++) {
-            args[i] = GSON.fromJson(argJsons[i], types[i]);
+        Object[] args = new Object[argStrings.length];
+        for (int i = 0; i < argStrings.length; i++) {
+            args[i] = SyncSerializeUtils.fromString(paramTypes[i], types[i], argStrings[i]);
         }
         return args;
     }
@@ -68,10 +70,13 @@ public class RpcMethodInfo {
         return classes;
     }
 
-    private String[] toJsons(Object... objs) {
+    private String[] argsToString(Method method, Object... objs) throws Exception {
         String[] jsons = new String[null != objs ? objs.length : 0];
         for (int i = 0; i < jsons.length; i++) {
-            jsons[i] = GSON.toJson(objs[i]);
+            jsons[i] = SyncSerializeUtils.toString(paramTypes[i], objs[i], e -> {
+                Class<?> clazz = method.getDeclaringClass();
+                return new RpcPluginException("类“" + clazz + "”中方法“" + method + "”的入参中含有不可序列化的对象“" + e.getMessage() + "”");
+            });
         }
         return jsons;
     }
@@ -82,6 +87,14 @@ public class RpcMethodInfo {
             result[i] = classes[i].getName();
         }
         return result;
+    }
+
+    // ***********************内部类****************************
+
+    @Data
+    public static class TypeInfo {
+        private final SerializeType returnType;
+        private final SerializeType[] paramTypes;
     }
 
 }

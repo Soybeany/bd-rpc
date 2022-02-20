@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ITestService3Impl implements ITestService3 {
     @Override
-    public IResult getValue() {
-        return new ResultImpl();
+    public IResult getValue(IResult r) {
+        return new ResultImpl("好" + r.getValue());
     }
 }

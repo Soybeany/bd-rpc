@@ -1,6 +1,7 @@
 package com.demo.service1;
 
 import com.demo.service1.model.ExIoException;
+import com.demo.service1.model.ResultImpl;
 import com.demo.service1.model.TestParam;
 import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
@@ -96,7 +97,7 @@ public class TestController {
 
     @GetMapping("/test4")
     public String test2(String group) {
-        return wrap(() -> service3.get(group).getValue().getValue());
+        return wrap(() -> service3.get(group).getValue(new ResultImpl("对的")).getValue());
     }
 
     @PostMapping("/bd-rpc/invoke")

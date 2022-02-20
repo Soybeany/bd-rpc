@@ -1,6 +1,7 @@
 package com.soybeany.sync.server.impl;
 
 import com.soybeany.sync.core.model.BaseSyncerImpl;
+import com.soybeany.sync.core.model.SerializeType;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.server.SyncServerService;
 import com.soybeany.sync.server.api.IServerPlugin;
@@ -26,7 +27,7 @@ public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<
     public SyncDTO sync(HttpServletRequest request) {
         try {
             Map<String, String> result = service.sync(request);
-            return SyncDTO.norm(false, result, null);
+            return SyncDTO.norm(SerializeType.GSON, result, null);
         } catch (Exception e) {
             return SyncDTO.error(e);
         }

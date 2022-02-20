@@ -10,6 +10,6 @@ import com.soybeany.rpc.core.anno.BdRpc;
 @BdRpc(serviceId = "test3")
 public interface ITestService3 {
 
-    IResult getValue() throws Exception;
+    IResult getValue(IResult r) throws Exception;
 
 }

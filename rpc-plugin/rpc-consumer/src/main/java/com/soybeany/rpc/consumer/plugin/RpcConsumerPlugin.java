@@ -26,6 +26,7 @@ import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.client.util.RequestUtils;
 import com.soybeany.sync.core.exception.SyncRequestException;
+import com.soybeany.sync.core.model.SerializeType;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
@@ -77,7 +79,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Map<String, DataPicker<RpcServerInfo>> pickers = new HashMap<>();
     private final Map<Method, DataManager<InvokeInfo, Object>> dataManagerMap = new HashMap<>();
     private final Map<Class<?>, Map<String, InfoPart2>> infoPart2Map = new HashMap<>();
-    private final Map<Method, BdRpcSerialize.Type> serializeTypeMap = new HashMap<>();
+    private final Map<Method, RpcMethodInfo.TypeInfo> typeInfoMap = new HashMap<>();
     private final Set<String> serviceIdSet = new HashSet<>();
 
     private final String system;
@@ -301,7 +303,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         }
         RequestUtils.Config config = new RequestUtils.Config();
         config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(
-                invokeInfo.serviceId, invokeInfo.method, serializeTypeMap.get(invokeInfo.method), invokeInfo.args
+                invokeInfo.serviceId, invokeInfo.method, typeInfoMap.get(invokeInfo.method), invokeInfo.args
         )));
         config.setTimeoutInSec(invokeInfo.timeoutInSec);
         RequestUtils.Result<RpcServerInfo, SyncDTO> result;
@@ -358,7 +360,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         InfoPart1 infoPart = new InfoPart1(fallbackImpl, serviceId, timeoutInSec);
         // 方法信息预处理
         for (Method method : interfaceClass.getMethods()) {
-            handleMethod(interfaceClass, method, infoPart);
+            // 处理缓存注解
+            handleCacheAnnotation(method);
+            // 处理批量注解
+            handleBatchAnnotation(interfaceClass, method, infoPart);
+            // 处理序列化注解
+            handleSerializeAnnotation(method);
         }
         // 远端服务
         Object instance = Proxy.newProxyInstance(
@@ -369,26 +376,48 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         proxies.put(interfaceClass, instance);
     }
 
-    private void handleMethod(Class<?> interfaceClass, Method method, InfoPart1 part1) {
-        // 处理缓存注解
+    private void handleCacheAnnotation(Method method) {
         BdRpcCache cache = method.getAnnotation(BdRpcCache.class);
-        if (null != cache) {
-            dataManagerMap.put(method, getNewDataManager(cache));
+        if (null == cache) {
+            return;
         }
-        // 处理批量注解
+        dataManagerMap.put(method, getNewDataManager(cache));
+    }
+
+    private void handleBatchAnnotation(Class<?> interfaceClass, Method method, InfoPart1 part1) {
         BdRpcBatch batch = method.getAnnotation(BdRpcBatch.class);
-        if (null != batch) {
-            InfoPart2 previous = infoPart2Map.computeIfAbsent(interfaceClass, clazz -> new HashMap<>())
-                    .put(batch.methodId(), new InfoPart2(method, part1));
-            if (null != previous) {
-                throw new RpcPluginException("同一个类中，@BdRpcBatch的methodId(" + batch.methodId() + ")需唯一");
-            }
+        if (null == batch) {
+            return;
         }
-        // 处理序列化注解
+        InfoPart2 previous = infoPart2Map.computeIfAbsent(interfaceClass, clazz -> new HashMap<>())
+                .put(batch.methodId(), new InfoPart2(method, part1));
+        if (null != previous) {
+            throw new RpcPluginException("同一个类中，@BdRpcBatch的methodId(" + batch.methodId() + ")需唯一");
+        }
+    }
+
+    private void handleSerializeAnnotation(Method method) {
+        SerializeType returnType = null;
         BdRpcSerialize serialize = method.getAnnotation(BdRpcSerialize.class);
         if (null != serialize) {
-            serializeTypeMap.put(method, serialize.value());
+            returnType = serialize.value();
         }
+        boolean hasParamType = false;
+        Annotation[][] paramAnnotations = method.getParameterAnnotations();
+        SerializeType[] paramTypes = new SerializeType[paramAnnotations.length];
+        for (int i = 0; i < paramAnnotations.length; i++) {
+            for (Annotation annotation : paramAnnotations[i]) {
+                if (annotation instanceof BdRpcSerialize) {
+                    paramTypes[i] = ((BdRpcSerialize) annotation).value();
+                    hasParamType = true;
+                    break;
+                }
+            }
+        }
+        if (null == returnType && !hasParamType) {
+            return;
+        }
+        typeInfoMap.put(method, new RpcMethodInfo.TypeInfo(returnType, hasParamType ? paramTypes : null));
     }
 
     @SuppressWarnings("unchecked")
