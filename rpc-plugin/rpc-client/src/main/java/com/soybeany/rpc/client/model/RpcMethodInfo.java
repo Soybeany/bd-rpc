@@ -1,5 +1,6 @@
 package com.soybeany.rpc.client.model;
 
+import com.soybeany.rpc.core.anno.BdRpcSerialize;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import lombok.Data;
 
@@ -20,12 +21,14 @@ public class RpcMethodInfo {
     private String serviceId;
     private String methodName;
     private String[] paramClazzNames;
+    private BdRpcSerialize.Type serializeType;
     private String[] argJsons;
 
-    public RpcMethodInfo(String serviceId, Method method, Object... args) {
+    public RpcMethodInfo(String serviceId, Method method, BdRpcSerialize.Type serializeType, Object... args) {
         this.serviceId = serviceId;
         this.methodName = method.getName();
         this.paramClazzNames = toClassNames(method.getParameterTypes());
+        this.serializeType = serializeType;
         this.argJsons = toJsons(args);
     }
 

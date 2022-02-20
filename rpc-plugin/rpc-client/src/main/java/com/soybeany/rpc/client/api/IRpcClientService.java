@@ -10,6 +10,10 @@ import java.util.Set;
  */
 public interface IRpcClientService extends ISystemConfig {
 
+    /**
+     * 消费者时，为 “接口” 所在路径；<br/>
+     * 生产者时，为 “实现类” 所在路径
+     */
     void onSetupPkgPathToScan(Set<String> paths);
 
 }

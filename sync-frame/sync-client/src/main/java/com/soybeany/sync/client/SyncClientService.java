@@ -1,5 +1,6 @@
 package com.soybeany.sync.client;
 
+import com.google.gson.reflect.TypeToken;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.api.ISyncClientConfig;
 import com.soybeany.sync.client.api.ISyncExceptionWatcher;
@@ -15,6 +16,7 @@ import com.soybeany.util.file.BdFileUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,6 +30,9 @@ import static com.soybeany.sync.core.util.NetUtils.GSON;
  */
 @Slf4j
 public class SyncClientService {
+
+    private static final Type TYPE = new TypeToken<Map<String, String>>() {
+    }.getType();
 
     @SuppressWarnings("AlibabaThreadPoolCreation")
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
@@ -117,7 +122,7 @@ public class SyncClientService {
             if (!dto.getIsNorm()) {
                 throw new SyncRequestException(dto.parseErrMsg() + "(" + result.getUrl() + ")");
             }
-            data = dto.toData();
+            data = dto.toData(TYPE);
         } catch (Exception e) {
             handleException(syncPlugins, uid, SyncState.SYNC, e);
             return;

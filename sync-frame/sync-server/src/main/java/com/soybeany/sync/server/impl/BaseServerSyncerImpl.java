@@ -26,7 +26,7 @@ public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<
     public SyncDTO sync(HttpServletRequest request) {
         try {
             Map<String, String> result = service.sync(request);
-            return SyncDTO.norm(result, null);
+            return SyncDTO.norm(false, result, null);
         } catch (Exception e) {
             return SyncDTO.error(e);
         }

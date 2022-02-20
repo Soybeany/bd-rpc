@@ -17,6 +17,7 @@ import com.soybeany.rpc.consumer.model.RpcProxySelector;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.anno.BdRpcBatch;
 import com.soybeany.rpc.core.anno.BdRpcCache;
+import com.soybeany.rpc.core.anno.BdRpcSerialize;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcConsumerInput;
 import com.soybeany.rpc.core.model.RpcConsumerOutput;
@@ -76,6 +77,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Map<String, DataPicker<RpcServerInfo>> pickers = new HashMap<>();
     private final Map<Method, DataManager<InvokeInfo, Object>> dataManagerMap = new HashMap<>();
     private final Map<Class<?>, Map<String, InfoPart2>> infoPart2Map = new HashMap<>();
+    private final Map<Method, BdRpcSerialize.Type> serializeTypeMap = new HashMap<>();
     private final Set<String> serviceIdSet = new HashSet<>();
 
     private final String system;
@@ -298,7 +300,9 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             return invokeMethodOfFallbackImpl(invokeInfo.method, invokeInfo.args, invokeInfo.fallbackImpl, "暂无serviceId(" + invokeInfo.serviceId + ")的服务提供者信息");
         }
         RequestUtils.Config config = new RequestUtils.Config();
-        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(invokeInfo.serviceId, invokeInfo.method, invokeInfo.args)));
+        config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(
+                invokeInfo.serviceId, invokeInfo.method, serializeTypeMap.get(invokeInfo.method), invokeInfo.args
+        )));
         config.setTimeoutInSec(invokeInfo.timeoutInSec);
         RequestUtils.Result<RpcServerInfo, SyncDTO> result;
         try {
@@ -315,7 +319,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         }
         // 正常则直接返回结果
         if (dto.getIsNorm()) {
-            return dto.toData();
+            return dto.toData(invokeInfo.method.getGenericReturnType());
         }
         // 非正常时按情况抛出异常
         Exception exception = dto.parseErr();
@@ -379,6 +383,11 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             if (null != previous) {
                 throw new RpcPluginException("同一个类中，@BdRpcBatch的methodId(" + batch.methodId() + ")需唯一");
             }
+        }
+        // 处理序列化注解
+        BdRpcSerialize serialize = method.getAnnotation(BdRpcSerialize.class);
+        if (null != serialize) {
+            serializeTypeMap.put(method, serialize.value());
         }
     }
 
