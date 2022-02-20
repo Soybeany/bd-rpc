@@ -288,6 +288,11 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         try {
             return onInvoke(getGroupedPicker(invokeInfo), invokeInfo);
         } catch (Exception e) {
+            // 若异常为运行时异常，则不需作额外处理
+            if (e instanceof RuntimeException) {
+                throw e;
+            }
+            // 否则，将不在异常定义中的异常改为运行时异常，再抛出
             for (Class<?> exceptionType : invokeInfo.method.getExceptionTypes()) {
                 if (exceptionType.isInstance(e)) {
                     throw e;
