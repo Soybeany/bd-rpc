@@ -122,7 +122,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
             RpcMethodInfo info = GSON.fromJson(param, RpcMethodInfo.class);
             return SyncDTO.norm(info.getReturnType(), onExecuteSingle(info), e -> {
                 Object obj = serviceMap.get(info.getServiceId());
-                return new RpcPluginException("类“" + obj.getClass() + "”中方法“" + info.getMethodDesc() + "”的返回值中含有不可序列化的对象“" + e.getMessage() + "”");
+                return new RpcPluginException("方法“" + info.getMethod(obj) + "”的返回值中含有不可序列化的对象“" + e.getMessage() + "”");
             });
         } catch (Throwable throwable) {
             return SyncDTO.error(throwable);

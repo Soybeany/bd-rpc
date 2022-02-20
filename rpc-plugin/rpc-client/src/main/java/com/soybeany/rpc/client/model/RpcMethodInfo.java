@@ -73,10 +73,9 @@ public class RpcMethodInfo {
     private String[] argsToString(Method method, Object... objs) throws Exception {
         String[] jsons = new String[null != objs ? objs.length : 0];
         for (int i = 0; i < jsons.length; i++) {
-            jsons[i] = SyncSerializeUtils.toString(paramTypes[i], objs[i], e -> {
-                Class<?> clazz = method.getDeclaringClass();
-                return new RpcPluginException("类“" + clazz + "”中方法“" + method + "”的入参中含有不可序列化的对象“" + e.getMessage() + "”");
-            });
+            jsons[i] = SyncSerializeUtils.toString(paramTypes[i], objs[i],
+                    e -> new RpcPluginException("方法“" + method + "”的入参中含有不可序列化的对象“" + e.getMessage() + "”")
+            );
         }
         return jsons;
     }
