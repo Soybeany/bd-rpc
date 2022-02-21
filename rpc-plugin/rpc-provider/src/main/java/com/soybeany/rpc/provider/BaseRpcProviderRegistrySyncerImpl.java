@@ -48,6 +48,10 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
         return "0";
     }
 
+    /**
+     * 配置分组<br/>
+     * 与{@link #onSetupSystem()}的静态硬隔离不同，这是动态的软隔离
+     */
     protected String onSetupGroup() {
         return null;
     }

@@ -1,22 +1,16 @@
 package com.demo.service2;
 
 import com.soybeany.mq.client.plugin.MqClientRegistryPlugin;
-import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
-import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
-import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
-import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.provider.BaseRpcProviderRegistrySyncerImpl;
+import com.soybeany.rpc.core.model.RpcServerInfo;
+import com.soybeany.rpc.unit.BaseRpcUnitRegistrySyncerImpl;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -29,14 +23,7 @@ import static com.demo.service2.model.Constants.PATH_RPC;
  */
 @Slf4j
 @Component
-public class RpcProviderRegistrySyncerImpl extends BaseRpcProviderRegistrySyncerImpl implements IRpcServiceProxy {
-
-    private static final Set<String> PKG_TO_SCAN = Collections.singleton("com.demo");
-
-    @Autowired
-    private ApplicationContext appContext;
-
-    private RpcConsumerPlugin plugin;
+public class RpcProviderRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
 
     @Override
     protected String onSetupGroup() {
@@ -44,8 +31,17 @@ public class RpcProviderRegistrySyncerImpl extends BaseRpcProviderRegistrySyncer
     }
 
     @Override
+    protected DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId) {
+        return new DataPickerSimpleImpl<>();
+    }
+
+    @Override
+    protected void onSetupApiPkgToScan(Set<String> paths) {
+    }
+
+    @Override
     public void onSetupImplPkgToScan(Set<String> paths) {
-        paths.addAll(PKG_TO_SCAN);
+        paths.add("com.demo");
     }
 
     @Override
@@ -66,26 +62,7 @@ public class RpcProviderRegistrySyncerImpl extends BaseRpcProviderRegistrySyncer
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         super.onSetupPlugins(plugins);
-        plugin = new RpcConsumerPlugin(
-                onSetupSystem(),
-                onSetupVersion(),
-                appContext,
-                serviceId -> new DataPickerSimpleImpl<>(),
-                serviceId -> 5,
-                null
-        );
-        plugins.add(plugin);
         plugins.add(new MqClientRegistryPlugin());
-    }
-
-    @Override
-    public <T> T get(Class<T> interfaceClass) throws RpcPluginException {
-        return plugin.get(interfaceClass);
-    }
-
-    @Override
-    public <T> IRpcBatchInvoker<T> getBatch(Class<?> interfaceClass, String methodId) {
-        return plugin.getBatch(interfaceClass, methodId);
     }
 
     @PostConstruct

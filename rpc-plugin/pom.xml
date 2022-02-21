@@ -17,6 +17,7 @@
         <module>rpc-consumer</module>
         <module>rpc-provider</module>
         <module>rpc-registry</module>
+        <module>rpc-unit</module>
     </modules>
 
     <dependencies>

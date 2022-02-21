@@ -20,6 +20,7 @@ public class RpcProxySelector<T> {
 
     /**
      * 基于{@link ThreadLocal}的实现，若涉及多线程操作，则需要在目标线程再执行此调用，否则会丢失分组信息
+     * <br/>group值对应生产者里group的配置
      * <br/>若group传入null，则为全部分组
      */
     public T get(String group) {

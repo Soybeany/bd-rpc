@@ -59,6 +59,9 @@ public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncer
         return 5;
     }
 
+    /**
+     * 为特定的service配置选择器
+     */
     protected abstract DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId);
 
     /**
