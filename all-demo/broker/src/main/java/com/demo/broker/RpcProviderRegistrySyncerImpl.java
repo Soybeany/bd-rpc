@@ -25,7 +25,7 @@ public class RpcProviderRegistrySyncerImpl extends BaseRpcProviderRegistrySyncer
     }
 
     @Override
-    public void onSetupPkgPathToScan(Set<String> paths) {
+    public void onSetupImplPkgToScan(Set<String> paths) {
         paths.add("com.demo");
     }
 

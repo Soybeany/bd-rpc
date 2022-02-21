@@ -1,9 +1,9 @@
 package com.soybeany.rpc.provider;
 
-import com.soybeany.rpc.client.api.IRpcClientService;
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
 import com.soybeany.rpc.provider.plugin.RpcProviderPlugin;
 import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.api.ISystemConfig;
 import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.NetUtils;
@@ -21,7 +21,7 @@ import java.util.Set;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcClientService, IRpcServiceExecutor {
+public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncerImpl implements ISystemConfig, IRpcServiceExecutor {
 
     @Autowired
     private ApplicationContext appContext;
@@ -37,7 +37,7 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         String invokeUrl = onSetupInvokeUrl(NetUtils.getLocalIpAddress());
         Set<String> paths = new HashSet<>();
-        onSetupPkgPathToScan(paths);
+        onSetupImplPkgToScan(paths);
         plugin = new RpcProviderPlugin(onSetupSystem(), onSetupVersion(), onSetupGroup(), appContext, invokeUrl, paths);
         plugins.add(plugin);
     }
@@ -54,5 +54,10 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
 
     @NonNull
     protected abstract String onSetupInvokeUrl(String ip);
+
+    /**
+     * “实现类” 所在路径
+     */
+    protected abstract void onSetupImplPkgToScan(Set<String> paths);
 
 }

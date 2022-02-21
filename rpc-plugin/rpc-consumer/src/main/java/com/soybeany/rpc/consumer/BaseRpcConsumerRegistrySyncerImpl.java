@@ -1,12 +1,12 @@
 package com.soybeany.rpc.consumer;
 
-import com.soybeany.rpc.client.api.IRpcClientService;
 import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.api.ISystemConfig;
 import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
 import com.soybeany.sync.client.picker.DataPicker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.Set;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcClientService, IRpcServiceProxy {
+public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncerImpl implements ISystemConfig, IRpcServiceProxy {
 
     @Autowired
     protected ApplicationContext appContext;
@@ -40,7 +40,7 @@ public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncer
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         Set<String> paths = new HashSet<>();
-        onSetupPkgPathToScan(paths);
+        onSetupApiPkgToScan(paths);
         plugin = new RpcConsumerPlugin(onSetupSystem(), onSetupVersion(), appContext,
                 this::onGetNewServerPicker,
                 this::onSetupTimeoutInSec,
@@ -60,5 +60,10 @@ public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncer
     }
 
     protected abstract DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId);
+
+    /**
+     * “接口” 所在路径
+     */
+    protected abstract void onSetupApiPkgToScan(Set<String> paths);
 
 }

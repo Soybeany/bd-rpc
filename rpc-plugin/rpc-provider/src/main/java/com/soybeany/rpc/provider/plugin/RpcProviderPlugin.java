@@ -43,7 +43,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     private final String group;
     private final ApplicationContext appContext;
     private final String invokeUrl;
-    private final Set<String> pkgToScan;
+    private final Set<String> implPkgToScan;
 
     private String md5;
 
@@ -70,16 +70,18 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         rpcServerInfo.setGroup(group);
         rpcServerInfo.setInvokeUrl(invokeUrl);
         rpcServerInfo.setAuthorization(authorizationToken);
-        // 扫描
+        // 扫描指定路径下的实现类
         new Thread(() -> {
             List<String> paths = getPostTreatPkgPathsToScan();
-            for (String name : appContext.getBeanDefinitionNames()) {
-                Object bean = appContext.getBean(name);
+            Arrays.stream(appContext.getBeanDefinitionNames()).map(appContext::getBean).forEach(bean -> {
                 for (String path : paths) {
-                    Optional.ofNullable(ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass()))
-                            .ifPresent(bdRpc -> onHandleBean(bdRpc, bean));
+                    BdRpc rpc = ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass());
+                    if (null != rpc) {
+                        onHandleBean(rpc, bean);
+                        break;
+                    }
                 }
-            }
+            });
         }).start();
     }
 
@@ -106,7 +108,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     @Override
     protected Set<String> onSetupPkgPathToScan() {
-        return pkgToScan;
+        return implPkgToScan;
     }
 
     @Override

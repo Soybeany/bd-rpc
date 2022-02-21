@@ -52,7 +52,7 @@ public class RpcConsumerRegistrySyncerImpl extends BaseRpcConsumerRegistrySyncer
     }
 
     @Override
-    public void onSetupPkgPathToScan(Set<String> paths) {
+    public void onSetupApiPkgToScan(Set<String> paths) {
         paths.add("com.demo");
     }
 

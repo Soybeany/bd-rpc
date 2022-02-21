@@ -4,6 +4,7 @@ import com.soybeany.sync.client.SyncClientService;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.api.ISyncClientConfig;
 import com.soybeany.sync.client.api.ISyncExceptionWatcher;
+import com.soybeany.sync.client.api.ISyncer;
 import com.soybeany.sync.client.model.SyncState;
 import com.soybeany.sync.core.model.BaseSyncerImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ import java.util.List;
  * @date 2021/12/16
  */
 @Slf4j
-public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncClientConfig, ISyncExceptionWatcher {
+public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncClientConfig, ISyncExceptionWatcher, ISyncer {
 
     protected SyncClientService service;
 
@@ -39,6 +40,13 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
     public void onSyncException(List<IClientPlugin<Object, Object>> plugins, String uid, SyncState state, Exception e) {
         log.warn("同步异常" + getObjNames(plugins) + "(" + state + "): " + e.getMessage());
     }
+
+    @Override
+    public void sync(boolean async) {
+        service.sync(async);
+    }
+
+    // ***********************子类方法****************************
 
     @SuppressWarnings("unchecked")
     protected IClientPlugin<Object, Object>[] toPluginArr(List<IClientPlugin<?, ?>> list) {

@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.api.ISyncClientConfig;
 import com.soybeany.sync.client.api.ISyncExceptionWatcher;
+import com.soybeany.sync.client.api.ISyncer;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.model.SyncState;
 import com.soybeany.sync.client.picker.DataPicker;
@@ -29,7 +30,7 @@ import static com.soybeany.sync.core.util.NetUtils.GSON;
  * @date 2021/10/27
  */
 @Slf4j
-public class SyncClientService {
+public class SyncClientService implements ISyncer {
 
     private static final Type TYPE = new TypeToken<Map<String, String>>() {
     }.getType();
@@ -52,6 +53,15 @@ public class SyncClientService {
         this.watcher = watcher;
         IBasePlugin.checkPlugins(allPlugins);
         Collections.sort(allPlugins);
+    }
+
+    @Override
+    public void sync(boolean async) {
+        if (async) {
+            service.submit(this::onSync);
+        } else {
+            onSync();
+        }
     }
 
     public void start() {
@@ -80,7 +90,7 @@ public class SyncClientService {
         // 启动回调
         allPlugins.forEach(plugin -> plugin.onStartup(info));
         // 执行定时任务
-        service.scheduleWithFixedDelay(this::sendSync, 0, interval, TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(this::onSync, 0, interval, TimeUnit.SECONDS);
     }
 
     private void onStop() {
@@ -88,7 +98,7 @@ public class SyncClientService {
         service.shutdown();
     }
 
-    private void sendSync() {
+    private synchronized void onSync() {
         String uid = BdFileUtils.getUuid();
         RequestUtils.Config rConfig = new RequestUtils.Config();
         rConfig.setTimeoutInSec(config.onSetupSyncTimeoutInSec());
