@@ -13,7 +13,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/10/29
  */
-@BdRpc(serviceId = "test")
+@BdRpc
 public interface ITestService {
 
     List<TestVO> getValue(List<TestParam> param) throws Exception;

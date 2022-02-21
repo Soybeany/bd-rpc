@@ -17,7 +17,7 @@ public @interface BdRpc {
     /**
      * 服务id(唯一)
      */
-    String serviceId();
+    String serviceId() default "";
 
     /**
      * 指定调用超时，若值小于0则使用全局配置(单位：秒)

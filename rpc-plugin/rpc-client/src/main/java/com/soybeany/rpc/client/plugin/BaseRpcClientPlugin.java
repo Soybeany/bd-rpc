@@ -3,6 +3,7 @@ package com.soybeany.rpc.client.plugin;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.anno.BdRpcFallback;
 import com.soybeany.sync.client.api.IClientPlugin;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -15,8 +16,12 @@ public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugi
     private final List<String> exPkgPathsToScan = new ArrayList<>();
     private List<String> postTreatPkgPathsToScan;
 
-    protected static String getId(String version, BdRpc annotation) {
-        return annotation.serviceId() + "-" + version;
+    protected static String getId(String version, Class<?> clazz, BdRpc annotation) {
+        String serviceId = annotation.serviceId();
+        if (!StringUtils.hasText(serviceId)) {
+            serviceId = clazz.getSimpleName();
+        }
+        return serviceId + "-" + version;
     }
 
     protected static boolean isFallbackImpl(Object obj) {

@@ -7,7 +7,7 @@ import com.soybeany.rpc.core.anno.BdRpc;
  * @author Soybeany
  * @date 2021/10/29
  */
-@BdRpc(serviceId = "test3")
+@BdRpc
 public interface ITestService3 {
 
     IResult getValue(IResult r) throws Exception;

@@ -131,7 +131,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 //处理指定的注解
                 Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
                         .filter(bdRpc -> clazz.isInterface())
-                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(version, bdRpc), bdRpc.timeoutInSec()));
+                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(version, clazz, bdRpc), bdRpc.timeoutInSec()));
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());

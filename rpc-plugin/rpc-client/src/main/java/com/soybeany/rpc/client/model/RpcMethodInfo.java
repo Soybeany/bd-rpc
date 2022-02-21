@@ -7,7 +7,6 @@ import lombok.Data;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -47,13 +46,10 @@ public class RpcMethodInfo {
         }
     }
 
-    public String getMethodDesc() {
-        return methodName + "(" + Arrays.asList(paramClazzNames) + ")";
-    }
-
     public Object[] getArgs(Method method) throws Exception {
         Type[] types = method.getGenericParameterTypes();
         Object[] args = new Object[argStrings.length];
+        SerializeType[] paramTypes = getNonnullParamTypes(args.length);
         for (int i = 0; i < argStrings.length; i++) {
             args[i] = SyncSerializeUtils.fromString(paramTypes[i], types[i], argStrings[i]);
         }
@@ -72,12 +68,17 @@ public class RpcMethodInfo {
 
     private String[] argsToString(Method method, Object... objs) throws Exception {
         String[] jsons = new String[null != objs ? objs.length : 0];
+        SerializeType[] paramTypes = getNonnullParamTypes(jsons.length);
         for (int i = 0; i < jsons.length; i++) {
             jsons[i] = SyncSerializeUtils.toString(paramTypes[i], objs[i],
                     e -> new RpcPluginException("方法“" + method + "”的入参中含有不可序列化的对象“" + e.getMessage() + "”")
             );
         }
         return jsons;
+    }
+
+    private SerializeType[] getNonnullParamTypes(int length) {
+        return Optional.ofNullable(paramTypes).orElseGet(() -> new SerializeType[length]);
     }
 
     private String[] toClassNames(Class<?>[] classes) {

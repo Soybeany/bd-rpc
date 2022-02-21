@@ -14,7 +14,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2021/10/29
  */
-@BdRpc(serviceId = "test")
+@BdRpc
 public interface ITestService {
 
     @BdRpcCache(desc = "测试", ttl = 10, useMd5Key = false)

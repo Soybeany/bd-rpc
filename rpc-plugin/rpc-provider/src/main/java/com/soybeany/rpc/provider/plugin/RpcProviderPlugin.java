@@ -75,9 +75,9 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
             List<String> paths = getPostTreatPkgPathsToScan();
             Arrays.stream(appContext.getBeanDefinitionNames()).map(appContext::getBean).forEach(bean -> {
                 for (String path : paths) {
-                    BdRpc rpc = ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass());
-                    if (null != rpc) {
-                        onHandleBean(rpc, bean);
+                    ReflectUtils.Result<BdRpc> result = ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass());
+                    if (null != result) {
+                        onHandleBean(result.getClazz(), result.getAnnotation(), bean);
                         break;
                     }
                 }
@@ -146,13 +146,13 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         }
     }
 
-    private void onHandleBean(BdRpc bdRpc, Object bean) {
+    private void onHandleBean(Class<?> clazz, BdRpc bdRpc, Object bean) {
         // 熔断的实现不作为提供者
         if (isFallbackImpl(bean)) {
             return;
         }
         // 其余情况才作为提供者
-        String id = getId(version, bdRpc);
+        String id = getId(version, clazz, bdRpc);
         Object previous = serviceMap.put(id, bean);
         if (null != previous) {
             throw new RpcPluginException("@BdRpc的serviceId(" + id + ")需唯一");
