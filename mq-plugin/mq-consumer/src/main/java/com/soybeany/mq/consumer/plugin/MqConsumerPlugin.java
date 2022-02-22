@@ -7,6 +7,7 @@ import com.soybeany.mq.consumer.api.ITopicInfoRepository;
 import com.soybeany.mq.core.api.IMqMsgStorageManager;
 import com.soybeany.mq.core.api.IMqReceiptHandler;
 import com.soybeany.mq.core.model.MqConsumerMsg;
+import com.soybeany.mq.core.model.MqTopicExceptionInfo;
 import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.sync.client.model.SyncClientInfo;
@@ -60,7 +61,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
         }
         msgHandlerMap = toMap(handlers);
         // 执行定时任务
-        service.scheduleWithFixedDelay(this::safePull, 0, pullIntervalSec, TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(this::safePull, 2, pullIntervalSec, TimeUnit.SECONDS);
     }
 
     @Override
@@ -80,7 +81,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
     }
 
     private void onPull() {
-        // 拉取数据
+        // 拉取消息
         Set<String> topics = msgHandlerMap.keySet();
         Collection<MqTopicInfo> infoList = repository.getAll(topics);
         Map<String, MqConsumerMsg<Serializable>> msgMap;
@@ -89,38 +90,58 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
         } catch (Exception e) {
             return;
         }
-        // 处理数据
+        // 处理消息
+        handleAllMsg(infoList, msgMap);
+    }
+
+    private void handleAllMsg(Collection<MqTopicInfo> infoList, Map<String, MqConsumerMsg<Serializable>> msgMap) {
+        List<MqTopicInfo> successList = new ArrayList<>();
+        List<MqTopicExceptionInfo> failureList = new ArrayList<>();
         Map<String, Long> oldStampMap = new HashMap<>();
-        msgMap.forEach((topic, msg) -> {
-            // 数据分发
-            boolean enableUpdate = true;
-            Exception exception = null;
+        // 循环处理每个消息
+        msgMap.forEach((topic, msg) -> handleOneMsg(infoList, oldStampMap, successList, failureList, topic, msg));
+        // 执行回调
+        String ip = NetUtils.getLocalIpAddress();
+        if (!successList.isEmpty()) {
+            mqReceiptHandler.onSuccess(ip, successList);
+        }
+        if (!failureList.isEmpty()) {
+            mqReceiptHandler.onException(ip, failureList);
+        }
+    }
+
+    private void handleOneMsg(Collection<MqTopicInfo> infoList, Map<String, Long> oldStampMap, List<MqTopicInfo> successList,
+                              List<MqTopicExceptionInfo> failureList, String topic, MqConsumerMsg<Serializable> msg) {
+        // 数据分发
+        boolean enableUpdate = true;
+        Exception exception = null;
+        List<Serializable> msgList = msg.getMsgList();
+        try {
+            if (!msgList.isEmpty()) {
+                msgHandlerMap.get(topic).onHandle(msgList);
+            }
+        } catch (Exception e) {
+            exception = e;
+            if (oldStampMap.isEmpty()) {
+                infoList.forEach(info -> oldStampMap.put(info.getTopic(), info.getStamp()));
+            }
+            enableUpdate = exceptionHandler.onException(topic, e, oldStampMap.get(topic), msg.getStamp(), msgList);
+        }
+        MqTopicInfo curTopicInfo = new MqTopicInfo(topic, msg.getStamp());
+        // 更新topic的戳
+        if (enableUpdate) {
             try {
-                msgHandlerMap.get(topic).onHandle(msg.getMsgList());
+                repository.updateTopicInfo(curTopicInfo);
             } catch (Exception e) {
                 exception = e;
-                if (oldStampMap.isEmpty()) {
-                    infoList.forEach(info -> oldStampMap.put(info.getTopic(), info.getStamp()));
-                }
-                enableUpdate = exceptionHandler.onException(topic, e, oldStampMap.get(topic), msg.getStamp(), msg.getMsgList());
             }
-            MqTopicInfo curTopicInfo = new MqTopicInfo(topic, msg.getStamp());
-            // 更新topic的戳
-            if (enableUpdate) {
-                try {
-                    repository.updateTopicInfo(curTopicInfo);
-                } catch (Exception e) {
-                    exception = e;
-                }
-            }
-            // 执行回调
-            String ip = NetUtils.getLocalIpAddress();
-            if (null != exception) {
-                mqReceiptHandler.onException(ip, curTopicInfo, exception);
-            } else {
-                mqReceiptHandler.onSuccess(ip, curTopicInfo);
-            }
-        });
+        }
+        // 记录信息
+        if (null != exception) {
+            failureList.add(new MqTopicExceptionInfo(topic, msg.getStamp(), exception));
+        } else {
+            successList.add(curTopicInfo);
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

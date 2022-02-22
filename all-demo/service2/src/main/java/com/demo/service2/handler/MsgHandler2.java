@@ -21,5 +21,6 @@ public class MsgHandler2 implements IMqMsgHandler<String> {
     @Override
     public void onHandle(List<String> messages) {
         log.info("2收到:" + messages);
+        throw new RuntimeException("测试处理失败");
     }
 }
