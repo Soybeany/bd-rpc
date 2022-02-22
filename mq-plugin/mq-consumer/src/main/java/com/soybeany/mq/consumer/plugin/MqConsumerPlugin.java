@@ -40,7 +40,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
      */
     private final int pullIntervalSec;
     private final IRpcServiceProxy proxy;
-    private final List<IMqMsgHandler<? extends Serializable>> handlers;
+    private final List<IMqMsgHandler<?>> handlers;
     private final ITopicInfoRepository repository;
     private final IMqExceptionHandler exceptionHandler;
     private final boolean enableReceipt;
@@ -145,7 +145,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Map<String, IMqMsgHandler<Serializable>> toMap(List<IMqMsgHandler<? extends Serializable>> handlers) {
+    private Map<String, IMqMsgHandler<Serializable>> toMap(List<IMqMsgHandler<?>> handlers) {
         Map<String, IMqMsgHandler<Serializable>> map = new HashMap<>();
         for (IMqMsgHandler handler : handlers) {
             IMqMsgHandler previous = map.put(handler.onSetupTopic(), handler);

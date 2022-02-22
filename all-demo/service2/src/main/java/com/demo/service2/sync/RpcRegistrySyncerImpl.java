@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +29,7 @@ import java.util.Set;
 public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
 
     @Autowired
-    private List<IMqMsgHandler<? extends Serializable>> handlers;
+    private List<IMqMsgHandler<?>> handlers;
 
     @Override
     protected String onSetupGroup() {
