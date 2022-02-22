@@ -1,6 +1,7 @@
 package com.soybeany.sync.client.model;
 
 import lombok.Data;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @author Soybeany
@@ -10,13 +11,28 @@ import lombok.Data;
 public class SyncClientInfo {
 
     /**
-     * 同步间隔(单位：秒)
+     * 应用上下文
      */
-    private final int syncIntervalInSec;
+    private final ApplicationContext appContext;
 
     /**
-     * 同步超时
+     * 当前使用的业务系统
      */
-    private final int syncTimeout;
+    private final String system;
+
+    /**
+     * 当前服务的版本
+     */
+    private final String version;
+
+    /**
+     * 同步间隔(单位：秒)
+     */
+    private final int syncIntervalSec;
+
+    /**
+     * 同步超时(单位：秒)
+     */
+    private final int syncTimeoutSec;
 
 }

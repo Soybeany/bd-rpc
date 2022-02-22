@@ -9,6 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- todo 修改为 mq-func -->
     <artifactId>mq-plugin</artifactId>
     <packaging>pom</packaging>
     <modules>

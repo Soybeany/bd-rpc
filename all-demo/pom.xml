@@ -21,6 +21,7 @@
         <module>service2</module>
         <module>service3</module>
         <module>registry</module>
+        <module>core</module>
     </modules>
 
     <dependencies>

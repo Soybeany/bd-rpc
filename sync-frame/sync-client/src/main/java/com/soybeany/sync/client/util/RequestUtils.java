@@ -57,7 +57,7 @@ public class RequestUtils {
         // 请求
         OkHttpClient client;
         synchronized (CLIENT_MAP) {
-            client = CLIENT_MAP.computeIfAbsent(config.timeoutInSec, timeout -> new OkHttpClient.Builder()
+            client = CLIENT_MAP.computeIfAbsent(config.timeoutSec, timeout -> new OkHttpClient.Builder()
                     .writeTimeout(timeout, TimeUnit.SECONDS)
                     .readTimeout(timeout, TimeUnit.SECONDS)
                     .build()
@@ -81,7 +81,7 @@ public class RequestUtils {
     public static class Config {
         private final Map<String, String> headers = new HashMap<>();
         private final Map<String, String> params = new HashMap<>();
-        private int timeoutInSec = 10;
+        private int timeoutSec = 10;
     }
 
     @Data

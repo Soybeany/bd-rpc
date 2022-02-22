@@ -1,6 +1,6 @@
 package com.soybeany.sync.server.impl;
 
-import com.soybeany.sync.server.api.IAutoCleaner;
+import com.soybeany.sync.core.api.IAutoCleaner;
 
 import java.util.*;
 import java.util.concurrent.Executors;

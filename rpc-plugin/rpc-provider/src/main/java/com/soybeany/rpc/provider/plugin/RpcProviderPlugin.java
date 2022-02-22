@@ -38,13 +38,11 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     private final String authorizationToken = BdFileUtils.getUuid();
     private final RpcServerInfo rpcServerInfo = new RpcServerInfo();
 
-    private final String system;
-    private final String version;
     private final String group;
-    private final ApplicationContext appContext;
     private final String invokeUrl;
     private final Set<String> implPkgToScan;
 
+    private SyncClientInfo info;
     private String md5;
 
     @Override
@@ -66,6 +64,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
     @Override
     public void onStartup(SyncClientInfo info) {
         super.onStartup(info);
+        this.info = info;
         // 配置服务器信息
         rpcServerInfo.setGroup(group);
         rpcServerInfo.setInvokeUrl(invokeUrl);
@@ -73,6 +72,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         // 扫描指定路径下的实现类
         new Thread(() -> {
             List<String> paths = getPostTreatPkgPathsToScan();
+            ApplicationContext appContext = info.getAppContext();
             Arrays.stream(appContext.getBeanDefinitionNames()).map(appContext::getBean).forEach(bean -> {
                 for (String path : paths) {
                     ReflectUtils.Result<BdRpc> result = ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass());
@@ -87,12 +87,12 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
 
     @Override
     public synchronized boolean onBeforeSync(String uid, RpcProviderOutput output) throws Exception {
-        output.setProviderId(system + "-" + rpcServerInfo.getInvokeUrl());
+        output.setProviderId(info.getSystem() + "-" + rpcServerInfo.getInvokeUrl());
         Set<String> serviceIds = serviceMap.keySet();
         String md5 = Md5Utils.strToMd5(GSON.toJson(new Object[]{rpcServerInfo, serviceIds}));
         if (!md5.equals(this.md5)) {
             output.setUpdated(true);
-            output.setSystem(system);
+            output.setSystem(info.getSystem());
             output.setMd5(md5);
             output.setRpcServerInfo(rpcServerInfo);
             output.setServiceIds(serviceIds);
@@ -152,7 +152,7 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
             return;
         }
         // 其余情况才作为提供者
-        String id = getId(version, clazz, bdRpc);
+        String id = getId(info.getVersion(), clazz, bdRpc);
         Object previous = serviceMap.put(id, bean);
         if (null != previous) {
             throw new RpcPluginException("@BdRpc的serviceId(" + id + ")需唯一");

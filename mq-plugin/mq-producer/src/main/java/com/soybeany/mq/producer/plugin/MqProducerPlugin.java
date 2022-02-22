@@ -1,107 +1,34 @@
 package com.soybeany.mq.producer.plugin;
 
-import com.soybeany.mq.core.model.BdMqConstants;
-import com.soybeany.mq.core.model.MqProducerInput;
+import com.soybeany.mq.client.plugin.BaseMqClientRegistryPlugin;
+import com.soybeany.mq.core.api.IMqMsgStorageManager;
 import com.soybeany.mq.core.model.MqProducerMsg;
-import com.soybeany.mq.core.model.MqProducerOutput;
-import com.soybeany.mq.producer.api.IMqMsgSendCallback;
 import com.soybeany.mq.producer.api.IMqMsgSender;
-import com.soybeany.sync.client.api.IClientPlugin;
-import com.soybeany.sync.client.model.SyncState;
+import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
 
 /**
  * @author Soybeany
  * @date 2022/1/19
  */
 @Slf4j
-public class MqProducerPlugin implements IClientPlugin<MqProducerInput, MqProducerOutput>, IMqMsgSender {
+@RequiredArgsConstructor
+public class MqProducerPlugin extends BaseMqClientRegistryPlugin implements IMqMsgSender {
 
-    private final Map<String, Holder> buffer = new HashMap<>();
-    private final Map<String, List<IMqMsgSendCallback>> callbackMap = new HashMap<>();
+    private final IRpcServiceProxy proxy;
+    private IMqMsgStorageManager mqMsgStorageManager;
 
-    @Override
-    public String onSetupSyncTagToHandle() {
-        return BdMqConstants.TAG_P;
-    }
+    // ***********************子类实现****************************
 
     @Override
-    public Class<MqProducerInput> onGetInputClass() {
-        return MqProducerInput.class;
-    }
-
-    @Override
-    public Class<MqProducerOutput> onGetOutputClass() {
-        return MqProducerOutput.class;
-    }
-
-    @Override
-    public synchronized boolean onBeforeSync(String uid, MqProducerOutput output) throws Exception {
-        // 当缓冲区没数据时，不需执行同步
-        if (buffer.isEmpty()) {
-            return false;
+    public <T extends Serializable> void send(String topic, MqProducerMsg<T> msg) {
+        if (null == mqMsgStorageManager) {
+            mqMsgStorageManager = proxy.get(IMqMsgStorageManager.class);
         }
-        // 处理缓冲
-        buffer.forEach((topic, holder) -> {
-            output.getMessages().put(topic, holder.msgList);
-            callbackMap.put(uid, holder.callbackList);
-        });
-        // 清空缓冲
-        buffer.clear();
-        return IClientPlugin.super.onBeforeSync(uid, output);
-    }
-
-    @Override
-    public synchronized void onAfterSync(String uid, MqProducerInput input) throws Exception {
-        IClientPlugin.super.onAfterSync(uid, input);
-        handleInput(uid, input);
-    }
-
-    @Override
-    public synchronized void onSyncException(String uid, SyncState state, Exception e) throws Exception {
-        IClientPlugin.super.onSyncException(uid, state, e);
-        handleInput(uid, new MqProducerInput(false, e.getMessage()));
-    }
-
-    @Override
-    public synchronized void asyncSend(String topic, MqProducerMsg msg, IMqMsgSendCallback callback) {
-        buffer.computeIfAbsent(topic, t -> new Holder()).add(msg, callback);
-    }
-
-    // ***********************内部方法****************************
-
-    private synchronized void handleInput(String uid, MqProducerInput input) {
-        List<IMqMsgSendCallback> callbacks = callbackMap.remove(uid);
-        if (null == callbacks) {
-            log.warn("无法找到uid(" + uid + ")的归档");
-            return;
-        }
-        // 调用异步回调
-        for (IMqMsgSendCallback callback : callbacks) {
-            try {
-                callback.onFinish(input);
-            } catch (Exception ignore) {
-            }
-        }
-    }
-
-    // ***********************内部类****************************
-
-    private static class Holder {
-        final List<MqProducerMsg> msgList = new ArrayList<>();
-        final List<IMqMsgSendCallback> callbackList = new ArrayList<>();
-
-        public void add(MqProducerMsg msg, IMqMsgSendCallback callback) {
-            msgList.add(msg);
-            if (null != callback) {
-                callbackList.add(callback);
-            }
-        }
+        mqMsgStorageManager.save(topic, msg);
     }
 
 }

@@ -9,7 +9,6 @@ import com.soybeany.rpc.client.model.RpcMethodInfo;
 import com.soybeany.rpc.client.plugin.BaseRpcClientPlugin;
 import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
-import com.soybeany.rpc.consumer.api.IServerInfoReceiver;
 import com.soybeany.rpc.consumer.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.consumer.exception.RpcRequestException;
 import com.soybeany.rpc.consumer.model.RpcBatchResult;
@@ -18,6 +17,7 @@ import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.anno.BdRpcBatch;
 import com.soybeany.rpc.core.anno.BdRpcCache;
 import com.soybeany.rpc.core.anno.BdRpcSerialize;
+import com.soybeany.rpc.core.api.IServerInfoReceiver;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcConsumerInput;
 import com.soybeany.rpc.core.model.RpcConsumerOutput;
@@ -32,7 +32,6 @@ import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -82,13 +81,11 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Map<Method, RpcMethodInfo.TypeInfo> typeInfoMap = new HashMap<>();
     private final Set<String> serviceIdSet = new HashSet<>();
 
-    private final String system;
-    private final String version;
-    private final ApplicationContext appContext;
     private final Function<String, DataPicker<RpcServerInfo>> dataPickerProvider;
-    private final Function<String, Integer> timeoutInSecProvider;
+    private final Function<String, Integer> invokeTimeoutSecProvider;
     private final Set<String> pkgToScan;
 
+    private SyncClientInfo info;
     private ExecutorService batchExecutor;
     private String md5;
 
@@ -111,6 +108,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     @Override
     public void onStartup(SyncClientInfo info) {
         super.onStartup(info);
+        this.info = info;
         //spring工具类，可以获取指定路径下的全部类
         ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
         try {
@@ -131,7 +129,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 //处理指定的注解
                 Optional.ofNullable(clazz.getAnnotation(BdRpc.class))
                         .filter(bdRpc -> clazz.isInterface())
-                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(version, clazz, bdRpc), bdRpc.timeoutInSec()));
+                        .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(info.getVersion(), clazz, bdRpc), bdRpc.timeoutInSec()));
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
@@ -152,7 +150,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     @Override
     public synchronized boolean onBeforeSync(String uid, RpcConsumerOutput output) throws Exception {
-        output.setSystem(system);
+        output.setSystem(info.getSystem());
         output.setServiceIds(serviceIdSet);
         output.setMd5(md5);
         return super.onBeforeSync(uid, output);
@@ -258,11 +256,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         return (T) manager.getData(invokeInfo);
     }
 
-    private DataManager<InvokeInfo, Object> getNewDataManager(BdRpcCache cache) {
+    private DataManager<InvokeInfo, Object> getNewDataManager(Method method, BdRpcCache cache) {
         boolean hasStorageId = StringUtils.hasLength(cache.storageId());
-        String storageId = hasStorageId ? cache.storageId() : cache.desc();
+        String desc = getDesc(method, cache);
+        String storageId = hasStorageId ? cache.storageId() : desc;
         return DataManager.Builder
-                .get(cache.desc(), (IDatasource<InvokeInfo, Object>) this::onInvoke, invokeInfo -> {
+                .get(desc, (IDatasource<InvokeInfo, Object>) this::onInvoke, invokeInfo -> {
                     String keyWithGroup = getKeyWithGroup(invokeInfo.group, GSON.toJson(invokeInfo.args));
                     return cache.useMd5Key() ? Md5Utils.strToMd5(keyWithGroup) : keyWithGroup;
                 })
@@ -277,6 +276,14 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 .storageId(storageId)
                 .enableRenewExpiredCache(cache.enableRenewExpiredCache())
                 .build();
+    }
+
+    private static String getDesc(Method method, BdRpcCache cache) {
+        String desc = cache.desc();
+        if (!StringUtils.hasText(desc)) {
+            desc = method.getDeclaringClass().getSimpleName() + "-" + method.getName();
+        }
+        return desc;
     }
 
     private DataPicker<RpcServerInfo> getGroupedPicker(InvokeInfo invokeInfo) {
@@ -310,7 +317,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         config.getParams().put(KEY_METHOD_INFO, GSON.toJson(new RpcMethodInfo(
                 invokeInfo.serviceId, invokeInfo.method, typeInfoMap.get(invokeInfo.method), invokeInfo.args
         )));
-        config.setTimeoutInSec(invokeInfo.timeoutInSec);
+        config.setTimeoutSec(invokeInfo.timeoutInSec);
         RequestUtils.Result<RpcServerInfo, SyncDTO> result;
         try {
             result = RequestUtils.request(picker, serverInfo -> {
@@ -361,7 +368,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             fallbackImpl = impl;
         }
         // 分区信息生成
-        int timeoutInSec = (referTimeoutInSec >= 0 ? referTimeoutInSec : timeoutInSecProvider.apply(serviceId));
+        int timeoutInSec = (referTimeoutInSec >= 0 ? referTimeoutInSec : invokeTimeoutSecProvider.apply(serviceId));
         InfoPart1 infoPart = new InfoPart1(fallbackImpl, serviceId, timeoutInSec);
         // 方法信息预处理
         for (Method method : interfaceClass.getMethods()) {
@@ -386,7 +393,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         if (null == cache) {
             return;
         }
-        dataManagerMap.put(method, getNewDataManager(cache));
+        dataManagerMap.put(method, getNewDataManager(method, cache));
     }
 
     private void handleBatchAnnotation(Class<?> interfaceClass, Method method, InfoPart1 part1) {
@@ -428,7 +435,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     @SuppressWarnings("unchecked")
     private <T> T getBeanFromContext(Class<?> interfaceClass) {
         try {
-            return (T) appContext.getBean(interfaceClass);
+            return (T) info.getAppContext().getBean(interfaceClass);
         } catch (NoSuchBeanDefinitionException ignore) {
             return null;
         }

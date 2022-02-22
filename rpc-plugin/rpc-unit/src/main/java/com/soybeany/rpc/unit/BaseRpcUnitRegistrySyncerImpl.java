@@ -9,13 +9,10 @@ import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
 import com.soybeany.rpc.provider.plugin.RpcProviderPlugin;
 import com.soybeany.sync.client.api.IClientPlugin;
-import com.soybeany.sync.client.api.ISystemConfig;
 import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.NetUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.lang.NonNull;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,10 +25,7 @@ import java.util.Set;
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl implements ISystemConfig, IRpcServiceProxy, IRpcServiceExecutor {
-
-    @Autowired
-    protected ApplicationContext appContext;
+public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcServiceProxy, IRpcServiceExecutor {
 
     private RpcConsumerPlugin consumerPlugin;
     private RpcProviderPlugin providerPlugin;
@@ -56,27 +50,18 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
         // 设置消费者插件
         Set<String> apiPaths = new HashSet<>();
         onSetupApiPkgToScan(apiPaths);
-        consumerPlugin = new RpcConsumerPlugin(onSetupSystem(), onSetupVersion(), appContext,
-                this::onGetNewServerPicker,
-                this::onSetupTimeoutInSec,
-                apiPaths
-        );
+        consumerPlugin = new RpcConsumerPlugin(this::onGetNewServerPicker, this::onSetupInvokeTimeoutSec, apiPaths);
         plugins.add(consumerPlugin);
         // 设置生产者插件
-        String invokeUrl = onSetupInvokeUrl(NetUtils.getLocalIpAddress());
         Set<String> paths = new HashSet<>();
         onSetupImplPkgToScan(paths);
-        providerPlugin = new RpcProviderPlugin(onSetupSystem(), onSetupVersion(), onSetupGroup(), appContext, invokeUrl, paths);
+        providerPlugin = new RpcProviderPlugin(onSetupGroup(), onSetupInvokeUrl(NetUtils.getLocalIpAddress()), paths);
         plugins.add(providerPlugin);
     }
 
     // ***********************子类实现****************************
 
-    protected String onSetupVersion() {
-        return "0";
-    }
-
-    protected int onSetupTimeoutInSec(String serviceId) {
+    protected int onSetupInvokeTimeoutSec(String serviceId) {
         return 5;
     }
 
@@ -94,6 +79,9 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
      */
     protected abstract DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId);
 
+    /**
+     * 配置对外暴露服务所使用的url
+     */
     @NonNull
     protected abstract String onSetupInvokeUrl(String ip);
 

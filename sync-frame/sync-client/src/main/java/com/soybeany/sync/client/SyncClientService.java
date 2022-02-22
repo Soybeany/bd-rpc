@@ -2,7 +2,6 @@ package com.soybeany.sync.client;
 
 import com.google.gson.reflect.TypeToken;
 import com.soybeany.sync.client.api.IClientPlugin;
-import com.soybeany.sync.client.api.ISyncClientConfig;
 import com.soybeany.sync.client.api.ISyncExceptionWatcher;
 import com.soybeany.sync.client.api.ISyncer;
 import com.soybeany.sync.client.model.SyncClientInfo;
@@ -15,10 +14,14 @@ import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.util.file.BdFileUtils;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +33,7 @@ import static com.soybeany.sync.core.util.NetUtils.GSON;
  * @date 2021/10/27
  */
 @Slf4j
+@RequiredArgsConstructor
 public class SyncClientService implements ISyncer {
 
     private static final Type TYPE = new TypeToken<Map<String, String>>() {
@@ -38,22 +42,13 @@ public class SyncClientService implements ISyncer {
     @SuppressWarnings("AlibabaThreadPoolCreation")
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
-    private final ISyncClientConfig config;
+    private final SyncClientInfo info;
     @Getter
     private final DataPicker<String> urlPicker;
     private final List<IClientPlugin<Object, Object>> allPlugins;
     private final ISyncExceptionWatcher watcher;
 
     private Boolean started;
-
-    public SyncClientService(ISyncClientConfig config, IClientPlugin<Object, Object>[] plugins, ISyncExceptionWatcher watcher) {
-        this.config = config;
-        urlPicker = config.onSetupSyncServerPicker();
-        allPlugins = Arrays.asList(plugins);
-        this.watcher = watcher;
-        IBasePlugin.checkPlugins(allPlugins);
-        Collections.sort(allPlugins);
-    }
 
     @Override
     public void sync(boolean async) {
@@ -83,14 +78,15 @@ public class SyncClientService implements ISyncer {
     // ***********************内部方法****************************
 
     private void onStart() {
-        int interval = config.onSetupSyncIntervalInSec();
-        SyncClientInfo info = new SyncClientInfo(interval, config.onSetupSyncTimeoutInSec());
+        // 插件预处理
+        IBasePlugin.checkPlugins(allPlugins);
+        Collections.sort(allPlugins);
         // 插件预处理
         allPlugins.forEach(plugin -> plugin.onPreTreat(allPlugins));
         // 启动回调
         allPlugins.forEach(plugin -> plugin.onStartup(info));
         // 执行定时任务
-        service.scheduleWithFixedDelay(this::onSync, 0, interval, TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(this::onSync, 0, info.getSyncIntervalSec(), TimeUnit.SECONDS);
     }
 
     private void onStop() {
@@ -101,7 +97,7 @@ public class SyncClientService implements ISyncer {
     private synchronized void onSync() {
         String uid = BdFileUtils.getUuid();
         RequestUtils.Config rConfig = new RequestUtils.Config();
-        rConfig.setTimeoutInSec(config.onSetupSyncTimeoutInSec());
+        rConfig.setTimeoutSec(info.getSyncTimeoutSec());
         List<IClientPlugin<Object, Object>> syncPlugins = new ArrayList<>();
         // 同步前回调
         for (IClientPlugin<Object, Object> plugin : allPlugins) {

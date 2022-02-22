@@ -5,11 +5,16 @@ import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.api.ISyncClientConfig;
 import com.soybeany.sync.client.api.ISyncExceptionWatcher;
 import com.soybeany.sync.client.api.ISyncer;
+import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.model.SyncState;
+import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.core.model.BaseSyncerImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,14 +24,24 @@ import java.util.List;
 @Slf4j
 public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncClientConfig, ISyncExceptionWatcher, ISyncer {
 
+    @Autowired
+    protected ApplicationContext appContext;
+
     protected SyncClientService service;
+
+    @SuppressWarnings("unchecked")
+    protected static List<IClientPlugin<Object, Object>> toPluginArr(List<IClientPlugin<?, ?>> list) {
+        return Arrays.asList(list.toArray(new IClientPlugin[0]));
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
         List<IClientPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
-        service = new SyncClientService(this, toPluginArr(plugins), this);
+        SyncClientInfo info = new SyncClientInfo(appContext, onSetupSystem(), onSetupVersion(),
+                onSetupSyncIntervalSec(), onSetupSyncTimeoutSec());
+        service = new SyncClientService(info, onSetupSyncServerPicker(), toPluginArr(plugins), this);
         service.start();
     }
 
@@ -46,11 +61,41 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
         service.sync(async);
     }
 
-    // ***********************子类方法****************************
+    // ***********************子类重写****************************
 
-    @SuppressWarnings("unchecked")
-    protected IClientPlugin<Object, Object>[] toPluginArr(List<IClientPlugin<?, ?>> list) {
-        return list.toArray(new IClientPlugin[0]);
+    /**
+     * 配置服务所在的系统，系统间的服务与数据都是隔离的
+     */
+    protected String onSetupSystem() {
+        return null;
     }
+
+    /**
+     * 当前服务的版本，当有 “api/实现” 不可兼容变更时，可改变版本号值进行隔离
+     */
+    protected String onSetupVersion() {
+        return "0";
+    }
+
+    /**
+     * 配置同步的等待超时
+     */
+    protected int onSetupSyncTimeoutSec() {
+        return 10;
+    }
+
+    /**
+     * 设置同步服务器的url
+     *
+     * @return 值
+     */
+    protected abstract DataPicker<String> onSetupSyncServerPicker();
+
+    /**
+     * 设置同步间隔
+     *
+     * @return 秒值
+     */
+    protected abstract int onSetupSyncIntervalSec();
 
 }

@@ -53,6 +53,9 @@ public abstract class BaseSyncerImpl<Plugin> {
 
     // ***********************子类实现****************************
 
+    /**
+     * 配置待使用的插件
+     */
     protected abstract void onSetupPlugins(List<Plugin> plugins);
 
 }

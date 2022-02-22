@@ -11,6 +11,6 @@ public interface IMqExceptionHandler {
     /**
      * @return 是否允许更新最新同步值
      */
-    boolean onException(Exception e, List<String> payloads, IMqMsgHandler handler);
+    boolean onException(String topic, Exception e, long oldStamp, long newStamp, List<?> msgList);
 
 }

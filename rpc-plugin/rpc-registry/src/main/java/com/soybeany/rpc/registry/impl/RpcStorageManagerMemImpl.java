@@ -2,7 +2,7 @@ package com.soybeany.rpc.registry.impl;
 
 import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.registry.api.IRpcStorageManager;
-import com.soybeany.sync.server.api.IAutoCleaner;
+import com.soybeany.sync.core.api.IAutoCleaner;
 import com.soybeany.sync.server.impl.StdMemStorage;
 
 import java.util.Set;

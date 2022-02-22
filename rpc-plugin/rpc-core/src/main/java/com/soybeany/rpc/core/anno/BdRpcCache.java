@@ -16,7 +16,7 @@ public @interface BdRpcCache {
     /**
      * 描述该缓存
      */
-    String desc();
+    String desc() default "";
 
     /**
      * 是否需要日志输出

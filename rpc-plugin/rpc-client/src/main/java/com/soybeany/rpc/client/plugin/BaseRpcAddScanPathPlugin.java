@@ -41,7 +41,7 @@ public abstract class BaseRpcAddScanPathPlugin implements IClientPlugin<Object, 
             }
             hasMatchedPlugin = true;
             List<String> paths = new ArrayList<>();
-            onSetupScanPaths(plugin, paths);
+            onAddScanPaths(plugin, paths);
             ((BaseRpcClientPlugin<Object, Object>) plugin).addExPkgPathsToScan(paths);
         }
         if (!hasMatchedPlugin) {
@@ -49,6 +49,6 @@ public abstract class BaseRpcAddScanPathPlugin implements IClientPlugin<Object, 
         }
     }
 
-    protected abstract void onSetupScanPaths(IClientPlugin<?, ?> plugin, List<String> paths);
+    protected abstract void onAddScanPaths(IClientPlugin<?, ?> plugin, List<String> paths);
 
 }

@@ -12,6 +12,16 @@ public class RpcProxySelector<T> {
     private static final ThreadLocal<String> GROUP_HOLDER = new ThreadLocal<>();
     private final T target;
 
+    /**
+     * 设置使用的分组
+     */
+    public static void setGroup(String group) {
+        GROUP_HOLDER.set(group);
+    }
+
+    /**
+     * 获取并移除分组（框架内部用，外部一般不使用）
+     */
     public static String getAndRemoveGroup() {
         String group = GROUP_HOLDER.get();
         GROUP_HOLDER.remove();
@@ -24,7 +34,7 @@ public class RpcProxySelector<T> {
      * <br/>若group传入null，则为全部分组
      */
     public T get(String group) {
-        GROUP_HOLDER.set(group);
+        setGroup(group);
         return target;
     }
 

@@ -1,7 +1,6 @@
 package com.soybeany.mq.consumer.impl;
 
 import com.soybeany.mq.consumer.api.IMqExceptionHandler;
-import com.soybeany.mq.consumer.api.IMqMsgHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -13,8 +12,9 @@ import java.util.List;
 @Slf4j
 public class MqExceptionHandlerLogImpl implements IMqExceptionHandler {
     @Override
-    public boolean onException(Exception e, List<String> payloads, IMqMsgHandler handler) {
-        log.error("“" + handler.getClass() + "”处理“" + payloads + "”异常(" + e.getMessage() + ")");
-        return false;
+    public boolean onException(String topic, Exception e, long oldStamp, long newStamp, List<?> msgList) {
+        log.warn("消息处理异常(" + e.getClass().getSimpleName() + "-" + e.getMessage()
+                + ")，topic(" + topic + ")，stamp(" + oldStamp + "->" + newStamp + ")，" + msgList.size() + "条");
+        return true;
     }
 }
