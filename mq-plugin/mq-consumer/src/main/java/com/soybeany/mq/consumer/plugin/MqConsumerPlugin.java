@@ -7,7 +7,7 @@ import com.soybeany.mq.consumer.api.ITopicInfoRepository;
 import com.soybeany.mq.core.api.IMqMsgStorageManager;
 import com.soybeany.mq.core.api.IMqReceiptHandler;
 import com.soybeany.mq.core.model.MqConsumerMsg;
-import com.soybeany.mq.core.model.MqTopicExceptionInfo;
+import com.soybeany.mq.core.model.MqReceiptInfo;
 import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.sync.client.model.SyncClientInfo;
@@ -95,11 +95,12 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
     }
 
     private void handleAllMsg(Collection<MqTopicInfo> infoList, Map<String, MqConsumerMsg<Serializable>> msgMap) {
-        List<MqTopicInfo> successList = new ArrayList<>();
-        List<MqTopicExceptionInfo> failureList = new ArrayList<>();
+        List<MqReceiptInfo> successList = new ArrayList<>();
+        List<MqReceiptInfo.WithE> failureList = new ArrayList<>();
         Map<String, Long> oldStampMap = new HashMap<>();
+        infoList.forEach(info -> oldStampMap.put(info.getTopic(), info.getStamp()));
         // 循环处理每个消息
-        msgMap.forEach((topic, msg) -> handleOneMsg(infoList, oldStampMap, successList, failureList, topic, msg));
+        msgMap.forEach((topic, msg) -> handleEachMsg(oldStampMap, successList, failureList, topic, msg));
         // 执行回调
         String ip = NetUtils.getLocalIpAddress();
         if (!successList.isEmpty()) {
@@ -110,11 +111,13 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
         }
     }
 
-    private void handleOneMsg(Collection<MqTopicInfo> infoList, Map<String, Long> oldStampMap, List<MqTopicInfo> successList,
-                              List<MqTopicExceptionInfo> failureList, String topic, MqConsumerMsg<Serializable> msg) {
+    private void handleEachMsg(Map<String, Long> oldStampMap, List<MqReceiptInfo> successList,
+                               List<MqReceiptInfo.WithE> failureList, String topic, MqConsumerMsg<Serializable> msg) {
         // 数据分发
         boolean enableUpdate = true;
         Exception exception = null;
+        Long oldStamp = oldStampMap.get(topic);
+        Long newStamp = msg.getStamp();
         List<Serializable> msgList = msg.getMsgList();
         try {
             if (!msgList.isEmpty()) {
@@ -122,10 +125,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
             }
         } catch (Exception e) {
             exception = e;
-            if (oldStampMap.isEmpty()) {
-                infoList.forEach(info -> oldStampMap.put(info.getTopic(), info.getStamp()));
-            }
-            enableUpdate = exceptionHandler.onException(topic, e, oldStampMap.get(topic), msg.getStamp(), msgList);
+            enableUpdate = exceptionHandler.onException(topic, e, oldStamp, newStamp, msgList);
         }
         MqTopicInfo curTopicInfo = new MqTopicInfo(topic, msg.getStamp());
         // 更新topic的戳
@@ -136,11 +136,11 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
                 exception = e;
             }
         }
-        // 记录信息
+        // 记录执行情况
         if (null != exception) {
-            failureList.add(new MqTopicExceptionInfo(topic, msg.getStamp(), exception));
+            failureList.add(new MqReceiptInfo.WithE(topic, oldStamp, newStamp, exception));
         } else {
-            successList.add(curTopicInfo);
+            successList.add(new MqReceiptInfo(topic, oldStamp, newStamp));
         }
     }
 

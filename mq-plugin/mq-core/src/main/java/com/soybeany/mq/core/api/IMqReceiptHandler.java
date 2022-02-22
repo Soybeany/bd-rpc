@@ -1,7 +1,6 @@
 package com.soybeany.mq.core.api;
 
-import com.soybeany.mq.core.model.MqTopicExceptionInfo;
-import com.soybeany.mq.core.model.MqTopicInfo;
+import com.soybeany.mq.core.model.MqReceiptInfo;
 import com.soybeany.rpc.core.anno.BdRpc;
 import com.soybeany.rpc.core.anno.BdRpcSerialize;
 
@@ -16,8 +15,9 @@ import java.util.Collection;
 @BdRpc
 public interface IMqReceiptHandler {
 
-    void onSuccess(String ip, Collection<MqTopicInfo> topics);
+    void onSuccess(String ip, Collection<MqReceiptInfo> info);
 
-    default void onException(String ip, @BdRpcSerialize Collection<MqTopicExceptionInfo> topics) {
+    default void onException(String ip, @BdRpcSerialize Collection<MqReceiptInfo.WithE> info) {
     }
+
 }
