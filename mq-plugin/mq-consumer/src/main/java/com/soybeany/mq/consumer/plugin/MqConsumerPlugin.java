@@ -60,7 +60,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
         }
         msgHandlerMap = toMap(handlers);
         // 执行定时任务
-        service.scheduleWithFixedDelay(this::onPull, 0, pullIntervalSec, TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(this::safePull, 0, pullIntervalSec, TimeUnit.SECONDS);
     }
 
     @Override
@@ -71,11 +71,24 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
 
     // ***********************内部方法****************************
 
+    private void safePull() {
+        try {
+            onPull();
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
+    }
+
     private void onPull() {
         // 拉取数据
         Set<String> topics = msgHandlerMap.keySet();
         Collection<MqTopicInfo> infoList = repository.getAll(topics);
-        Map<String, MqConsumerMsg<Serializable>> msgMap = mqMsgStorageManager.load(infoList);
+        Map<String, MqConsumerMsg<Serializable>> msgMap;
+        try {
+            msgMap = mqMsgStorageManager.load(infoList);
+        } catch (Exception e) {
+            return;
+        }
         // 处理数据
         Map<String, Long> oldStampMap = new HashMap<>();
         msgMap.forEach((topic, msg) -> {
@@ -109,7 +122,6 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
             }
         });
     }
-
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private Map<String, IMqMsgHandler<Serializable>> toMap(List<IMqMsgHandler<? extends Serializable>> handlers) {

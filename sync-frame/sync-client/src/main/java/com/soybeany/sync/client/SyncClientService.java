@@ -86,12 +86,20 @@ public class SyncClientService implements ISyncer {
         // 启动回调
         allPlugins.forEach(plugin -> plugin.onStartup(info));
         // 执行定时任务
-        service.scheduleWithFixedDelay(this::onSync, 0, info.getSyncIntervalSec(), TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(this::safeSync, 0, info.getSyncIntervalSec(), TimeUnit.SECONDS);
     }
 
     private void onStop() {
         allPlugins.forEach(IClientPlugin::onShutdown);
         service.shutdown();
+    }
+
+    private void safeSync() {
+        try {
+            onSync();
+        } catch (Exception e) {
+            log.error("同步出现了未预料的异常:" + e.getMessage());
+        }
     }
 
     private synchronized void onSync() {

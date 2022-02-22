@@ -20,6 +20,7 @@ public interface IMqMsgStorageManager {
     @BdRpcSerialize
     <T extends Serializable> void save(String topic, @BdRpcSerialize MqProducerMsg<T> msg);
 
+    @BdRpcSerialize
     <T extends Serializable> Map<String, MqConsumerMsg<T>> load(Collection<MqTopicInfo> topics);
 
 }

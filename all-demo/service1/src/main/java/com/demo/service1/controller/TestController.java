@@ -49,12 +49,6 @@ public class TestController {
     private ILocalService localService;
     private IObjTestService objTestService;
     private IShareStorageTestService shareStorageTestService;
-    private ISimpleTestService simpleTestService;
-
-    @GetMapping("/simple")
-    public String simple(String input) {
-        return wrap(() -> simpleTestService.getValue(input));
-    }
 
     @GetMapping("/group")
     public String group(String group, String input) {
@@ -120,9 +114,10 @@ public class TestController {
     }
 
     @PostMapping("/sendMq")
-    public String sendMq(String topic, String value) {
+    public String sendMq(String value) {
         return wrap(() -> {
-            mqMsgSender.send(topic, new MqProducerMsg<>(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
+            mqMsgSender.send("1", new MqProducerMsg<>(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
+            mqMsgSender.send("2", new MqProducerMsg<>(LocalDateTime.now(), LocalDateTime.now().plusSeconds(20), value));
             return "已发送";
         });
     }
@@ -137,7 +132,6 @@ public class TestController {
         localService = serviceProxy.get(ILocalService.class);
         objTestService = serviceProxy.get(IObjTestService.class);
         shareStorageTestService = serviceProxy.get(IShareStorageTestService.class);
-        simpleTestService = serviceProxy.get(ISimpleTestService.class);
     }
 
     // ***********************内部方法****************************
