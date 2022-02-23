@@ -12,6 +12,7 @@ import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.core.util.NetUtils;
+import com.soybeany.util.ExceptionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -80,7 +81,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
             // 处理消息
             handleAllMsg(infoList, mqMsgStorageManager.load(infoList));
         } catch (Throwable e) {
-            log.warn(e.getMessage());
+            log.warn(ExceptionUtils.getExceptionDetail(e));
         }
     }
 

@@ -12,6 +12,7 @@ import com.soybeany.sync.core.api.IBasePlugin;
 import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.util.ExceptionUtils;
 import com.soybeany.util.file.BdFileUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -98,7 +99,7 @@ public class SyncClientService implements ISyncer {
         try {
             onSync();
         } catch (Throwable e) {
-            log.error("同步出现了未预料的异常:" + e.getMessage());
+            log.error(ExceptionUtils.getExceptionDetail(e));
         }
     }
 
