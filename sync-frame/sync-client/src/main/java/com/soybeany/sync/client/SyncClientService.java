@@ -97,7 +97,7 @@ public class SyncClientService implements ISyncer {
     private void safeSync() {
         try {
             onSync();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("同步出现了未预料的异常:" + e.getMessage());
         }
     }
