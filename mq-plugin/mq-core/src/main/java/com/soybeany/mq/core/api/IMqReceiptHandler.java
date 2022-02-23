@@ -15,7 +15,7 @@ import java.util.Collection;
 @BdRpc
 public interface IMqReceiptHandler {
 
-    void onSuccess(String ip, Collection<MqReceiptInfo> info);
+    void onSuccess(String ip, @BdRpcSerialize Collection<MqReceiptInfo> info);
 
     default void onException(String ip, @BdRpcSerialize Collection<MqReceiptInfo.WithE> info) {
     }

@@ -21,7 +21,6 @@
         <dependency>
             <groupId>com.github.Soybeany.bdlib-server</groupId>
             <artifactId>bd-cachev2</artifactId>
-            <version>2.6.17</version>
         </dependency>
     </dependencies>
 
