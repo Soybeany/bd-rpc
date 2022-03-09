@@ -1,11 +1,13 @@
 package com.soybeany.rpc.unit;
 
 import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
+import com.soybeany.rpc.consumer.api.IRpcExApiPkgProvider;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.consumer.model.RpcProxySelector;
 import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcServerInfo;
+import com.soybeany.rpc.provider.api.IRpcExImplPkgProvider;
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
 import com.soybeany.rpc.provider.plugin.RpcProviderPlugin;
 import com.soybeany.sync.client.api.IClientPlugin;
@@ -13,12 +15,14 @@ import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.NetUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -26,6 +30,11 @@ import java.util.Set;
  * @date 2021/12/16
  */
 public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcServiceProxy, IRpcServiceExecutor {
+
+    @Autowired(required = false)
+    private List<IRpcExApiPkgProvider> apiPkgProviders;
+    @Autowired(required = false)
+    private List<IRpcExImplPkgProvider> implPkgProviders;
 
     private RpcConsumerPlugin consumerPlugin;
     private RpcProviderPlugin providerPlugin;
@@ -50,12 +59,16 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
         // 设置消费者插件
         Set<String> apiPaths = new HashSet<>();
         onSetupApiPkgToScan(apiPaths);
+        Optional.ofNullable(apiPkgProviders)
+                .ifPresent(providers -> providers.forEach(provider -> provider.onSetupApiPkgToScan(apiPaths)));
         consumerPlugin = new RpcConsumerPlugin(this::onGetNewServerPicker, this::onSetupInvokeTimeoutSec, apiPaths);
         plugins.add(consumerPlugin);
         // 设置生产者插件
-        Set<String> paths = new HashSet<>();
-        onSetupImplPkgToScan(paths);
-        providerPlugin = new RpcProviderPlugin(onSetupGroup(), onSetupInvokeUrl(NetUtils.getLocalIpAddress()), paths);
+        Set<String> implPaths = new HashSet<>();
+        onSetupImplPkgToScan(implPaths);
+        Optional.ofNullable(implPkgProviders)
+                .ifPresent(providers -> providers.forEach(provider -> provider.onSetupImplPkgToScan(implPaths)));
+        providerPlugin = new RpcProviderPlugin(onSetupGroup(), onSetupInvokeUrl(NetUtils.getLocalIpAddress()), implPaths);
         plugins.add(providerPlugin);
     }
 

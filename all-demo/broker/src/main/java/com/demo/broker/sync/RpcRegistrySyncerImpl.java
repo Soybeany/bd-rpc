@@ -7,8 +7,6 @@ import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.util.Set;
 
 
@@ -43,16 +41,6 @@ public class RpcRegistrySyncerImpl extends BaseRpcProviderRegistrySyncerImpl {
     @Override
     protected String onSetupInvokeUrl(String ip) {
         return getUrl(false, ip, 8083, "", Constants.PATH_RPC, "");
-    }
-
-    @PostConstruct
-    private void onInit() {
-        start();
-    }
-
-    @PreDestroy
-    private void onDestroy() {
-        stop();
     }
 
 }

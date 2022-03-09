@@ -1,17 +1,20 @@
 package com.soybeany.rpc.provider;
 
+import com.soybeany.rpc.provider.api.IRpcExImplPkgProvider;
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
 import com.soybeany.rpc.provider.plugin.RpcProviderPlugin;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.core.util.NetUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -19,6 +22,9 @@ import java.util.Set;
  * @date 2021/12/16
  */
 public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcServiceExecutor {
+
+    @Autowired(required = false)
+    private List<IRpcExImplPkgProvider> providers;
 
     private RpcProviderPlugin plugin;
 
@@ -31,6 +37,8 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         Set<String> paths = new HashSet<>();
         onSetupImplPkgToScan(paths);
+        Optional.ofNullable(providers)
+                .ifPresent(providers -> providers.forEach(provider -> provider.onSetupImplPkgToScan(paths)));
         plugin = new RpcProviderPlugin(onSetupGroup(), onSetupInvokeUrl(NetUtils.getLocalIpAddress()), paths);
         plugins.add(plugin);
     }

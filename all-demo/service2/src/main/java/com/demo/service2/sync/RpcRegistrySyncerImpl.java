@@ -14,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.util.List;
 import java.util.Set;
 
@@ -70,16 +68,6 @@ public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
         super.onSetupPlugins(plugins);
         plugins.add(new MqConsumerPlugin(3, this, handlers,
                 new TopicInfoRepositoryMemImpl(), new MqExceptionHandlerLogImpl(), true));
-    }
-
-    @PostConstruct
-    private void onInit() {
-        start();
-    }
-
-    @PreDestroy
-    private void onDestroy() {
-        stop();
     }
 
 }

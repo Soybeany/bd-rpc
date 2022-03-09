@@ -14,8 +14,6 @@ import com.soybeany.sync.core.util.NetUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -72,16 +70,6 @@ public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl impleme
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         super.onSetupPlugins(plugins);
         plugins.add(mqProducerPlugin = new MqProducerPlugin(this));
-    }
-
-    @PostConstruct
-    private void onInit() {
-        start();
-    }
-
-    @PreDestroy
-    private void onDestroy() {
-        stop();
     }
 
     @Override

@@ -1,15 +1,28 @@
 package com.soybeany.sync.core.model;
 
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 基础的服务实现，需要注册为spring bean，并手工调用{@link #start()}与{@link #stop()}
+ * 基础的服务实现，需要注册为spring bean
  *
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseSyncerImpl<Plugin> {
+public abstract class BaseSyncerImpl<Plugin> implements InitializingBean, DisposableBean {
+
+    @Override
+    public void afterPropertiesSet() {
+        onStart();
+    }
+
+    @Override
+    public void destroy() {
+        onStop();
+    }
 
     // ***********************子类工具方法****************************
 
@@ -31,16 +44,6 @@ public abstract class BaseSyncerImpl<Plugin> {
         return objs.stream()
                 .map(obj -> obj.getClass().getSimpleName())
                 .collect(Collectors.toList());
-    }
-
-    // ***********************公共方法****************************
-
-    public void start() {
-        onStart();
-    }
-
-    public void stop() {
-        onStop();
     }
 
     // ***********************子类重写****************************
