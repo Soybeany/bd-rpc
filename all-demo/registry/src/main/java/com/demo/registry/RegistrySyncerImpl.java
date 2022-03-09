@@ -3,13 +3,11 @@ package com.demo.registry;
 import com.soybeany.rpc.registry.BaseRpcRegistrySyncerImpl;
 import com.soybeany.rpc.registry.api.IRpcStorageManager;
 import com.soybeany.rpc.registry.impl.RpcStorageManagerMemImpl;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Soybeany
  * @date 2021/10/28
  */
-@Component
 public class RegistrySyncerImpl extends BaseRpcRegistrySyncerImpl {
 
     private RpcStorageManagerMemImpl rpcStorageManager;

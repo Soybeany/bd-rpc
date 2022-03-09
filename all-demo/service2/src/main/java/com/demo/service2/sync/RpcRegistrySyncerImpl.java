@@ -6,7 +6,6 @@ import com.soybeany.rpc.unit.BaseRpcUnitRegistrySyncerImpl;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
@@ -16,7 +15,6 @@ import java.util.Set;
  * @date 2021/10/28
  */
 @Slf4j
-@Component
 public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
 
     @Override

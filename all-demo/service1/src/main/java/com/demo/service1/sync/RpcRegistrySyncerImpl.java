@@ -8,7 +8,6 @@ import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import com.soybeany.sync.client.picker.filter.DataPickerFuseFilter;
 import com.soybeany.sync.core.util.NetUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Set;
@@ -18,7 +17,6 @@ import java.util.Set;
  * @date 2021/10/28
  */
 @Slf4j
-@Component
 public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
 
     @Override
