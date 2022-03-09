@@ -40,17 +40,22 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
      * 设置拉取消息的间隔（单位：秒）
      */
     private final int pullIntervalSec;
-    private final IRpcServiceProxy proxy;
     private final List<IMqMsgHandler<?>> handlers;
     private final ITopicInfoRepository repository;
     private final IMqExceptionHandler exceptionHandler;
     private final boolean enableReceipt;
 
+    private IRpcServiceProxy proxy;
     private IMqMsgStorageManager mqMsgStorageManager;
     private IMqReceiptHandler mqReceiptHandler = EMPTY_HANDLER;
     private Map<String, IMqMsgHandler<Serializable>> msgHandlerMap;
 
     // ***********************公开方法****************************
+
+    @Override
+    public void onSetupRpcServiceProxy(IRpcServiceProxy proxy) {
+        this.proxy = proxy;
+    }
 
     @Override
     public void onStartup(SyncClientInfo info) {

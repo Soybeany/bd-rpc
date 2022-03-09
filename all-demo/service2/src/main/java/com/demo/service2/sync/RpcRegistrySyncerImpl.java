@@ -64,9 +64,9 @@ public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
     }
 
     @Override
-    protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        super.onSetupPlugins(plugins);
-        plugins.add(new MqConsumerPlugin(3, this, handlers,
+    protected void onSetupOtherPlugins(List<IClientPlugin<?, ?>> plugins) {
+        super.onSetupOtherPlugins(plugins);
+        plugins.add(new MqConsumerPlugin(3, handlers,
                 new TopicInfoRepositoryMemImpl(), new MqExceptionHandlerLogImpl(), true));
     }
 

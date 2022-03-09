@@ -1,5 +1,6 @@
 package com.soybeany.rpc.provider;
 
+import com.soybeany.rpc.client.api.IRpcOtherPluginsProvider;
 import com.soybeany.rpc.provider.api.IRpcExImplPkgProvider;
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
 import com.soybeany.rpc.provider.plugin.RpcProviderPlugin;
@@ -25,6 +26,8 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
 
     @Autowired(required = false)
     private List<IRpcExImplPkgProvider> providers;
+    @Autowired(required = false)
+    private List<IRpcOtherPluginsProvider> pluginProviders;
 
     private RpcProviderPlugin plugin;
 
@@ -41,6 +44,8 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
                 .ifPresent(providers -> providers.forEach(provider -> provider.onSetupImplPkgToScan(paths)));
         plugin = new RpcProviderPlugin(onSetupGroup(), onSetupInvokeUrl(NetUtils.getLocalIpAddress()), paths);
         plugins.add(plugin);
+        Optional.ofNullable(pluginProviders)
+                .ifPresent(providers -> providers.forEach(provider -> plugins.addAll(provider.onSetupPlugins())));
     }
 
     // ***********************子类实现****************************

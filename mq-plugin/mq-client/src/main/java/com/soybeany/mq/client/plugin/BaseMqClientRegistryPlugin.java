@@ -1,20 +1,30 @@
 package com.soybeany.mq.client.plugin;
 
-import com.soybeany.rpc.client.plugin.BaseRpcAddScanPathPlugin;
-import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
+import com.soybeany.rpc.consumer.api.IRpcServiceProxyAware;
 import com.soybeany.sync.client.api.IClientPlugin;
-
-import java.util.List;
 
 /**
  * @author Soybeany
  * @date 2022/1/29
  */
-public abstract class BaseMqClientRegistryPlugin extends BaseRpcAddScanPathPlugin {
+public abstract class BaseMqClientRegistryPlugin implements IClientPlugin<Object, Object>, IRpcServiceProxyAware {
     @Override
-    protected void onAddScanPaths(IClientPlugin<?, ?> plugin, List<String> paths) {
-        if (plugin instanceof RpcConsumerPlugin) {
-            paths.add("com.soybeany.mq.core.api");
-        }
+    public String onSetupSyncTagToHandle() {
+        return null;
+    }
+
+    @Override
+    public Class<Object> onGetInputClass() {
+        return Object.class;
+    }
+
+    @Override
+    public Class<Object> onGetOutputClass() {
+        return Object.class;
+    }
+
+    @Override
+    public boolean onBeforeSync(String uid, Object o) {
+        return false;
     }
 }

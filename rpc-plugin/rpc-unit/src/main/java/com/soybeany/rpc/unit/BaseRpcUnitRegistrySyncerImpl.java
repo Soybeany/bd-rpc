@@ -1,8 +1,10 @@
 package com.soybeany.rpc.unit;
 
+import com.soybeany.rpc.client.api.IRpcOtherPluginsProvider;
 import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
 import com.soybeany.rpc.consumer.api.IRpcExApiPkgProvider;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
+import com.soybeany.rpc.consumer.api.IRpcServiceProxyAware;
 import com.soybeany.rpc.consumer.model.RpcProxySelector;
 import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -35,6 +37,8 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
     private List<IRpcExApiPkgProvider> apiPkgProviders;
     @Autowired(required = false)
     private List<IRpcExImplPkgProvider> implPkgProviders;
+    @Autowired(required = false)
+    private List<IRpcOtherPluginsProvider> pluginProviders;
 
     private RpcConsumerPlugin consumerPlugin;
     private RpcProviderPlugin providerPlugin;
@@ -70,6 +74,17 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
                 .ifPresent(providers -> providers.forEach(provider -> provider.onSetupImplPkgToScan(implPaths)));
         providerPlugin = new RpcProviderPlugin(onSetupGroup(), onSetupInvokeUrl(NetUtils.getLocalIpAddress()), implPaths);
         plugins.add(providerPlugin);
+        // 设置额外的插件
+        Optional.ofNullable(pluginProviders)
+                .ifPresent(providers -> providers.forEach(provider -> plugins.addAll(provider.onSetupPlugins())));
+        // 设置子类插件
+        onSetupOtherPlugins(plugins);
+        // 调用发现回调
+        for (IClientPlugin<?, ?> plugin : plugins) {
+            if (plugin instanceof IRpcServiceProxyAware) {
+                ((IRpcServiceProxyAware) plugin).onSetupRpcServiceProxy(this);
+            }
+        }
     }
 
     // ***********************子类实现****************************
@@ -85,6 +100,12 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
      */
     protected String onSetupGroup() {
         return null;
+    }
+
+    /**
+     * 允许子类设置其它插件
+     */
+    protected void onSetupOtherPlugins(List<IClientPlugin<?, ?>> plugins) {
     }
 
     /**
