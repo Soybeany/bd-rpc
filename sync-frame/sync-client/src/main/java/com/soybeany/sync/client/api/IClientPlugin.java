@@ -13,11 +13,11 @@ import java.util.List;
 public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output> {
 
     /**
-     * 允许插件预处理
+     * 启动回调前的回调，允许插件预处理
      *
      * @param appliedPlugins 同一service下应用的全部插件
      */
-    default void onPreTreat(List<IClientPlugin<Object, Object>> appliedPlugins) {
+    default void onBeforeStartup(List<IClientPlugin<Object, Object>> appliedPlugins) {
     }
 
     /**
@@ -26,6 +26,14 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
      * @param info 同步客户端的信息
      */
     default void onStartup(SyncClientInfo info) {
+    }
+
+    /**
+     * 启动回调后的回调，允许插件后处理
+     *
+     * @param appliedPlugins 同一service下应用的全部插件
+     */
+    default void onAfterStartup(List<IClientPlugin<Object, Object>> appliedPlugins) {
     }
 
     /**

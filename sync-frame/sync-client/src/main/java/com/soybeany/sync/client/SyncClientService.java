@@ -83,9 +83,11 @@ public class SyncClientService implements ISyncer {
         IBasePlugin.checkPlugins(allPlugins);
         Collections.sort(allPlugins);
         // 插件预处理
-        allPlugins.forEach(plugin -> plugin.onPreTreat(allPlugins));
+        allPlugins.forEach(plugin -> plugin.onBeforeStartup(allPlugins));
         // 启动回调
         allPlugins.forEach(plugin -> plugin.onStartup(info));
+        // 插件后处理
+        allPlugins.forEach(plugin -> plugin.onAfterStartup(allPlugins));
         // 执行定时任务
         service.scheduleWithFixedDelay(this::safeSync, 0, info.getSyncIntervalSec(), TimeUnit.SECONDS);
     }

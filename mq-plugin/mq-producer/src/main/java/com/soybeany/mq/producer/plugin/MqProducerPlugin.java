@@ -5,9 +5,11 @@ import com.soybeany.mq.core.api.IMqMsgStorageManager;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.producer.api.IMqMsgSender;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
+import com.soybeany.sync.client.api.IClientPlugin;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author Soybeany
@@ -27,10 +29,13 @@ public class MqProducerPlugin extends BaseMqClientRegistryPlugin implements IMqM
     }
 
     @Override
+    public void onAfterStartup(List<IClientPlugin<Object, Object>> appliedPlugins) {
+        super.onAfterStartup(appliedPlugins);
+        mqMsgStorageManager = proxy.get(IMqMsgStorageManager.class);
+    }
+
+    @Override
     public <T extends Serializable> void send(String topic, MqProducerMsg<T> msg) {
-        if (null == mqMsgStorageManager) {
-            mqMsgStorageManager = proxy.get(IMqMsgStorageManager.class);
-        }
         mqMsgStorageManager.save(topic, msg);
     }
 

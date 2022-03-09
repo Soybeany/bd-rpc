@@ -10,6 +10,7 @@ import com.soybeany.mq.core.model.MqConsumerMsg;
 import com.soybeany.mq.core.model.MqReceiptInfo;
 import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
+import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.core.util.NetUtils;
 import com.soybeany.util.ExceptionUtils;
@@ -61,13 +62,18 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
     public void onStartup(SyncClientInfo info) {
         super.onStartup(info);
         // 变量赋值
+        msgHandlerMap = toMap(handlers);
+        // 执行定时任务
+        service.scheduleWithFixedDelay(this::onPull, 2, pullIntervalSec, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void onAfterStartup(List<IClientPlugin<Object, Object>> appliedPlugins) {
+        super.onAfterStartup(appliedPlugins);
         mqMsgStorageManager = proxy.get(IMqMsgStorageManager.class);
         if (enableReceipt) {
             mqReceiptHandler = proxy.get(IMqReceiptHandler.class);
         }
-        msgHandlerMap = toMap(handlers);
-        // 执行定时任务
-        service.scheduleWithFixedDelay(this::onPull, 2, pullIntervalSec, TimeUnit.SECONDS);
     }
 
     @Override
