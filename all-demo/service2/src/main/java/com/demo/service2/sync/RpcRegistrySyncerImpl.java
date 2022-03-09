@@ -1,20 +1,13 @@
 package com.demo.service2.sync;
 
 import com.demo.model.Constants;
-import com.soybeany.mq.consumer.api.IMqMsgHandler;
-import com.soybeany.mq.consumer.impl.MqExceptionHandlerLogImpl;
-import com.soybeany.mq.consumer.impl.TopicInfoRepositoryMemImpl;
-import com.soybeany.mq.consumer.plugin.MqConsumerPlugin;
 import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.unit.BaseRpcUnitRegistrySyncerImpl;
-import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Set;
 
 
@@ -25,9 +18,6 @@ import java.util.Set;
 @Slf4j
 @Component
 public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
-
-    @Autowired
-    private List<IMqMsgHandler<?>> handlers;
 
     @Override
     protected String onSetupGroup() {
@@ -61,13 +51,6 @@ public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
     @Override
     protected String onSetupInvokeUrl(String ip) {
         return getUrl(false, ip, 8081, "", Constants.PATH_RPC, "");
-    }
-
-    @Override
-    protected void onSetupOtherPlugins(List<IClientPlugin<?, ?>> plugins) {
-        super.onSetupOtherPlugins(plugins);
-        plugins.add(new MqConsumerPlugin(3, handlers,
-                new TopicInfoRepositoryMemImpl(), new MqExceptionHandlerLogImpl(), true));
     }
 
 }

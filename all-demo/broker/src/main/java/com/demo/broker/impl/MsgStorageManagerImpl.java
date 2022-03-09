@@ -5,7 +5,6 @@ import com.soybeany.mq.core.api.IMqMsgStorageManager;
 import com.soybeany.mq.core.model.MqConsumerMsg;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.core.model.MqTopicInfo;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -15,7 +14,6 @@ import java.util.Map;
  * @author Soybeany
  * @date 2022/2/22
  */
-@Component
 public class MsgStorageManagerImpl implements IMqMsgStorageManager {
 
     private final IMqMsgStorageManager target = new MqMsgStorageManagerMemImpl();

@@ -14,7 +14,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2022/3/9
  */
-public class MqPluginProvider implements IRpcOtherPluginsProvider, IMqMsgSender {
+public class MqProducerPluginProvider implements IRpcOtherPluginsProvider, IMqMsgSender {
 
     private MqProducerPlugin plugin;
 
