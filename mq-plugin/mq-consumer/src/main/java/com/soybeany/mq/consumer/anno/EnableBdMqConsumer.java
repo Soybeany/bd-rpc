@@ -3,7 +3,7 @@ package com.soybeany.mq.consumer.anno;
 import com.soybeany.mq.client.impl.MqImportSelectorImpl;
 import com.soybeany.mq.consumer.api.IMqExceptionHandler;
 import com.soybeany.mq.consumer.api.ITopicInfoRepository;
-import com.soybeany.mq.consumer.impl.MqConsumerImportSelectorImpl;
+import com.soybeany.mq.consumer.impl.MqConsumerPluginProvider;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -15,7 +15,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import({MqImportSelectorImpl.class, MqConsumerImportSelectorImpl.class})
+@Import({MqImportSelectorImpl.class, MqConsumerPluginProvider.class})
 public @interface EnableBdMqConsumer {
 
     /**
