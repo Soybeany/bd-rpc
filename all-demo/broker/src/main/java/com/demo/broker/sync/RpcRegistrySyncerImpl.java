@@ -19,7 +19,7 @@ import java.util.Set;
 public class RpcRegistrySyncerImpl extends BaseRpcProviderRegistrySyncerImpl {
 
     @Override
-    protected String onSetupGroup() {
+    public String onSetupGroup() {
         return "oq";
     }
 
@@ -39,7 +39,7 @@ public class RpcRegistrySyncerImpl extends BaseRpcProviderRegistrySyncerImpl {
     }
 
     @Override
-    protected String onSetupInvokeUrl(String ip) {
+    public String onSetupInvokeUrl(String ip) {
         return getUrl(false, ip, 8083, "", Constants.PATH_RPC, "");
     }
 

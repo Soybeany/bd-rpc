@@ -12,9 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Soybeany
@@ -22,6 +20,9 @@ import java.util.List;
  */
 @Slf4j
 public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncExceptionAware, ISyncer {
+
+    public static final String DEFAULT_SYNCER_ID = "default";
+    private static final Set<String> EXIST_SYNCER_IDS = new HashSet<>();
 
     @Autowired
     protected ApplicationContext appContext;
@@ -36,8 +37,10 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
     @Override
     protected void onStart() {
         super.onStart();
+        checkSyncerId();
         List<IClientPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
+        postSetupPlugins(Collections.unmodifiableList(plugins));
         SyncClientInfo info = new SyncClientInfo(appContext, onSetupSystem(), onSetupVersion(),
                 onSetupSyncIntervalSec(), onSetupSyncTimeoutSec());
         service = new SyncClientService(info, onSetupSyncServerPicker(), toPluginArr(plugins), this);
@@ -60,7 +63,23 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
         service.sync(async);
     }
 
+    // ***********************内部方法****************************
+
+    private void checkSyncerId() {
+        boolean added = EXIST_SYNCER_IDS.add(onSetupSyncerId());
+        if (!added) {
+            throw new RuntimeException("同时配置多个syncer时，每个syncer需使用onSetupSyncerId配置不同的id");
+        }
+    }
+
     // ***********************子类重写****************************
+
+    /**
+     * 配置用于识别当前syncer的id，在同时配置了多个syncer时，需使用不同的id
+     */
+    protected String onSetupSyncerId() {
+        return DEFAULT_SYNCER_ID;
+    }
 
     /**
      * 配置服务所在的系统，系统间的服务与数据都是隔离的

@@ -1,37 +1,28 @@
 package com.soybeany.rpc.unit;
 
 import com.soybeany.rpc.client.api.IRpcOtherPluginsProvider;
-import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
-import com.soybeany.rpc.consumer.api.IRpcExApiPkgProvider;
-import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
-import com.soybeany.rpc.consumer.api.IRpcServiceProxyAware;
-import com.soybeany.rpc.consumer.model.RpcProxySelector;
+import com.soybeany.rpc.consumer.api.*;
 import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
-import com.soybeany.rpc.core.model.RpcServerInfo;
 import com.soybeany.rpc.provider.api.IRpcExImplPkgProvider;
+import com.soybeany.rpc.provider.api.IRpcProviderSyncer;
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
 import com.soybeany.rpc.provider.plugin.RpcProviderPlugin;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
-import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.core.model.SyncDTO;
-import com.soybeany.sync.core.util.NetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Soybeany
  * @date 2021/12/16
  */
-public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl implements IRpcServiceProxy, IRpcServiceExecutor {
+public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
+        implements IRpcServiceProxy, IRpcServiceExecutor, IRpcConsumerSyncer, IRpcProviderSyncer {
 
     @Autowired(required = false)
     private List<IRpcExApiPkgProvider> apiPkgProviders;
@@ -61,72 +52,16 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
         // 设置消费者插件
-        Set<String> apiPaths = new HashSet<>();
-        onSetupApiPkgToScan(apiPaths);
-        Optional.ofNullable(apiPkgProviders)
-                .ifPresent(providers -> providers.forEach(provider -> provider.onSetupApiPkgToScan(apiPaths)));
-        consumerPlugin = new RpcConsumerPlugin(this::onGetNewServerPicker, this::onSetupInvokeTimeoutSec, apiPaths);
-        plugins.add(consumerPlugin);
+        plugins.add(consumerPlugin = IRpcConsumerSyncer.getRpcConsumerPlugin(this, apiPkgProviders));
         // 设置生产者插件
-        Set<String> implPaths = new HashSet<>();
-        onSetupImplPkgToScan(implPaths);
-        Optional.ofNullable(implPkgProviders)
-                .ifPresent(providers -> providers.forEach(provider -> provider.onSetupImplPkgToScan(implPaths)));
-        providerPlugin = new RpcProviderPlugin(onSetupGroup(), onSetupInvokeUrl(NetUtils.getLocalIpAddress()), implPaths);
-        plugins.add(providerPlugin);
+        plugins.add(providerPlugin = IRpcProviderSyncer.getRpcProviderPlugin(this, implPkgProviders));
         // 设置额外的插件
-        Optional.ofNullable(pluginProviders)
-                .ifPresent(providers -> providers.forEach(provider -> plugins.addAll(provider.onSetupPlugins())));
-        // 设置子类插件
-        onSetupOtherPlugins(plugins);
-        // 调用发现回调
-        for (IClientPlugin<?, ?> plugin : plugins) {
-            if (plugin instanceof IRpcServiceProxyAware) {
-                ((IRpcServiceProxyAware) plugin).onSetupRpcServiceProxy(this);
-            }
-        }
+        IRpcOtherPluginsProvider.setupExPlugins(onSetupSyncerId(), pluginProviders, plugins);
     }
 
-    // ***********************子类实现****************************
-
-    protected int onSetupInvokeTimeoutSec(String serviceId) {
-        return 5;
+    @Override
+    protected void postSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
+        super.postSetupPlugins(plugins);
+        IRpcServiceProxyAware.invokeRpcServiceProxyAware(plugins, this);
     }
-
-    /**
-     * 配置分组<br/>
-     * 与{@link #onSetupSystem()}的静态硬隔离不同，这是动态的软隔离
-     * 与{@link RpcProxySelector#get}的入参group对应
-     */
-    protected String onSetupGroup() {
-        return null;
-    }
-
-    /**
-     * 允许子类设置其它插件
-     */
-    protected void onSetupOtherPlugins(List<IClientPlugin<?, ?>> plugins) {
-    }
-
-    /**
-     * 为特定的service配置选择器
-     */
-    protected abstract DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId);
-
-    /**
-     * 配置对外暴露服务所使用的url
-     */
-    @NonNull
-    protected abstract String onSetupInvokeUrl(String ip);
-
-    /**
-     * “接口” 所在路径
-     */
-    protected abstract void onSetupApiPkgToScan(Set<String> paths);
-
-    /**
-     * “实现类” 所在路径
-     */
-    protected abstract void onSetupImplPkgToScan(Set<String> paths);
-
 }

@@ -52,7 +52,7 @@ public class MqConsumerPluginProvider implements IRpcOtherPluginsProvider, Impor
     }
 
     @Override
-    public List<IClientPlugin<?, ?>> onSetupPlugins() {
+    public List<IClientPlugin<?, ?>> onSetupPlugins(String syncerId) {
         return Collections.singletonList(
                 new MqConsumerPlugin(info.pullIntervalSec, handlers, info.repository, info.exceptionHandler, info.enableReceipt)
         );

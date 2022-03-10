@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<
         super.onStart();
         List<IServerPlugin<?, ?>> plugins = new ArrayList<>();
         onSetupPlugins(plugins);
+        postSetupPlugins(Collections.unmodifiableList(plugins));
         service = new SyncServerService(plugins.toArray(new IServerPlugin[0]), this);
     }
 

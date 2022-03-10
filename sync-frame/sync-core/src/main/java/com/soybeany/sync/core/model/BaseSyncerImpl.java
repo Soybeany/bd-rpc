@@ -61,4 +61,10 @@ public abstract class BaseSyncerImpl<Plugin> implements InitializingBean, Dispos
      */
     protected abstract void onSetupPlugins(List<Plugin> plugins);
 
+    /**
+     * 设置完插件后的回调
+     */
+    protected void postSetupPlugins(List<Plugin> plugins) {
+    }
+
 }

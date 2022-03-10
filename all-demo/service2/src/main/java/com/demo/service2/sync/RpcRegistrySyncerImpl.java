@@ -6,6 +6,7 @@ import com.soybeany.rpc.unit.BaseRpcUnitRegistrySyncerImpl;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.client.picker.DataPickerSimpleImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
@@ -15,20 +16,21 @@ import java.util.Set;
  * @date 2021/10/28
  */
 @Slf4j
+@Component
 public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
 
     @Override
-    protected String onSetupGroup() {
+    public String onSetupGroup() {
         return "cz";
     }
 
     @Override
-    protected DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId) {
+    public DataPicker<RpcServerInfo> onGetNewServerPicker(String serviceId) {
         return new DataPickerSimpleImpl<>();
     }
 
     @Override
-    protected void onSetupApiPkgToScan(Set<String> paths) {
+    public void onSetupApiPkgToScan(Set<String> paths) {
     }
 
     @Override
@@ -47,7 +49,7 @@ public class RpcRegistrySyncerImpl extends BaseRpcUnitRegistrySyncerImpl {
     }
 
     @Override
-    protected String onSetupInvokeUrl(String ip) {
+    public String onSetupInvokeUrl(String ip) {
         return getUrl(false, ip, 8081, "", Constants.PATH_RPC, "");
     }
 
