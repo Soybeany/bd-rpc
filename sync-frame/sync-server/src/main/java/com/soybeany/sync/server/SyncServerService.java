@@ -3,7 +3,7 @@ package com.soybeany.sync.server;
 import com.soybeany.sync.core.api.IBasePlugin;
 import com.soybeany.sync.core.exception.SyncException;
 import com.soybeany.sync.server.api.IServerPlugin;
-import com.soybeany.sync.server.api.ISyncExceptionWatcher;
+import com.soybeany.sync.server.api.ISyncExceptionAware;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,11 +20,11 @@ import static com.soybeany.sync.core.util.NetUtils.getRemoteIpAddress;
 public class SyncServerService {
 
     private final List<IServerPlugin<Object, Object>> allPlugins;
-    private final ISyncExceptionWatcher watcher;
+    private final ISyncExceptionAware syncExceptionAware;
 
-    public SyncServerService(IServerPlugin<Object, Object>[] plugins, ISyncExceptionWatcher watcher) {
+    public SyncServerService(IServerPlugin<Object, Object>[] plugins, ISyncExceptionAware syncExceptionAware) {
         allPlugins = Arrays.asList(plugins);
-        this.watcher = watcher;
+        this.syncExceptionAware = syncExceptionAware;
         IBasePlugin.checkPlugins(allPlugins);
         Collections.sort(allPlugins);
     }
@@ -35,7 +35,7 @@ public class SyncServerService {
         } catch (Exception e) {
             // 执行异常监控回调
             try {
-                watcher.onSyncException(allPlugins, e);
+                syncExceptionAware.onSyncException(allPlugins, e);
             } catch (Exception e2) {
                 log.error(e2.getMessage());
             }

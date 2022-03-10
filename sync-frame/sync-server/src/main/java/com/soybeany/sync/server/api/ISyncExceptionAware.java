@@ -6,7 +6,7 @@ import java.util.List;
  * @author Soybeany
  * @date 2022/2/19
  */
-public interface ISyncExceptionWatcher {
+public interface ISyncExceptionAware {
 
     /**
      * 同步过程中出现异常时的回调

@@ -2,7 +2,7 @@ package com.soybeany.sync.client;
 
 import com.google.gson.reflect.TypeToken;
 import com.soybeany.sync.client.api.IClientPlugin;
-import com.soybeany.sync.client.api.ISyncExceptionWatcher;
+import com.soybeany.sync.client.api.ISyncExceptionAware;
 import com.soybeany.sync.client.api.ISyncer;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.model.SyncState;
@@ -47,7 +47,7 @@ public class SyncClientService implements ISyncer {
     @Getter
     private final DataPicker<String> urlPicker;
     private final List<IClientPlugin<Object, Object>> allPlugins;
-    private final ISyncExceptionWatcher watcher;
+    private final ISyncExceptionAware syncExceptionAware;
 
     private Boolean started;
 
@@ -171,7 +171,7 @@ public class SyncClientService implements ISyncer {
         }
         // 执行异常监控回调
         try {
-            watcher.onSyncException(plugins, uid, state, e);
+            syncExceptionAware.onSyncException(plugins, uid, state, e);
         } catch (Exception e2) {
             log.error(e2.getMessage());
         }

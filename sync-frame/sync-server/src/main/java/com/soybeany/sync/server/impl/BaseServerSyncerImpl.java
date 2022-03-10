@@ -6,7 +6,7 @@ import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.sync.server.SyncServerService;
 import com.soybeany.sync.server.api.IServerPlugin;
 import com.soybeany.sync.server.api.IServerSyncer;
-import com.soybeany.sync.server.api.ISyncExceptionWatcher;
+import com.soybeany.sync.server.api.ISyncExceptionAware;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ import java.util.Map;
  * @date 2021/12/17
  */
 @Slf4j
-public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<?, ?>> implements IServerSyncer, ISyncExceptionWatcher {
+public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<?, ?>> implements IServerSyncer, ISyncExceptionAware {
 
     private SyncServerService service;
 

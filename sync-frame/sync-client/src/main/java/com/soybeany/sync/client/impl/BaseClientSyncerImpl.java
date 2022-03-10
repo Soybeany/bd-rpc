@@ -2,8 +2,7 @@ package com.soybeany.sync.client.impl;
 
 import com.soybeany.sync.client.SyncClientService;
 import com.soybeany.sync.client.api.IClientPlugin;
-import com.soybeany.sync.client.api.ISyncClientConfig;
-import com.soybeany.sync.client.api.ISyncExceptionWatcher;
+import com.soybeany.sync.client.api.ISyncExceptionAware;
 import com.soybeany.sync.client.api.ISyncer;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.model.SyncState;
@@ -22,7 +21,7 @@ import java.util.List;
  * @date 2021/12/16
  */
 @Slf4j
-public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncClientConfig, ISyncExceptionWatcher, ISyncer {
+public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncExceptionAware, ISyncer {
 
     @Autowired
     protected ApplicationContext appContext;
