@@ -10,10 +10,21 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
-        <module>rpc-plugin</module>
-        <module>mq-plugin</module>
+        <module>sync-core</module>
+        <module>sync-server</module>
+        <module>sync-client</module>
+        <module>rpc-core</module>
+        <module>rpc-client</module>
+        <module>rpc-consumer</module>
+        <module>rpc-provider</module>
+        <module>rpc-registry</module>
+        <module>rpc-unit</module>
+        <module>mq-core</module>
+        <module>mq-broker</module>
+        <module>mq-producer</module>
+        <module>mq-consumer</module>
+        <module>mq-client</module>
         <module>all-demo</module>
-        <module>sync-frame</module>
     </modules>
 
     <properties>
@@ -76,6 +87,27 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <repositories>
         <repository>
