@@ -34,8 +34,9 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
 
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
+        String syncerId = onSetupSyncerId();
         plugins.add(plugin = IRpcProviderSyncer.getRpcProviderPlugin(this, implPkgProviders));
-        IRpcOtherPluginsProvider.setupExPlugins(onSetupSyncerId(), pluginProviders, plugins);
+        IRpcOtherPluginsProvider.setupExPlugins(syncerId, pluginProviders, plugins);
     }
 
 }

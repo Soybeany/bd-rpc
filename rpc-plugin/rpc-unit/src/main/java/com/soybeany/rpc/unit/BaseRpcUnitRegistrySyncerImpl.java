@@ -51,12 +51,13 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
 
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
+        String syncerId = onSetupSyncerId();
         // 设置消费者插件
-        plugins.add(consumerPlugin = IRpcConsumerSyncer.getRpcConsumerPlugin(this, apiPkgProviders));
+        plugins.add(consumerPlugin = IRpcConsumerSyncer.getRpcConsumerPlugin(syncerId, this, apiPkgProviders));
         // 设置生产者插件
         plugins.add(providerPlugin = IRpcProviderSyncer.getRpcProviderPlugin(this, implPkgProviders));
         // 设置额外的插件
-        IRpcOtherPluginsProvider.setupExPlugins(onSetupSyncerId(), pluginProviders, plugins);
+        IRpcOtherPluginsProvider.setupExPlugins(syncerId, pluginProviders, plugins);
     }
 
     @Override

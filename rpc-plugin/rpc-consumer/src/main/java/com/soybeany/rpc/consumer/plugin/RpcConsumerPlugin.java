@@ -7,6 +7,7 @@ import com.soybeany.cache.v2.log.StdLogger;
 import com.soybeany.cache.v2.storage.LruMemCacheStorage;
 import com.soybeany.rpc.client.model.RpcMethodInfo;
 import com.soybeany.rpc.client.plugin.BaseRpcClientPlugin;
+import com.soybeany.rpc.consumer.anno.BdRpcWired;
 import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.consumer.exception.RpcPluginNoFallbackException;
@@ -22,16 +23,19 @@ import com.soybeany.rpc.core.exception.RpcPluginException;
 import com.soybeany.rpc.core.model.RpcConsumerInput;
 import com.soybeany.rpc.core.model.RpcConsumerOutput;
 import com.soybeany.rpc.core.model.RpcServerInfo;
+import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.client.picker.DataPicker;
 import com.soybeany.sync.client.util.RequestUtils;
 import com.soybeany.sync.core.exception.SyncRequestException;
 import com.soybeany.sync.core.model.SerializeType;
 import com.soybeany.sync.core.model.SyncDTO;
+import com.soybeany.util.ExceptionUtils;
 import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -41,8 +45,8 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
@@ -66,6 +70,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     private static final String RESOURCE_PATTERN = "/**/*.class";
     private static final String GROUP_SEPARATOR = ":";
+    private static Map<String, Map<Class<?>, List<InjectInfo>>> FIELDS_TO_INJECT;
 
     /**
      * 已加载的代理（本地/远程）
@@ -81,6 +86,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final Map<Method, RpcMethodInfo.TypeInfo> typeInfoMap = new HashMap<>();
     private final Set<String> serviceIdSet = new HashSet<>();
 
+    private final String syncerId;
     private final Function<String, DataPicker<RpcServerInfo>> dataPickerProvider;
     private final Function<String, Integer> invokeTimeoutSecProvider;
     private final Set<String> pkgToScan;
@@ -131,13 +137,41 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                         .filter(bdRpc -> clazz.isInterface())
                         .ifPresent(bdRpc -> setupServiceImpl(clazz, getId(info.getVersion(), clazz, bdRpc), bdRpc.timeoutInSec()));
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new RpcPluginException("路径元信息解析异常:" + e.getMessage());
         }
         // 按需启动线程池
         if (!infoPart2Map.isEmpty()) {
             batchExecutor = Executors.newCachedThreadPool();
         }
+    }
+
+    @Override
+    public void onApplicationStarted() {
+        super.onApplicationStarted();
+        // 初始化待注入字段
+        initFieldsToInject();
+        // 动态注入
+        Map<Class<?>, List<InjectInfo>> map = FIELDS_TO_INJECT.remove(syncerId);
+        if (null == map) {
+            return;
+        }
+        map.forEach((clazz, injectInfoList) -> {
+            Object value = get(clazz);
+            try {
+                for (InjectInfo info : injectInfoList) {
+                    info.field.setAccessible(true);
+                    info.field.set(info.obj, value);
+                }
+            } catch (Exception e) {
+                throw new RpcPluginException("动态注入代理异常:" + ExceptionUtils.getExceptionDetail(e));
+            }
+        });
+    }
+
+    @Override
+    public void onAfterStartup(List<IClientPlugin<Object, Object>> appliedPlugins) {
+        super.onAfterStartup(appliedPlugins);
     }
 
     @Override
@@ -245,6 +279,32 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
 
     // ***********************内部方法****************************
 
+    @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
+    private void initFieldsToInject() {
+        synchronized (RpcConsumerPlugin.class) {
+            if (null != FIELDS_TO_INJECT) {
+                return;
+            }
+            FIELDS_TO_INJECT = new HashMap<>();
+        }
+        ApplicationContext appContext = info.getAppContext();
+        String[] names = appContext.getBeanDefinitionNames();
+        Arrays.stream(names).map(appContext::getBean).forEach(bean -> {
+            if (bean == this) {
+                return;
+            }
+            for (Field field : bean.getClass().getDeclaredFields()) {
+                BdRpcWired reference = field.getAnnotation(BdRpcWired.class);
+                if (null == reference) {
+                    continue;
+                }
+                FIELDS_TO_INJECT.computeIfAbsent(reference.syncerId(), id -> new HashMap<>())
+                        .computeIfAbsent(field.getType(), clazz -> new ArrayList<>())
+                        .add(new InjectInfo(bean, field));
+            }
+        });
+    }
+
     @SuppressWarnings("unchecked")
     private <T> T invoke(InvokeInfo invokeInfo) throws Throwable {
         DataManager<InvokeInfo, Object> manager = dataManagerMap.get(invokeInfo.method);
@@ -278,7 +338,7 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
                 .build();
     }
 
-    private static String getDesc(Method method, BdRpcCache cache) {
+    private String getDesc(Method method, BdRpcCache cache) {
         String desc = cache.desc();
         if (!StringUtils.hasText(desc)) {
             desc = method.getDeclaringClass().getSimpleName() + "-" + method.getName();
@@ -450,6 +510,12 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     }
 
     // ***********************内部类****************************
+
+    @RequiredArgsConstructor
+    private static class InjectInfo {
+        final Object obj;
+        final Field field;
+    }
 
     @RequiredArgsConstructor
     private static class InfoPart1 {

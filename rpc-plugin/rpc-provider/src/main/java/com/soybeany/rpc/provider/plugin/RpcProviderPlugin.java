@@ -60,7 +60,6 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         return RpcProviderOutput.class;
     }
 
-    @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     @Override
     public void onStartup(SyncClientInfo info) {
         super.onStartup(info);
@@ -69,20 +68,23 @@ public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, Rpc
         rpcServerInfo.setGroup(group);
         rpcServerInfo.setInvokeUrl(invokeUrl);
         rpcServerInfo.setAuthorization(authorizationToken);
+    }
+
+    @Override
+    public void onApplicationStarted() {
+        super.onApplicationStarted();
         // 扫描指定路径下的实现类
-        new Thread(() -> {
-            List<String> paths = getPostTreatPkgPathsToScan();
-            ApplicationContext appContext = info.getAppContext();
-            Arrays.stream(appContext.getBeanDefinitionNames()).map(appContext::getBean).forEach(bean -> {
-                for (String path : paths) {
-                    ReflectUtils.Result<BdRpc> result = ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass());
-                    if (null != result) {
-                        onHandleBean(result.getClazz(), result.getAnnotation(), bean);
-                        break;
-                    }
+        List<String> paths = getPostTreatPkgPathsToScan();
+        ApplicationContext appContext = info.getAppContext();
+        Arrays.stream(appContext.getBeanDefinitionNames()).map(appContext::getBean).forEach(bean -> {
+            for (String path : paths) {
+                ReflectUtils.Result<BdRpc> result = ReflectUtils.getAnnotation(path, BdRpc.class, bean.getClass());
+                if (null != result) {
+                    onHandleBean(result.getClazz(), result.getAnnotation(), bean);
+                    break;
                 }
-            });
-        }).start();
+            }
+        });
     }
 
     @Override

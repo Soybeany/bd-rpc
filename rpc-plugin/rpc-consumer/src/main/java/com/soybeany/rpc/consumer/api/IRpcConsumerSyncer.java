@@ -17,12 +17,12 @@ public interface IRpcConsumerSyncer {
 
     int DEFAULT_INVOKE_TIMEOUT = 5;
 
-    static RpcConsumerPlugin getRpcConsumerPlugin(IRpcConsumerSyncer syncer, List<IRpcExApiPkgProvider> apiPkgProviders) {
+    static RpcConsumerPlugin getRpcConsumerPlugin(String syncerId, IRpcConsumerSyncer syncer, List<IRpcExApiPkgProvider> apiPkgProviders) {
         Set<String> paths = new HashSet<>();
         syncer.onSetupApiPkgToScan(paths);
         Optional.ofNullable(apiPkgProviders)
                 .ifPresent(providers -> providers.forEach(provider -> provider.onSetupApiPkgToScan(paths)));
-        return new RpcConsumerPlugin(syncer::onGetNewServerPicker, syncer::onSetupInvokeTimeoutSec, paths);
+        return new RpcConsumerPlugin(syncerId, syncer::onGetNewServerPicker, syncer::onSetupInvokeTimeoutSec, paths);
     }
 
     default int onSetupInvokeTimeoutSec(String serviceId) {

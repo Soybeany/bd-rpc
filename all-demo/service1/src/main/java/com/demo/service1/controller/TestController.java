@@ -7,6 +7,7 @@ import com.demo.service.*;
 import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.producer.api.IMqMsgSender;
+import com.soybeany.rpc.consumer.anno.BdRpcWired;
 import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.consumer.exception.RpcRequestException;
@@ -43,11 +44,17 @@ public class TestController {
 
     private RpcProxySelector<ISimpleTestService> simpleServiceSelector;
     private IRpcBatchInvoker<IBatchTestService> batchInvoker;
+    @BdRpcWired
     private ICacheTestService cacheTestService;
+    @BdRpcWired
     private IExceptionTestService exceptionTestService;
+    @BdRpcWired
     private IFallbackTestService fallbackTestService;
+    @BdRpcWired
     private ILocalService localService;
+    @BdRpcWired
     private IObjTestService objTestService;
+    @BdRpcWired
     private IShareStorageTestService shareStorageTestService;
 
     @GetMapping("/group")
@@ -126,12 +133,6 @@ public class TestController {
     private void onInit() {
         simpleServiceSelector = serviceProxy.getSelector(ISimpleTestService.class);
         batchInvoker = serviceProxy.getBatch(IBatchTestService.class, "batch");
-        cacheTestService = serviceProxy.get(ICacheTestService.class);
-        exceptionTestService = serviceProxy.get(IExceptionTestService.class);
-        fallbackTestService = serviceProxy.get(IFallbackTestService.class);
-        localService = serviceProxy.get(ILocalService.class);
-        objTestService = serviceProxy.get(IObjTestService.class);
-        shareStorageTestService = serviceProxy.get(IShareStorageTestService.class);
     }
 
     // ***********************内部方法****************************

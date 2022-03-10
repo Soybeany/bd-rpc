@@ -37,6 +37,12 @@ public interface IClientPlugin<Input, Output> extends IBasePlugin<Input, Output>
     }
 
     /**
+     * 应用启动后的回调，适合处理bean相关的事务
+     */
+    default void onApplicationStarted() {
+    }
+
+    /**
      * 应用关闭时的回调
      */
     default void onShutdown() {

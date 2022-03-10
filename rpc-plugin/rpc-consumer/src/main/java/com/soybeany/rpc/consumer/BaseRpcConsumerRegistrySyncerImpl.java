@@ -36,8 +36,9 @@ public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncer
 
     @Override
     protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        plugins.add(plugin = IRpcConsumerSyncer.getRpcConsumerPlugin(this, apiPkgProviders));
-        IRpcOtherPluginsProvider.setupExPlugins(onSetupSyncerId(), pluginProviders, plugins);
+        String syncerId = onSetupSyncerId();
+        plugins.add(plugin = IRpcConsumerSyncer.getRpcConsumerPlugin(syncerId, this, apiPkgProviders));
+        IRpcOtherPluginsProvider.setupExPlugins(syncerId, pluginProviders, plugins);
     }
 
     @Override

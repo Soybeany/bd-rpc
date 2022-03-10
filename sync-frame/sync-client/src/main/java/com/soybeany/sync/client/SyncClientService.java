@@ -46,6 +46,7 @@ public class SyncClientService implements ISyncer {
     private final SyncClientInfo info;
     @Getter
     private final DataPicker<String> urlPicker;
+    @Getter
     private final List<IClientPlugin<Object, Object>> allPlugins;
     private final ISyncExceptionAware syncExceptionAware;
 

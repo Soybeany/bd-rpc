@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import java.util.*;
 
 /**
@@ -19,7 +21,7 @@ import java.util.*;
  * @date 2021/12/16
  */
 @Slf4j
-public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncExceptionAware, ISyncer {
+public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncExceptionAware, ISyncer, ServletContextListener {
 
     public static final String DEFAULT_SYNCER_ID = "default";
     private static final Set<String> EXIST_SYNCER_IDS = new HashSet<>();
@@ -32,6 +34,11 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
     @SuppressWarnings("unchecked")
     protected static List<IClientPlugin<Object, Object>> toPluginArr(List<IClientPlugin<?, ?>> list) {
         return Arrays.asList(list.toArray(new IClientPlugin[0]));
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        service.getAllPlugins().forEach(IClientPlugin::onApplicationStarted);
     }
 
     @Override
