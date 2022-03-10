@@ -81,14 +81,16 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <inherited>false</inherited>
+                    <configuration>
+                        <aggregate>true</aggregate>
+                    </configuration>
                     <executions>
                         <execution>
-                            <id>attach-sources</id>
+                            <id>aggregate</id>
                             <goals>
-                                <goal>jar</goal>
+                                <goal>aggregate-jar</goal>
                             </goals>
                             <phase>package</phase>
                         </execution>
