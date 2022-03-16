@@ -2,6 +2,7 @@ package com.soybeany.sync.client.impl;
 
 import com.soybeany.sync.client.SyncClientService;
 import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.api.IExClientPluginProvider;
 import com.soybeany.sync.client.api.ISyncExceptionAware;
 import com.soybeany.sync.client.api.ISyncer;
 import com.soybeany.sync.client.model.SyncClientInfo;
@@ -23,11 +24,12 @@ import java.util.*;
 @Slf4j
 public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<?, ?>> implements ISyncExceptionAware, ISyncer, ServletContextListener {
 
-    public static final String DEFAULT_SYNCER_ID = "default";
     private static final Set<String> EXIST_SYNCER_IDS = new HashSet<>();
 
     @Autowired
     protected ApplicationContext appContext;
+    @Autowired(required = false)
+    private List<IExClientPluginProvider> pluginProviders;
 
     protected SyncClientService service;
 
@@ -44,10 +46,16 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
     @Override
     protected void onStart() {
         super.onStart();
-        checkSyncerId();
+        // syncerId检查
+        String syncerId = onSetupSyncerId();
+        checkSyncerId(syncerId);
+        // 插件配置及回调
         List<IClientPlugin<?, ?>> plugins = new ArrayList<>();
-        onSetupPlugins(plugins);
+        onSetupPlugins(syncerId, plugins);
+        Optional.ofNullable(pluginProviders)
+                .ifPresent(providers -> providers.forEach(provider -> provider.onSetupPlugins(syncerId, plugins)));
         postSetupPlugins(Collections.unmodifiableList(plugins));
+        // 启动服务
         SyncClientInfo info = new SyncClientInfo(appContext, onSetupSystem(), onSetupVersion(),
                 onSetupSyncIntervalSec(), onSetupSyncTimeoutSec());
         service = new SyncClientService(info, onSetupSyncServerPicker(), toPluginArr(plugins), this);
@@ -72,21 +80,14 @@ public abstract class BaseClientSyncerImpl extends BaseSyncerImpl<IClientPlugin<
 
     // ***********************内部方法****************************
 
-    private void checkSyncerId() {
-        boolean added = EXIST_SYNCER_IDS.add(onSetupSyncerId());
+    private void checkSyncerId(String syncerId) {
+        boolean added = EXIST_SYNCER_IDS.add(syncerId);
         if (!added) {
             throw new RuntimeException("同时配置多个syncer时，每个syncer需使用onSetupSyncerId配置不同的id");
         }
     }
 
     // ***********************子类重写****************************
-
-    /**
-     * 配置用于识别当前syncer的id，在同时配置了多个syncer时，需使用不同的id
-     */
-    protected String onSetupSyncerId() {
-        return DEFAULT_SYNCER_ID;
-    }
 
     /**
      * 配置服务所在的系统，系统间的服务与数据都是隔离的

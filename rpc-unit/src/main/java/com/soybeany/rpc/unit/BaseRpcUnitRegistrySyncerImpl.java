@@ -1,6 +1,5 @@
 package com.soybeany.rpc.unit;
 
-import com.soybeany.rpc.client.api.IRpcOtherPluginsProvider;
 import com.soybeany.rpc.consumer.api.*;
 import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -28,8 +27,6 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
     private List<IRpcExApiPkgProvider> apiPkgProviders;
     @Autowired(required = false)
     private List<IRpcExImplPkgProvider> implPkgProviders;
-    @Autowired(required = false)
-    private List<IRpcOtherPluginsProvider> pluginProviders;
 
     private RpcConsumerPlugin consumerPlugin;
     private RpcProviderPlugin providerPlugin;
@@ -50,14 +47,11 @@ public abstract class BaseRpcUnitRegistrySyncerImpl extends BaseClientSyncerImpl
     }
 
     @Override
-    protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        String syncerId = onSetupSyncerId();
+    protected void onSetupPlugins(String syncerId, List<IClientPlugin<?, ?>> plugins) {
         // 设置消费者插件
         plugins.add(consumerPlugin = IRpcConsumerSyncer.getRpcConsumerPlugin(syncerId, this, apiPkgProviders));
         // 设置生产者插件
         plugins.add(providerPlugin = IRpcProviderSyncer.getRpcProviderPlugin(this, implPkgProviders));
-        // 设置额外的插件
-        IRpcOtherPluginsProvider.setupExPlugins(syncerId, pluginProviders, plugins);
     }
 
     @Override

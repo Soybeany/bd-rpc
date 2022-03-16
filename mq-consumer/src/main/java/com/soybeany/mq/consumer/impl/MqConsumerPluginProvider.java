@@ -5,15 +5,14 @@ import com.soybeany.mq.consumer.api.IMqExceptionHandler;
 import com.soybeany.mq.consumer.api.IMqMsgHandler;
 import com.soybeany.mq.consumer.api.ITopicInfoRepository;
 import com.soybeany.mq.consumer.plugin.MqConsumerPlugin;
-import com.soybeany.rpc.client.api.IRpcOtherPluginsProvider;
 import com.soybeany.sync.client.api.IClientPlugin;
+import com.soybeany.sync.client.api.IExClientPluginProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.type.AnnotationMetadata;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +21,7 @@ import java.util.Map;
  * @date 2022/3/9
  */
 @Slf4j
-public class MqConsumerPluginProvider implements IRpcOtherPluginsProvider, ImportAware {
+public class MqConsumerPluginProvider implements IExClientPluginProvider, ImportAware {
 
     @Autowired
     private List<IMqMsgHandler<?>> handlers;
@@ -52,10 +51,8 @@ public class MqConsumerPluginProvider implements IRpcOtherPluginsProvider, Impor
     }
 
     @Override
-    public List<IClientPlugin<?, ?>> onSetupPlugins(String syncerId) {
-        return Collections.singletonList(
-                new MqConsumerPlugin(info.pullIntervalSec, handlers, info.repository, info.exceptionHandler, info.enableReceipt)
-        );
+    public void onSetupPlugins(String syncerId, List<IClientPlugin<?, ?>> plugins) {
+        plugins.add(new MqConsumerPlugin(info.pullIntervalSec, handlers, info.repository, info.exceptionHandler, info.enableReceipt));
     }
 
     // ***********************内部类****************************

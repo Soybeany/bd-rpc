@@ -1,6 +1,5 @@
 package com.soybeany.rpc.provider;
 
-import com.soybeany.rpc.client.api.IRpcOtherPluginsProvider;
 import com.soybeany.rpc.provider.api.IRpcExImplPkgProvider;
 import com.soybeany.rpc.provider.api.IRpcProviderSyncer;
 import com.soybeany.rpc.provider.api.IRpcServiceExecutor;
@@ -22,8 +21,6 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
 
     @Autowired(required = false)
     private List<IRpcExImplPkgProvider> implPkgProviders;
-    @Autowired(required = false)
-    private List<IRpcOtherPluginsProvider> pluginProviders;
 
     private RpcProviderPlugin plugin;
 
@@ -33,10 +30,8 @@ public abstract class BaseRpcProviderRegistrySyncerImpl extends BaseClientSyncer
     }
 
     @Override
-    protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        String syncerId = onSetupSyncerId();
+    protected void onSetupPlugins(String syncerId, List<IClientPlugin<?, ?>> plugins) {
         plugins.add(plugin = IRpcProviderSyncer.getRpcProviderPlugin(this, implPkgProviders));
-        IRpcOtherPluginsProvider.setupExPlugins(syncerId, pluginProviders, plugins);
     }
 
 }

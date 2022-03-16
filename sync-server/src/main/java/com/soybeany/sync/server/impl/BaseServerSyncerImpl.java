@@ -39,7 +39,7 @@ public abstract class BaseServerSyncerImpl extends BaseSyncerImpl<IServerPlugin<
     protected void onStart() {
         super.onStart();
         List<IServerPlugin<?, ?>> plugins = new ArrayList<>();
-        onSetupPlugins(plugins);
+        onSetupPlugins(onSetupSyncerId(), plugins);
         postSetupPlugins(Collections.unmodifiableList(plugins));
         service = new SyncServerService(plugins.toArray(new IServerPlugin[0]), this);
     }

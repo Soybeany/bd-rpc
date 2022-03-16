@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
  */
 public abstract class BaseSyncerImpl<Plugin> implements InitializingBean, DisposableBean {
 
+    public static final String DEFAULT_SYNCER_ID = "default";
+
     @Override
     public void afterPropertiesSet() {
         onStart();
@@ -48,6 +50,13 @@ public abstract class BaseSyncerImpl<Plugin> implements InitializingBean, Dispos
 
     // ***********************子类重写****************************
 
+    /**
+     * 配置用于识别当前syncer的id，在同时配置了多个syncer时，需使用不同的id
+     */
+    protected String onSetupSyncerId() {
+        return DEFAULT_SYNCER_ID;
+    }
+
     protected void onStart() {
     }
 
@@ -59,7 +68,7 @@ public abstract class BaseSyncerImpl<Plugin> implements InitializingBean, Dispos
     /**
      * 配置待使用的插件
      */
-    protected abstract void onSetupPlugins(List<Plugin> plugins);
+    protected abstract void onSetupPlugins(String syncerId, List<Plugin> plugins);
 
     /**
      * 设置完插件后的回调

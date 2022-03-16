@@ -14,7 +14,7 @@ import java.util.List;
 public abstract class BaseRpcRegistrySyncerImpl extends BaseServerSyncerImpl {
 
     @Override
-    protected void onSetupPlugins(List<IServerPlugin<?, ?>> plugins) {
+    protected void onSetupPlugins(String syncerId, List<IServerPlugin<?, ?>> plugins) {
         plugins.addAll(RpcRegistryPluginProvider.get(onSetupStorageManager()));
     }
 

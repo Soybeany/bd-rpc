@@ -1,6 +1,5 @@
 package com.soybeany.rpc.consumer;
 
-import com.soybeany.rpc.client.api.IRpcOtherPluginsProvider;
 import com.soybeany.rpc.consumer.api.*;
 import com.soybeany.rpc.consumer.plugin.RpcConsumerPlugin;
 import com.soybeany.rpc.core.exception.RpcPluginException;
@@ -19,8 +18,6 @@ public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncer
 
     @Autowired(required = false)
     private List<IRpcExApiPkgProvider> apiPkgProviders;
-    @Autowired(required = false)
-    private List<IRpcOtherPluginsProvider> pluginProviders;
 
     private RpcConsumerPlugin plugin;
 
@@ -35,10 +32,8 @@ public abstract class BaseRpcConsumerRegistrySyncerImpl extends BaseClientSyncer
     }
 
     @Override
-    protected void onSetupPlugins(List<IClientPlugin<?, ?>> plugins) {
-        String syncerId = onSetupSyncerId();
+    protected void onSetupPlugins(String syncerId, List<IClientPlugin<?, ?>> plugins) {
         plugins.add(plugin = IRpcConsumerSyncer.getRpcConsumerPlugin(syncerId, this, apiPkgProviders));
-        IRpcOtherPluginsProvider.setupExPlugins(syncerId, pluginProviders, plugins);
     }
 
     @Override
