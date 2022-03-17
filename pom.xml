@@ -63,11 +63,13 @@
                 <groupId>com.github.Soybeany.bdlib-server</groupId>
                 <artifactId>bd-util</artifactId>
                 <version>${bdlib.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.github.Soybeany.bdlib-server</groupId>
                 <artifactId>bd-cachev2</artifactId>
                 <version>${bdlib.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
