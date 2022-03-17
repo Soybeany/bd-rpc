@@ -1,14 +1,11 @@
 package com.soybeany.rpc.consumer.plugin;
 
-import com.soybeany.cache.v2.contract.IDatasource;
 import com.soybeany.cache.v2.core.DataManager;
-import com.soybeany.cache.v2.log.ILogWriter;
-import com.soybeany.cache.v2.log.StdLogger;
-import com.soybeany.cache.v2.storage.LruMemCacheStorage;
 import com.soybeany.rpc.client.model.RpcMethodInfo;
 import com.soybeany.rpc.client.plugin.BaseRpcClientPlugin;
 import com.soybeany.rpc.consumer.anno.BdRpcWired;
 import com.soybeany.rpc.consumer.api.IRpcBatchInvoker;
+import com.soybeany.rpc.consumer.api.IRpcDataManagerProvider;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.rpc.consumer.exception.RpcPluginNoFallbackException;
 import com.soybeany.rpc.consumer.exception.RpcRequestException;
@@ -33,7 +30,6 @@ import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.util.ExceptionUtils;
 import com.soybeany.util.Md5Utils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -89,7 +85,9 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     private final String syncerId;
     private final Function<String, DataPicker<RpcServerInfo>> dataPickerProvider;
     private final Function<String, Integer> invokeTimeoutSecProvider;
+    private final IRpcDataManagerProvider dataManagerProvider;
     private final Set<String> pkgToScan;
+    private final boolean enableRpcWired;
 
     private SyncClientInfo info;
     private ExecutorService batchExecutor;
@@ -149,6 +147,9 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
     @Override
     public void onApplicationStarted() {
         super.onApplicationStarted();
+        if (!enableRpcWired) {
+            return;
+        }
         // 初始化待注入字段
         initFieldsToInject();
         // 动态注入
@@ -320,22 +321,10 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
         boolean hasStorageId = StringUtils.hasLength(cache.storageId());
         String desc = getDesc(method, cache);
         String storageId = hasStorageId ? cache.storageId() : desc;
-        return DataManager.Builder
-                .get(desc, (IDatasource<InvokeInfo, Object>) this::onInvoke, invokeInfo -> {
-                    String keyWithGroup = getKeyWithGroup(invokeInfo.group, GSON.toJson(invokeInfo.args));
-                    return cache.useMd5Key() ? Md5Utils.strToMd5(keyWithGroup) : keyWithGroup;
-                })
-                .logger(cache.needLog() ? new StdLogger<>(new CacheLogWriter()) : null)
-                .withCache(new LruMemCacheStorage.Builder<InvokeInfo, Object>()
-                        .capacity(cache.capacity())
-                        .enableShareStorage(hasStorageId)
-                        .ttl(cache.ttl())
-                        .ttlErr(cache.ttlErr())
-                        .build()
-                )
-                .storageId(storageId)
-                .enableRenewExpiredCache(cache.enableRenewExpiredCache())
-                .build();
+        return dataManagerProvider.onGetNew(method, cache, this::onInvoke, invokeInfo -> {
+            String keyWithGroup = getKeyWithGroup(invokeInfo.group, GSON.toJson(invokeInfo.args));
+            return cache.useMd5Key() ? Md5Utils.strToMd5(keyWithGroup) : keyWithGroup;
+        }, desc, storageId);
     }
 
     private String getDesc(Method method, BdRpcCache cache) {
@@ -559,19 +548,6 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             group = RpcProxySelector.getAndRemoveGroup();
         }
 
-    }
-
-    @Slf4j
-    private static class CacheLogWriter implements ILogWriter {
-        @Override
-        public void onWriteInfo(String s) {
-            log.info(s);
-        }
-
-        @Override
-        public void onWriteWarn(String s) {
-            log.warn(s);
-        }
     }
 
     @RequiredArgsConstructor
