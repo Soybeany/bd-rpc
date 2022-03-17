@@ -31,7 +31,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <bdlib.version>2.6.21</bdlib.version>
+        <bdlib.version>2.6.24</bdlib.version>
         <spring.version>5.3.13</spring.version>
     </properties>
 
