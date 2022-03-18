@@ -19,7 +19,7 @@ public abstract class BaseRpcClientPlugin<Input, Output> implements IClientPlugi
     protected static String getId(String version, Class<?> clazz, BdRpc annotation) {
         String serviceId = annotation.serviceId();
         if (!StringUtils.hasText(serviceId)) {
-            serviceId = clazz.getSimpleName();
+            serviceId = clazz.getName();
         }
         return serviceId + "-" + version;
     }
