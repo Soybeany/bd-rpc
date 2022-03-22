@@ -39,6 +39,7 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -294,15 +295,15 @@ public class RpcConsumerPlugin extends BaseRpcClientPlugin<RpcConsumerInput, Rpc
             if (bean == this) {
                 return;
             }
-            for (Field field : bean.getClass().getDeclaredFields()) {
+            ReflectionUtils.doWithFields(bean.getClass(), field -> {
                 BdRpcWired reference = field.getAnnotation(BdRpcWired.class);
                 if (null == reference) {
-                    continue;
+                    return;
                 }
                 FIELDS_TO_INJECT.computeIfAbsent(reference.syncerId(), id -> new HashMap<>())
                         .computeIfAbsent(field.getType(), clazz -> new ArrayList<>())
                         .add(new InjectInfo(bean, field));
-            }
+            });
         });
     }
 

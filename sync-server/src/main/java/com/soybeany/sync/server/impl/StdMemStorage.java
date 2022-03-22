@@ -1,6 +1,8 @@
 package com.soybeany.sync.server.impl;
 
 import com.soybeany.sync.core.api.IAutoCleaner;
+import com.soybeany.sync.core.api.IBasePlugin;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -11,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @author Soybeany
  * @date 2022/1/22
  */
+@Slf4j
 public class StdMemStorage<T> implements IAutoCleaner {
 
     private final Set<T> emptySet = Collections.unmodifiableSet(new HashSet<>());
@@ -30,12 +33,12 @@ public class StdMemStorage<T> implements IAutoCleaner {
 
     @Override
     public void startAutoClean(long validPeriodInSec) {
-        service.scheduleWithFixedDelay(() -> {
+        service.scheduleWithFixedDelay(IBasePlugin.toSafeRunnable(() -> {
             long time = getCurTimeInSec();
             synchronized (this) {
                 storageMap.forEach((k, v) -> v.values().removeIf(syncTime -> isInvalid(time, syncTime, validPeriodInSec)));
             }
-        }, validPeriodInSec, validPeriodInSec, TimeUnit.SECONDS);
+        }, log), validPeriodInSec, validPeriodInSec, TimeUnit.SECONDS);
     }
 
     @Override

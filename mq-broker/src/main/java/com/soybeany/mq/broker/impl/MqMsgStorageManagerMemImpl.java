@@ -5,6 +5,8 @@ import com.soybeany.mq.core.model.MqConsumerMsg;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.sync.core.api.IAutoCleaner;
+import com.soybeany.sync.core.api.IBasePlugin;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.*;
@@ -18,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  * @author Soybeany
  * @date 2022/1/20
  */
+@Slf4j
 public class MqMsgStorageManagerMemImpl implements IMqMsgStorageManager, IAutoCleaner {
 
     private static final int STATE_INVALID = -1;
@@ -53,12 +56,12 @@ public class MqMsgStorageManagerMemImpl implements IMqMsgStorageManager, IAutoCl
 
     @Override
     public void startAutoClean(long validPeriodInSec) {
-        service.scheduleWithFixedDelay(() -> {
+        service.scheduleWithFixedDelay(IBasePlugin.toSafeRunnable(() -> {
             long now = System.currentTimeMillis();
             synchronized (this) {
                 msgMap.forEach((k, v) -> v.values().removeIf(msg -> STATE_INVALID == getState(now, msg)));
             }
-        }, validPeriodInSec, validPeriodInSec, TimeUnit.SECONDS);
+        }, log), validPeriodInSec, validPeriodInSec, TimeUnit.SECONDS);
     }
 
     @Override

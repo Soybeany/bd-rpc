@@ -4,7 +4,6 @@ import com.demo.model.Interface;
 import com.demo.model.ParamImpl;
 import com.demo.model.TestParam;
 import com.demo.service.*;
-import com.soybeany.mq.core.exception.MqPluginException;
 import com.soybeany.mq.core.model.MqProducerMsg;
 import com.soybeany.mq.producer.api.IMqMsgSender;
 import com.soybeany.rpc.consumer.anno.BdRpcWired;
@@ -66,9 +65,7 @@ public class TestController {
     public String batch(String input) {
         return wrap(() -> {
             Map<String, RpcBatchResult<?>> result = new HashMap<>();
-            batchInvoker.invoke(input).forEach((info, r) -> {
-                result.put(info.getInvokeUrl(), r);
-            });
+            batchInvoker.invoke(input).forEach((info, r) -> result.put(info.getInvokeUrl(), r));
             return result.toString();
         });
     }
@@ -140,7 +137,7 @@ public class TestController {
     private String wrap(Callable<String> callable) {
         try {
             return callable.call();
-        } catch (RpcPluginException | MqPluginException e) {
+        } catch (RpcPluginException e) {
             String message = e.getMessage();
             if (e instanceof RpcRequestException) {
                 message = message + "(" + ((RpcRequestException) e).getServerInfo().getInvokeUrl() + ")";

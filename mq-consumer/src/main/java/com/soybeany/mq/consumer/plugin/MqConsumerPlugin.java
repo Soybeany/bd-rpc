@@ -12,8 +12,8 @@ import com.soybeany.mq.core.model.MqTopicInfo;
 import com.soybeany.rpc.consumer.api.IRpcServiceProxy;
 import com.soybeany.sync.client.api.IClientPlugin;
 import com.soybeany.sync.client.model.SyncClientInfo;
+import com.soybeany.sync.core.api.IBasePlugin;
 import com.soybeany.sync.core.util.NetUtils;
-import com.soybeany.util.ExceptionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,7 +64,7 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
         // 变量赋值
         msgHandlerMap = toMap(handlers);
         // 执行定时任务
-        service.scheduleWithFixedDelay(this::onPull, 2, pullIntervalSec, TimeUnit.SECONDS);
+        service.scheduleWithFixedDelay(IBasePlugin.toSafeRunnable(this::onPull, log), 2, pullIntervalSec, TimeUnit.SECONDS);
     }
 
     @Override
@@ -85,15 +85,11 @@ public class MqConsumerPlugin extends BaseMqClientRegistryPlugin {
     // ***********************内部方法****************************
 
     private void onPull() {
-        try {
-            // 拉取消息
-            Set<String> topics = msgHandlerMap.keySet();
-            Collection<MqTopicInfo> infoList = repository.getAll(topics);
-            // 处理消息
-            handleAllMsg(infoList, mqMsgStorageManager.load(infoList));
-        } catch (Throwable e) {
-            log.warn(ExceptionUtils.getExceptionDetail(e));
-        }
+        // 拉取消息
+        Set<String> topics = msgHandlerMap.keySet();
+        Collection<MqTopicInfo> infoList = repository.getAll(topics);
+        // 处理消息
+        handleAllMsg(infoList, mqMsgStorageManager.load(infoList));
     }
 
     private void handleAllMsg(Collection<MqTopicInfo> infoList, Map<String, MqConsumerMsg<Serializable>> msgMap) {

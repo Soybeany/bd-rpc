@@ -1,5 +1,9 @@
 package com.soybeany.sync.core.api;
 
+import com.soybeany.sync.core.exception.ISyncExceptionMsgProvider;
+import com.soybeany.util.ExceptionUtils;
+import org.slf4j.Logger;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +22,23 @@ public interface IBasePlugin<Input, Output> extends Comparable<IBasePlugin<?, ?>
                 throw new RuntimeException("sync插件tag不能有重复值(" + tag + ")");
             }
         }
+    }
+
+    /**
+     * 转换为安全的操作，用于定时器稳定运行
+     */
+    static Runnable toSafeRunnable(Runnable runnable, Logger log) {
+        return () -> {
+            try {
+                runnable.run();
+            } catch (Throwable e) {
+                if (e instanceof ISyncExceptionMsgProvider) {
+                    log.warn(((ISyncExceptionMsgProvider) e).getMsg());
+                } else {
+                    log.error(ExceptionUtils.getExceptionDetail(e));
+                }
+            }
+        };
     }
 
     @Override
