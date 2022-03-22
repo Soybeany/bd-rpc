@@ -17,11 +17,34 @@ import java.util.Optional;
 @Data
 public class RpcMethodInfo {
 
+    /**
+     * 服务的唯一id，唯一区分不同的服务
+     */
     private final String serviceId;
+
+    /**
+     * 方法名，用于{@link Class#getMethod(String, Class[])}作方法查找
+     */
     private final String methodName;
+
+    /**
+     * 入参类名，用于{@link Class#getMethod(String, Class[])}作方法查找
+     */
     private final String[] paramClazzNames;
+
+    /**
+     * 入参的序列化数组
+     */
     private final String[] argStrings;
+
+    /**
+     * 返回值的序列化方式
+     */
     private final SerializeType returnType;
+
+    /**
+     * 入参的序列化方式，支持不同入参使用不同的序列化方式
+     */
     private final SerializeType[] paramTypes;
 
     public RpcMethodInfo(String serviceId, Method method, TypeInfo typeInfo, Object... args) throws Exception {
