@@ -3,6 +3,7 @@ package com.soybeany.rpc.provider.api;
 import com.soybeany.rpc.provider.plugin.RpcProviderPlugin;
 import com.soybeany.sync.client.impl.BaseClientSyncerImpl;
 import com.soybeany.sync.core.util.NetUtils;
+import com.soybeany.util.file.BdFileUtils;
 import org.springframework.lang.NonNull;
 
 import java.util.HashSet;
@@ -21,7 +22,7 @@ public interface IRpcProviderSyncer {
         syncer.onSetupImplPkgToScan(paths);
         Optional.ofNullable(implPkgProviders)
                 .ifPresent(providers -> providers.forEach(provider -> provider.onSetupImplPkgToScan(paths)));
-        return new RpcProviderPlugin(syncer.onSetupGroup(), syncer.onSetupInvokeUrl(NetUtils.getLocalIpAddress()), paths);
+        return new RpcProviderPlugin(syncer.onSetupGroup(), syncer.onSetupInvokeUrl(NetUtils.getLocalIpAddress()), paths, syncer.onSetupAuthorizationToken());
     }
 
     /**
@@ -31,6 +32,13 @@ public interface IRpcProviderSyncer {
     @SuppressWarnings("JavadocReference")
     default String onSetupGroup() {
         return null;
+    }
+
+    /**
+     * 配置服务的访问凭证，默认为随机值
+     */
+    default String onSetupAuthorizationToken() {
+        return BdFileUtils.getUuid();
     }
 
     /**

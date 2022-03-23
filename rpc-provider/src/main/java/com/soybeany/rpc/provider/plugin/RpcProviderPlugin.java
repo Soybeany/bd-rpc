@@ -12,7 +12,6 @@ import com.soybeany.rpc.provider.util.ReflectUtils;
 import com.soybeany.sync.client.model.SyncClientInfo;
 import com.soybeany.sync.core.model.SyncDTO;
 import com.soybeany.util.Md5Utils;
-import com.soybeany.util.file.BdFileUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 
@@ -35,12 +34,12 @@ import static com.soybeany.sync.core.util.NetUtils.GSON;
 public class RpcProviderPlugin extends BaseRpcClientPlugin<RpcProviderInput, RpcProviderOutput> implements IRpcServiceExecutor {
 
     private final Map<String, Object> serviceMap = new HashMap<>();
-    private final String authorizationToken = BdFileUtils.getUuid();
     private final RpcServerInfo rpcServerInfo = new RpcServerInfo();
 
     private final String group;
     private final String invokeUrl;
     private final Set<String> implPkgToScan;
+    private final String authorizationToken;
 
     private SyncClientInfo info;
     private String md5;
