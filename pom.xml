@@ -31,8 +31,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <bdlib.version>2.6.24</bdlib.version>
-        <spring.version>5.3.13</spring.version>
+        <bdlib.version>2.6.25</bdlib.version>
+        <bdCache.version>2.6.25</bdCache.version>
+        <spring.version>5.3.16</spring.version>
     </properties>
 
     <dependencies>
@@ -44,10 +45,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -65,9 +62,9 @@
                 <version>${bdlib.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.Soybeany.bdlib-server</groupId>
+                <groupId>com.github.Soybeany</groupId>
                 <artifactId>bd-cachev2</artifactId>
-                <version>${bdlib.version}</version>
+                <version>${bdCache.version}</version>
             </dependency>
 
             <dependency>
@@ -78,11 +75,6 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
                 <version>${spring.version}</version>
             </dependency>
         </dependencies>
