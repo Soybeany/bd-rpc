@@ -1,6 +1,6 @@
 package com.soybeany.sync.core.api;
 
-import com.soybeany.sync.core.exception.ISyncExceptionMsgProvider;
+import com.soybeany.exception.BdRtException;
 import com.soybeany.util.ExceptionUtils;
 import org.slf4j.Logger;
 
@@ -31,12 +31,10 @@ public interface IBasePlugin<Input, Output> extends Comparable<IBasePlugin<?, ?>
         return () -> {
             try {
                 runnable.run();
+            } catch (BdRtException e) {
+                log.warn(e.getMessage());
             } catch (Throwable e) {
-                if (e instanceof ISyncExceptionMsgProvider) {
-                    log.warn(((ISyncExceptionMsgProvider) e).getMsg());
-                } else {
-                    log.error(ExceptionUtils.getExceptionDetail(e));
-                }
+                log.error(ExceptionUtils.getExceptionDetail(e));
             }
         };
     }

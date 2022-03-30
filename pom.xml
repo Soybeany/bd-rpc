@@ -31,8 +31,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <bdlib.version>2.6.25</bdlib.version>
-        <bdCache.version>2.6.25</bdCache.version>
+        <bdlib.version>2.6.26</bdlib.version>
+        <bdCache.version>2.6.26</bdCache.version>
         <spring.version>5.3.16</spring.version>
     </properties>
 
@@ -59,6 +59,11 @@
             <dependency>
                 <groupId>com.github.Soybeany.bdlib-server</groupId>
                 <artifactId>bd-util</artifactId>
+                <version>${bdlib.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.Soybeany.bdlib-server</groupId>
+                <artifactId>bd-exception</artifactId>
                 <version>${bdlib.version}</version>
             </dependency>
             <dependency>
