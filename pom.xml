@@ -62,11 +62,6 @@
                 <version>${bdlib.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.Soybeany.bdlib-server</groupId>
-                <artifactId>bd-exception</artifactId>
-                <version>${bdlib.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.github.Soybeany</groupId>
                 <artifactId>bd-cachev2</artifactId>
                 <version>${bdCache.version}</version>
